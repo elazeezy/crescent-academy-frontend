@@ -1,5 +1,55 @@
-
-html {
-  scroll-behavior: smooth;
-}
 @import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .section-padding {
+    padding-top: 4rem; /* 64px */
+    padding-bottom: 4rem;
+
+    @media (min-width: 768px) {
+      padding-top: 6rem; /* md:py-24 */
+      padding-bottom: 6rem;
+    }
+
+    @media (min-width: 1024px) {
+      padding-top: 8rem; /* lg:py-32 */
+      padding-bottom: 8rem;
+    }
+  }
+
+  .content-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+
+    @media (min-width: 1024px) {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 80rem; /* max-w-7xl ≈ 1280px */
+    }
+  }
+
+  .prose-custom {
+    max-width: none;
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: theme('colors.slate.700');
+  }
+
+  .prose-custom p {
+    margin-bottom: 1.5rem;
+  }
+
+  .prose-custom h2,
+  .prose-custom h3 {
+    color: #1E3A8A;
+    font-weight: 700;
+  }
+}

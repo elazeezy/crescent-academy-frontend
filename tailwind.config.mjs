@@ -8,12 +8,12 @@ export default {
     extend: {
       colors: {
         primary: {
-          dark: '#1E3A8A',    // Your Dark Blue
-          light: '#0EA5E9',   // Your Sky Blue
+          dark: '#1E3A8A',
+          light: '#0EA5E9',
           DEFAULT: '#1E3A8A',
         },
       },
     },
   },
   plugins: [],
-};
+}

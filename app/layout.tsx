@@ -1,12 +1,12 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import Navbar from "@/components/Navbar";   // your existing one
-import Footer from "@/components/Footer";   // the one we created
-import "./globals.css";                     // your global styles
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer"; // if you have one
 
 export const metadata: Metadata = {
-  title: "Crescent Academy - Authentic Education",
-  description: "Nurturing the complete child through academic excellence and moral uprightness.",
+  title: "Crescent Academy",
+  description: "Faith-driven centre of excellence nurturing the Complete Child",
 };
 
 export default function RootLayout({
@@ -16,10 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-white">
+      <body className="bg-white text-slate-900 antialiased">
         <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <main className="pt-0 md:pt-0 flex-grow"> {/* ← no top padding if navbar is fixed */}
+          {children}
+        </main>
+        <Footer /> {/* if you have Footer */}
       </body>
     </html>
   );

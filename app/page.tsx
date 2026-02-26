@@ -1,303 +1,545 @@
-"use client";
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';   
-import { motion } from "framer-motion";
-import { GraduationCap, Award, Microscope, Users, BookOpen, Heart, ShieldCheck, Calendar, Trophy, Quote, Image as ImageIcon } from "lucide-react";
+// app/page.tsx — Full fixed version
 
-// Define animation variants for beautiful slide-ins and fades
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Phone, Mail } from "lucide-react";
+import {
+  BookOpen,
+  Heart,
+  ShieldCheck,
+  Users,
+  GraduationCap,
+  Microscope,
+  Calendar,
+  Trophy,
+  Quote,
+} from "lucide-react";
+import Link from 'next/link';
+
+// Animation variants (removed transition from variants to avoid TS errors)
 const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 },
-  viewport: { once: true }
+  hidden: { opacity: 0, y: 60 },
+  visible: { opacity: 1, y: 0 },
 };
 
 const slideInLeft = {
-  initial: { opacity: 0, x: -50 },
-  whileInView: { opacity: 1, x: 0 },
-  transition: { duration: 0.8 },
-  viewport: { once: true }
+  hidden: { opacity: 0, x: -60 },
+  visible: { opacity: 1, x: 0 },
 };
 
 const slideInRight = {
-  initial: { opacity: 0, x: 50 },
-  whileInView: { opacity: 1, x: 0 },
-  transition: { duration: 0.8 },
-  viewport: { once: true }
+  hidden: { opacity: 0, x: 60 },
+  visible: { opacity: 1, x: 0 },
 };
 
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.2 }
-  }
+    transition: { staggerChildren: 0.15 },
+  },
+};
+
+// Sample slides — replace src with your real school photos
+const slides = [
+  {
+    image: "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070",
+    title: "Nurturing the Complete Child",
+    subtitle: "A harmonious blend of academic excellence and authentic Islamic values",
+    motto: "By the Grace of Allah",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1470&q=80",
+    title: "Faith • Knowledge • Character",
+    subtitle: "Building morally upright leaders for this world and the Hereafter",
+    motto: "Knowledge with Taqwa",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070",
+    title: "Excellence in Every Step",
+    subtitle: "From Nursery to Vocational — a journey of growth and guidance",
+    motto: "Discipline & Integrity",
+  },
+];
+
+const carouselVariants = {
+  initial: { opacity: 0, scale: 1.05 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 1.05 },
 };
 
 export default function LandingPage() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-slide every 6 seconds
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % slides.length);
+  };
+
+  const current = slides[currentIndex];
+
   return (
-    <div className="bg-white text-slate-900 font-sans">
+    <div className="bg-white text-slate-900 font-sans min-h-screen flex flex-col">
+      {/* Hero Carousel – smaller height on mobile */}
+      <section className="relative min-h-[55vh] md:min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background + Overlay */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            variants={carouselVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            <img
+              src={current.image}
+              alt={current.title}
+              className="w-full h-full object-cover brightness-[0.75] contrast-[1.1]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60" />
+          </motion.div>
+        </AnimatePresence>
 
-      
+        {/* Content – centered vertically */}
+        <div className="relative z-20 container mx-auto px-5 sm:px-8 text-center text-white">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="max-w-4xl mx-auto py-8 md:py-0"
+          >
+            {/* Badge / Motto */}
+            <motion.div
+              variants={fadeInUp}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/20 px-5 py-2 rounded-full mb-6 md:mb-8"
+            >
+              <span className="text-[#0EA5E9] text-sm md:text-base font-semibold tracking-wider uppercase">
+                Est. 2010
+              </span>
+            </motion.div>
 
-     {/* --- HERO SECTION (Premium & Mobile-First Redesign) --- */}
-<section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#1E3A8A]">
-  {/* Background layers */}
-  <div className="absolute inset-0 z-0">
-    {/* Gradient overlay */}
-    <div className="absolute inset-0 bg-gradient-to-b from-[#1E3A8A]/95 via-[#1E3A8A]/80 to-[#1E3A8A]/70 z-10" />
-    
-    {/* Image with subtle zoom + parallax feel */}
-    <motion.div
-      className="absolute inset-0"
-      initial={{ scale: 1.05 }}
-      animate={{ scale: 1.12 }}
-      transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-    >
-      <img
-        src="https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070"
-        alt="Crescent Academy - Students in harmony"
-        className="w-full h-full object-cover brightness-[0.85] contrast-[1.05]"
-        loading="eager"
-      />
-    </motion.div>
-  </div>
+            {/* Headline */}
+            <motion.h1
+              variants={fadeInUp}
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 }}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight mb-6 md:mb-8"
+            >
+              Nurturing the{" "}
+              <span className="text-[#0EA5E9] inline-block relative">
+                Complete Child
+                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#0EA5E9]/40 rounded-full blur-sm" />
+              </span>
+            </motion.h1>
 
-  {/* Content */}
-  <div className="relative z-20 container mx-auto px-5 sm:px-8 text-center text-white">
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
-      className="max-w-4xl mx-auto"
-    >
-      {/* Badge / Since year */}
-      <motion.div
-        variants={fadeInUp}
-        className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/20 px-5 py-2 rounded-full mb-6 md:mb-8"
-      >
-        <span className="text-[#0EA5E9] text-sm md:text-base font-semibold tracking-wider uppercase">
-          Est. 2010
-        </span>
-      </motion.div>
+            {/* Subtitle */}
+            <motion.p
+              variants={fadeInUp}
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.4 }}
+              className="text-base sm:text-lg md:text-xl lg:text-2xl font-light opacity-90 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed px-4 sm:px-0"
+            >
+              A harmonious blend of conventional excellence and authentic Islamic values — shaping minds, hearts, and futures.
+            </motion.p>
 
-      {/* Main Headline */}
-      <motion.h1
-        variants={fadeInUp}
-        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6 md:mb-8"
-      >
-        Nurturing the{" "}
-        <span className="text-[#0EA5E9] inline-block relative">
-          Complete Child
-          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#0EA5E9]/40 rounded-full blur-sm" />
-        </span>
-      </motion.h1>
+            {/* CTA Buttons – FIXED with Link */}
+            <motion.div
+              variants={fadeInUp}
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center"
+            >
+              <Link
+                href="/admissions"
+                className="group relative px-8 py-3.5 sm:px-10 sm:py-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white font-semibold rounded-xl shadow-xl transition-all duration-300 transform hover:scale-[1.04] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#0EA5E9]/40 min-w-[180px] sm:min-w-[220px] text-center block"
+              >
+                <span className="relative z-10">Enroll Now</span>
+                <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
 
-      {/* Subtitle */}
-      <motion.p
-        variants={fadeInUp}
-        className="text-lg sm:text-xl md:text-2xl font-light opacity-90 max-w-3xl mx-auto mb-10 md:mb-12 leading-relaxed"
-      >
-        A harmonious blend of conventional excellence and authentic Islamic values — shaping minds, hearts, and futures.
-      </motion.p>
+              <Link
+                href="/about"
+                className="group relative px-8 py-3.5 sm:px-10 sm:py-4 bg-white/10 backdrop-blur-md border border-white/30 hover:border-white/50 text-white font-semibold rounded-xl transition-all duration-300 hover:bg-white/20 min-w-[180px] sm:min-w-[220px] text-center block"
+              >
+                Discover Our Journey
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
 
-      {/* CTA Buttons */}
-      <motion.div
-        variants={fadeInUp}
-        className="flex flex-col sm:flex-row gap-5 sm:gap-6 justify-center items-center"
-      >
-        <button className="group relative px-10 py-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white font-semibold rounded-xl shadow-xl transition-all duration-300 transform hover:scale-[1.04] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-[#0EA5E9]/40 min-w-[220px]">
-          <span className="relative z-10">Enroll Now</span>
-          <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </button>
-
-        <button className="group relative px-10 py-4 bg-white/10 backdrop-blur-md border border-white/30 hover:border-white/50 text-white font-semibold rounded-xl transition-all duration-300 hover:bg-white/20 min-w-[220px]">
-          Explore Our History
-        </button>
-      </motion.div>
-    </motion.div>
-  </div>
-
-  {/* Subtle scroll indicator (mobile-friendly) */}
-  <motion.div
-    className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 hidden md:block"
-    animate={{ y: [0, 12, 0] }}
-    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-  >
-    <div className="w-8 h-12 border-2 border-white/40 rounded-full flex items-center justify-center">
-      <div className="w-1.5 h-3 bg-white/70 rounded-full animate-bounce" />
-    </div>
-  </motion.div>
-</section>
-
-{/* --- QUICK STATS (Modern Card Style) --- */}
-<motion.section
-  className="py-16 md:py-20 bg-gradient-to-b from-[#1E3A8A] to-[#0F2A5E] -mt-1"
-  variants={staggerContainer}
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true }}
->
-  <div className="container mx-auto px-6">
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-      {[
-        { icon: Trophy, value: "120+", label: "Prizes Won" },
-        { icon: Award, value: "30+", label: "Distinguished Awards" },
-        { icon: Calendar, value: "16+", label: "Years of Excellence" },
-        { icon: Heart, value: "100%", label: "Islamic Foundation" },
-      ].map((stat, i) => (
-        <motion.div
-          key={i}
-          variants={fadeInUp}
-          className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-6 md:p-8 text-center transition-all duration-300 hover:bg-white/15 hover:scale-[1.03] hover:shadow-xl"
+        {/* Controls – smaller on mobile */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 text-white/70 hover:text-white p-2 sm:p-3 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
+          aria-label="Previous slide"
         >
-          <stat.icon className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-4 text-[#0EA5E9]" />
-          <h3 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-2">
-            {stat.value}
-          </h3>
-          <p className="text-[#0EA5E9] text-sm md:text-base font-semibold uppercase tracking-wide">
-            {stat.label}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-</motion.section>
+          <ChevronLeft size={28} className="sm:size-32" />
+        </button>
 
-     {/* --- HISTORY SECTION (Redesigned - Elegant & Premium Look) --- */}
+        <button
+          onClick={nextSlide}
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 text-white/70 hover:text-white p-2 sm:p-3 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
+          aria-label="Next slide"
+        >
+          <ChevronRight size={28} className="sm:size-32" />
+        </button>
+
+        {/* Dots – smaller on mobile */}
+        <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-2 sm:gap-3">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                i === currentIndex ? "bg-[#0EA5E9] scale-125" : "bg-white/50 hover:bg-white/80"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Scroll indicator – only on desktop */}
+        <motion.div
+          className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 z-30 hidden md:block"
+          animate={{ y: [0, 12, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="w-7 h-11 border-2 border-white/40 rounded-full flex items-center justify-center">
+            <div className="w-1.5 h-3 bg-white/70 rounded-full animate-bounce" />
+          </div>
+        </motion.div>
+      </section>
+
+     {/* --- MISSION / VISION / PHILOSOPHY SECTION --- */}
 <motion.section
-  className="py-24 md:py-32 relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white"
+  className="relative py-24 md:py-32 bg-gradient-to-b from-[#1E3A8A] via-[#0F2A5E] to-[#1E3A8A] text-white overflow-hidden"
   initial={{ opacity: 0 }}
   whileInView={{ opacity: 1 }}
   viewport={{ once: true }}
 >
-  {/* Subtle background pattern (Islamic geometric style) */}
-  <div className="absolute inset-0 opacity-[0.04] pointer-events-none">
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,#0EA5E9_0%,transparent_10%),radial-gradient(circle_at_90%_80%,#1E3A8A_0%,transparent_10%)]" />
+  {/* Subtle animated background particles */}
+  <div className="absolute inset-0 opacity-10 pointer-events-none">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,#0EA5E9_1px,transparent_3px),radial-gradient(circle_at_80%_70%,#0EA5E9_1px,transparent_3px)] bg-[length:60px_60px] animate-pulse-slow" />
+  </div>
+
+  <div className="container mx-auto px-6 relative z-10">
+    {/* Section Title */}
+    <div className="text-center mb-16 md:mb-20">
+      <motion.span
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "backOut" }}
+        className="inline-block text-[#0EA5E9] text-sm md:text-base font-bold tracking-[0.5em] uppercase mb-4"
+      >
+        Our Foundation
+      </motion.span>
+
+      <motion.h2
+        initial={{ opacity: 0, y: 80, scale: 0.9 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 1, ease: "backOut", delay: 0.2 }}
+        className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 relative inline-block"
+      >
+        Building the Complete Child
+        <motion.span
+          initial={{ width: 0 }}
+          whileInView={{ width: "100%" }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
+          className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-[#0EA5E9] to-white rounded-full"
+        />
+      </motion.h2>
+
+      <motion.p
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.5 }}
+        className="text-lg md:text-xl max-w-3xl mx-auto opacity-90 leading-relaxed"
+      >
+        A harmonious blend of academic excellence, moral uprightness, and authentic Islamic values — by the grace of Allah (SWT).
+      </motion.p>
+    </div>
+
+    {/* Three Elegant Cards – with tilt & glow on hover */}
+    <div className="grid md:grid-cols-3 gap-8 lg:gap-12 perspective-1000">
+      {/* Mission Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 80, rotateX: 10 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+        whileHover={{ scale: 1.05, rotateX: -5, rotateY: 5, boxShadow: "0 25px 50px -12px rgba(14,165,233,0.4)" }}
+        transition={{ duration: 0.9, ease: "backOut" }}
+        viewport={{ once: true }}
+        className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl transition-all duration-500 group relative overflow-hidden transform-gpu"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0EA5E9]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <h3 className="text-2xl md:text-3xl font-bold text-[#0EA5E9] mb-6 group-hover:text-white transition-colors">
+          Our Mission
+        </h3>
+        <p className="text-white/90 leading-relaxed text-lg">
+          With the help of Allah (SWT), Crescent Academy is dedicated to nurturing a generation of students who are academically sound, morally upright, spiritually conscious, and socially responsible. We strive to produce the “Complete Child” — one who excels intellectually while remaining grounded in faith, good character, and service to humanity.
+        </p>
+      </motion.div>
+
+      {/* Vision Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 80, rotateX: 10 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+        whileHover={{ scale: 1.05, rotateX: -5, rotateY: -5, boxShadow: "0 25px 50px -12px rgba(14,165,233,0.4)" }}
+        transition={{ duration: 0.9, ease: "backOut", delay: 0.2 }}
+        viewport={{ once: true }}
+        className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl transition-all duration-500 group relative overflow-hidden transform-gpu"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0EA5E9]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <h3 className="text-2xl md:text-3xl font-bold text-[#0EA5E9] mb-6 group-hover:text-white transition-colors">
+          Our Vision
+        </h3>
+        <p className="text-white/90 leading-relaxed text-lg">
+          To be a leading centre of faith-driven excellence, raising leaders who are knowledgeable, disciplined, God-conscious, and prepared to positively impact their communities and the world — both in this life and the Hereafter.
+        </p>
+      </motion.div>
+
+      {/* Philosophy Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 80, rotateX: 10 }}
+        whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+        whileHover={{ scale: 1.05, rotateX: 5, rotateY: 5, boxShadow: "0 25px 50px -12px rgba(14,165,233,0.4)" }}
+        transition={{ duration: 0.9, ease: "backOut", delay: 0.4 }}
+        viewport={{ once: true }}
+        className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl transition-all duration-500 group relative overflow-hidden transform-gpu"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0EA5E9]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <h3 className="text-2xl md:text-3xl font-bold text-[#0EA5E9] mb-6 group-hover:text-white transition-colors">
+          Our Philosophy
+        </h3>
+        <p className="text-white/90 leading-relaxed text-lg mb-6">
+          True education goes beyond academics. We integrate authentic Islamic teachings with robust conventional learning to balance knowledge with taqwa (God-consciousness), character, and service.
+        </p>
+        <ul className="space-y-3 text-white/90">
+          {["Academic excellence", "Moral & spiritual development", "Discipline & integrity", "Leadership & social responsibility"].map((item, idx) => (
+            <motion.li
+              key={idx}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 + idx * 0.1, duration: 0.5 }}
+              className="flex items-center gap-3"
+            >
+              <motion.div
+                className="w-2 h-2 rounded-full bg-[#0EA5E9]"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", delay: idx * 0.2 }}
+              />
+              {item}
+            </motion.li>
+          ))}
+        </ul>
+      </motion.div>
+    </div>
+
+    {/* Inspirational Quote – typewriter effect */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: 1 }}
+      className="mt-20 text-center max-w-4xl mx-auto"
+    >
+      <motion.p
+        className="text-2xl md:text-3xl font-medium italic text-[#0EA5E9] leading-relaxed mb-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ staggerChildren: 0.03, delayChildren: 1.2 }}
+      >
+        {"“By the grace of Allah, every step forward is a step toward building the Complete Child — knowledgeable, disciplined, and prepared for both worlds.”".split("").map((char, i) => (
+          <motion.span
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.05, delay: 1.2 + i * 0.03 }}
+          >
+            {char}
+          </motion.span>
+        ))}
+      </motion.p>
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2.5 }}
+        className="text-white/70 text-lg font-light"
+      >
+        Crescent Academy — Since 2010
+      </motion.p>
+    </motion.div>
+  </div>
+</motion.section>
+
+
+
+<motion.section
+  className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white"
+  initial={{ opacity: 0 }}
+  whileInView={{ opacity: 1 }}
+  viewport={{ once: true }}
+>
+  {/* Blurred nature/school background */}
+  <div className="absolute inset-0 z-0">
+    <img
+      src="https://images.unsplash.com/photo-1502085671122-8d0d6d058485?auto=format&fit=crop&q=80&w=2070"
+      alt="Serene school campus with trees"
+      className="w-full h-full object-cover brightness-75 contrast-125 blur-sm scale-110"
+    />
+    <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/70 to-white/90" />
   </div>
 
   <div className="container mx-auto px-6 relative z-10">
     {/* Section Header */}
     <div className="text-center mb-16 md:mb-20">
       <motion.span
-        className="inline-block text-[#0EA5E9] text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-4"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        viewport={{ once: true }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "backOut" }}
+        className="inline-block text-[#0EA5E9] text-sm md:text-base font-bold tracking-[0.5em] uppercase mb-4"
       >
         Our Journey
       </motion.span>
 
       <motion.h2
-        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1E3A8A] leading-tight mb-6"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        viewport={{ once: true }}
+        initial={{ opacity: 0, y: 80, scale: 0.9 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 1, ease: "backOut", delay: 0.2 }}
+        className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 relative inline-block"
       >
-        Founded on Monday,<br className="hidden sm:block" /> 13th September 2010
+        History of Crescent Academy
+        <motion.span
+          initial={{ width: 0 }}
+          whileInView={{ width: "100%" }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.6 }}
+          className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-[#0EA5E9] to-[#1E3A8A] rounded-full"
+        />
       </motion.h2>
-
-      <motion.div
-        className="w-24 h-1 bg-gradient-to-r from-[#0EA5E9] to-[#1E3A8A] mx-auto rounded-full"
-        initial={{ width: 0 }}
-        whileInView={{ width: 96 }}
-        transition={{ duration: 1, delay: 0.5 }}
-        viewport={{ once: true }}
-      />
     </div>
 
+    {/* Main Content - Two Columns on Desktop */}
     <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-      {/* Left Column - Main Story */}
+      {/* Left: Story Text + Philosophy */}
       <motion.div
-        className="space-y-8 md:space-y-10"
-        variants={slideInLeft}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
+        initial={{ opacity: 0, x: -60 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="space-y-10"
       >
-        <div className="prose prose-lg prose-slate max-w-none">
+        <div className="prose prose-lg prose-slate max-w-none space-y-6">
           <p className="text-slate-700 leading-relaxed text-lg">
-            With the help of Allah (SWT), Crescent Academy was founded on Monday, 13th September 2010, as a co-educational institution dedicated to providing a harmonious blend of conventional and authentic Islamic education.
+            With the help of Allah (SWT), <strong>Crescent Academy</strong> was founded on Monday, 13th September 2010, as a co-educational institution dedicated to providing a harmonious blend of conventional and authentic Islamic education.
           </p>
 
           <p className="text-slate-700 leading-relaxed">
             Established in Ajegbe Close, Panada Area, Iwo, the school began with a clear vision: to nurture a generation of students who are academically sound, morally upright, spiritually conscious, and socially responsible.
           </p>
 
-          <p className="text-slate-700 leading-relaxed font-medium italic border-l-4 border-[#0EA5E9] pl-5 py-1">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.4 }}
+            className="text-slate-700 leading-relaxed font-medium italic border-l-4 border-[#0EA5E9] pl-5 py-1 bg-white/50 rounded-r-lg"
+          >
             From humble beginnings, Crescent Academy has grown steadily over the past sixteen years into a reputable centre of learning known for discipline, excellence, and strong Islamic values.
-          </p>
+          </motion.p>
 
           <p className="text-slate-700 leading-relaxed">
             Our establishment was driven by the desire to produce the “Complete Child” — one who excels intellectually while remaining grounded in faith and good character. Every milestone recorded since our inception has been achieved by the grace and guidance of Allah.
           </p>
         </div>
 
-        {/* Core Philosophy Block */}
-        <div className="bg-white/70 backdrop-blur-sm border border-slate-100 rounded-2xl p-8 shadow-lg">
+        {/* Educational Philosophy List */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.6 }}
+          className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 shadow-xl"
+        >
           <h4 className="text-2xl font-bold text-[#1E3A8A] mb-6">Our Educational Philosophy</h4>
-          <p className="text-slate-700 mb-6 leading-relaxed">
+
+          <p className="text-slate-700 leading-relaxed mb-6">
             At Crescent Academy, we believe that education must go beyond academic success. Our philosophy is rooted in the conviction that true success lies in balancing knowledge with character.
           </p>
 
-          <ul className="grid sm:grid-cols-2 gap-4 text-slate-700">
+          <ul className="space-y-4">
             {[
-              "Academic excellence",
-              "Moral and spiritual development",
-              "Leadership training",
-              "Discipline and integrity",
-              "Social responsibility",
-            ].map((point, i) => (
+              { text: "Academic excellence", delay: 0.7 },
+              { text: "Moral & spiritual development", delay: 0.8 },
+              { text: "Discipline & integrity", delay: 0.9 },
+              { text: "Leadership & social responsibility", delay: 1.0 },
+              { text: "Practical & vocational skills", delay: 1.1 },
+            ].map((item, idx) => (
               <motion.li
-                key={i}
-                className="flex items-center gap-3"
-                initial={{ opacity: 0, x: -20 }}
+                key={idx}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: item.delay }}
+                className="flex items-center gap-4 text-slate-700 text-lg"
               >
-                <div className="w-2 h-2 rounded-full bg-[#0EA5E9]" />
-                {point}
+                <motion.div
+                  className="w-3 h-3 rounded-full bg-[#0EA5E9] flex-shrink-0"
+                  animate={{ scale: [1, 1.4, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", delay: idx * 0.2 }}
+                />
+                {item.text}
               </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* Right Column - Timeline + Achievements */}
+      {/* Right: Timeline + Highlights */}
       <motion.div
+        initial={{ opacity: 0, x: 60 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 1, ease: "easeOut" }}
         className="space-y-10"
-        variants={slideInRight}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
       >
-        {/* Timeline Card */}
-        <div className="bg-gradient-to-br from-[#1E3A8A]/5 to-[#0EA5E9]/5 rounded-3xl p-8 border border-[#0EA5E9]/20 shadow-xl">
+        <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 shadow-xl">
           <h4 className="text-2xl font-bold text-[#1E3A8A] mb-6 flex items-center gap-3">
-            <span className="text-3xl">📜</span> Key Milestones
+            <span className="text-3xl animate-pulse">📜</span> Key Milestones
           </h4>
 
           <div className="space-y-8 relative pl-8 before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-[#0EA5E9] before:to-[#1E3A8A]">
             {[
               { year: "2010", text: "Founded in Ajegbe Close, Panada Area, Iwo" },
-              { year: "2014", text: "Established The Crescent College (Secondary)" },
-              { year: "2023", text: "Launched Crescent School of Science (Vocational)" },
-              { year: "Today", text: "Over 120 prizes, 30+ awards, thriving alumni network" },
+              { year: "2010–2016", text: "Early growth: Nursery & Primary established" },
+              { year: "2014", text: "Establishment of Crescent College (Secondary Section)" },
+              { year: "2023", text: "Launch of Crescent School of Science (Vocational & Technical)" },
+              { year: "Today", text: "120+ prizes, 30+ awards, thriving alumni network" },
             ].map((milestone, i) => (
               <motion.div
                 key={i}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.5 + i * 0.2, ease: "backOut" }}
                 className="relative"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.15 }}
-                viewport={{ once: true }}
               >
-                <div className="absolute -left-8 top-1.5 w-4 h-4 rounded-full bg-[#0EA5E9] border-4 border-white shadow" />
-                <div className="bg-white p-5 rounded-xl shadow-sm">
-                  <span className="text-[#0EA5E9] font-bold text-lg block mb-1">{milestone.year}</span>
+                <div className="absolute -left-8 top-1.5 w-5 h-5 rounded-full bg-[#0EA5E9] border-4 border-white shadow-md flex items-center justify-center text-white text-xs font-bold">
+                  {i + 1}
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                  <span className="text-[#0EA5E9] font-bold text-xl block mb-2">{milestone.year}</span>
                   <p className="text-slate-700">{milestone.text}</p>
                 </div>
               </motion.div>
@@ -305,483 +547,182 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Featured Image / Visionary Quote */}
-        <div className="relative group rounded-3xl overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1E3A8A]/70 via-transparent to-transparent z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-            alt="Crescent Academy Campus & Students"
-            className="w-full h-96 md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-8 z-20 text-white">
-            <p className="text-xl md:text-2xl font-light italic max-w-2xl">
-              “By Allah’s grace, every step forward is a step toward building the Complete Child.”
-            </p>
-            <p className="mt-3 font-medium">— Visionary Leadership</p>
-          </div>
-        </div>
+        {/* Notable Achievements Highlight */}
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          whileHover={{ scale: 1.03 }}
+          transition={{ duration: 1, delay: 1.2, ease: "backOut" }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-br from-[#1E3A8A]/5 to-[#0EA5E9]/5 rounded-3xl p-8 border border-[#0EA5E9]/20 shadow-xl"
+        >
+          <h4 className="text-2xl font-bold text-[#1E3A8A] mb-4 flex items-center gap-3">
+            <Trophy className="text-[#0EA5E9] animate-bounce-slow" size={28} />
+            Academic & Competitive Excellence
+          </h4>
+          <p className="text-slate-700 leading-relaxed mb-4">
+            By the mercy of Allah, our students have earned over <strong>120 prizes</strong> and <strong>30 distinguished awards</strong> in academics, Qur’anic recitation, debate, sportsmanship, and more.
+          </p>
+          <p className="text-slate-700 italic">
+            Recent highlight: Runners-up in the Iwo Day Football Competition — showcasing teamwork, discipline, and resilience.
+          </p>
+        </motion.div>
       </motion.div>
     </div>
 
-    {/* Final Summary Quote */}
+    {/* Closing Quote – typewriter effect */}
     <motion.div
-      className="mt-20 text-center max-w-4xl mx-auto"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
+      transition={{ delay: 1.5 }}
+      className="mt-20 text-center max-w-4xl mx-auto"
     >
-      <p className="text-2xl md:text-3xl font-medium text-[#1E3A8A] italic leading-relaxed">
-        “Crescent Academy stands today as a symbol of faith-driven excellence, academic distinction, and moral refinement — a true home for building the Complete Child.”
-      </p>
+      <motion.p
+        className="text-3xl md:text-4xl font-medium italic text-[#1E3A8A] leading-relaxed mb-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ staggerChildren: 0.035, delayChildren: 1.8 }}
+      >
+        {"“Crescent Academy stands today as a symbol of faith-driven excellence, academic distinction, and moral refinement — a true home for building the Complete Child.”".split("").map((char, i) => (
+          <motion.span
+            key={i}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.08, delay: 1.8 + i * 0.035 }}
+          >
+            {char}
+          </motion.span>
+        ))}
+      </motion.p>
     </motion.div>
   </div>
 </motion.section>
 
-      {/* --- PHILOSOPHY & CORE VALUES --- */}
-      {/* Kept and enhanced with grid, slide-in from right */}
-      <motion.section 
-        className="py-24 bg-slate-50"
-        variants={slideInRight}
-        initial="initial"
-        whileInView="whileInView"
+      {/* --- NEWS & EVENTS SECTION --- */}
+      <motion.section
+        className="relative py-24 md:py-32 bg-gradient-to-b from-slate-50 via-white to-slate-50 overflow-hidden"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
       >
-        <div className="container mx-auto px-6">
-          <h2 className="text-[#1E3A8A] font-bold text-sm tracking-[0.2em] uppercase mb-4 text-center">Our Philosophy</h2>
-          <h3 className="text-4xl font-bold mb-12 text-center text-slate-900">Core Values</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: <BookOpen className="text-[#0EA5E9] w-10 h-10" />, title: "Academic Excellence" },
-              { icon: <Heart className="text-[#0EA5E9] w-10 h-10" />, title: "Moral Development" },
-              { icon: <ShieldCheck className="text-[#0EA5E9] w-10 h-10" />, title: "Discipline & Integrity" },
-              { icon: <Users className="text-[#0EA5E9] w-10 h-10" />, title: "Social Responsibility" }
-            ].map((item, i) => (
-              <motion.div 
-                key={i} 
-                className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow"
-                variants={fadeInUp}
-              >
-                {item.icon}
-                <span className="font-bold text-slate-800 mt-4">{item.title}</span>
-              </motion.div>
-            ))}
-          </div>
+        {/* Subtle animated background particles (optional premium touch) */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(14,165,233,0.08)_0%,transparent_50%),radial-gradient(circle_at_80%_70%,rgba(30,58,138,0.08)_0%,transparent_50%)] animate-pulse-slow" />
         </div>
-      </motion.section>
 
-      {/* --- ACADEMIC WINGS --- */}
-      {/* Enhanced cards with real images, hover animations, slide-in stagger */}
-      <motion.section 
-        className="py-24"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <motion.h2 variants={fadeInUp} className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">Our Academic Wings</motion.h2>
-          <motion.p variants={fadeInUp} className="text-slate-500 mb-16 text-center">Continuous excellence from Nursery to Vocational levels.</motion.p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Academy */}
-            <motion.div 
+        <div className="container mx-auto px-6 relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16 md:mb-20">
+            <motion.span
               variants={fadeInUp}
-              className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group"
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.2 }}
+              className="inline-block text-[#0EA5E9] text-sm md:text-base font-bold tracking-[0.4em] uppercase mb-4"
             >
-              <img 
-                src="https://blog.esc13.net/wp-content/uploads/2019/10/GettyImages-684060418.jpeg" // Real image: Nursery classroom
-                alt="Crescent Academy"
-                className="w-full h-40 object-cover rounded-2xl mb-6"
-              />
-              <div className="w-14 h-14 bg-[#0EA5E9]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#0EA5E9] transition-colors mx-auto">
-                <GraduationCap className="text-[#0EA5E9] group-hover:text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-[#1E3A8A] mb-2 text-center">The Crescent Academy</h4>
-              <p className="text-sm text-[#0EA5E9] font-bold mb-4 text-center">Nursery & Primary</p>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6 text-center">
-                Foundational stage focusing on literacy, numeracy, and Tahfīdhul Qur’an (Memorization Program).
-              </p>
-              <ul className="text-xs space-y-2 text-slate-500 mb-8 text-center">
-                <li>• Panada Area Branch</li>
-                <li>• Kobaope Phase 1 Branch</li>
-              </ul>
-            </motion.div>
+              Stay Updated
+            </motion.span>
 
-            {/* College */}
-            <motion.div 
+            <motion.h2
               variants={fadeInUp}
-              className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group"
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.3 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1E3A8A] leading-tight mb-6"
             >
-              <img 
-                src="https://c7684bdb45.mjedge.net/wp-content/uploads/zikoko/2023/10/5B6D0D61-F0F1-433D-9C52-D152D1C40036-1024x676.webp" // Real image: Secondary students
-                alt="Crescent College"
-                className="w-full h-40 object-cover rounded-2xl mb-6"
-              />
-              <div className="w-14 h-14 bg-[#1E3A8A]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#1E3A8A] transition-colors mx-auto">
-                <BookOpen className="text-[#1E3A8A] group-hover:text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-[#1E3A8A] mb-2 text-center">The Crescent College</h4>
-              <p className="text-sm text-[#0EA5E9] font-bold mb-4 text-center">Secondary Education (Est. 2014)</p>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6 text-center">
-                Emphasis on leadership, critical thinking, and character formation.
-              </p>
-              <p className="text-xs text-slate-400 font-medium tracking-wide uppercase italic text-center">📍 Along Ile Ogbo Road</p>
-            </motion.div>
+              News & Events
+            </motion.h2>
 
-            {/* Science */}
-            <motion.div 
+            <motion.p
               variants={fadeInUp}
-              className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group"
+              transition={{ duration: 0.9, ease: "easeOut", delay: 0.4 }}
+              className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto"
             >
-              <img 
-                src="https://img.apmcdn.org/9f057903648c36ee1de116e22adced61db50c58b/uncropped/5f62f9-2014-09-dsc-1817.jpg" // Real image: Vocational lab
-                alt="School of Science"
-                className="w-full h-40 object-cover rounded-2xl mb-6"
-              />
-              <div className="w-14 h-14 bg-[#0EA5E9]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#0EA5E9] transition-colors mx-auto">
-                <Microscope className="text-[#0EA5E9] group-hover:text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-[#1E3A8A] mb-2 text-center">School of Science</h4>
-              <p className="text-sm text-[#0EA5E9] font-bold mb-4 text-center">Vocational & Technical (Est. 2023)</p>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6 text-center">
-                Strengthening scientific understanding with skills like Baking, Cosmetology, and Lab suit training.
-              </p>
-              <p className="text-xs text-slate-400 font-medium tracking-wide uppercase italic text-center">📍 Beside Masjid Darus Salam</p>
-            </motion.div>
+              Highlights from Crescent Academy — celebrations, achievements, upcoming events, and inspiring moments.
+            </motion.p>
           </div>
-        </div>
-      </motion.section>
 
-      {/* --- AWARDS & ACHIEVEMENTS --- */}
-      {/* New section with grid of awards, real images, slide-in left */}
-      <motion.section 
-        className="py-24 bg-slate-50"
-        variants={slideInLeft}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">Awards & Achievements</h2>
-          <p className="text-slate-500 mb-16 text-center">Celebrating our journey of excellence.</p>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <img 
-                src="https://egcsd.org/wp-content/uploads/2023/06/2023-Goff-Awards-Ceremony-trophies-web.jpg" // Real image: Awards trophies
-                alt="Awards"
-                className="w-full h-48 object-cover rounded-2xl mb-4"
-              />
-              <h4 className="font-bold text-[#1E3A8A]">Over 120 Prizes</h4>
-              <p className="text-slate-600 text-sm">From competitions like AMIS, NAPPS, etc.</p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://egcsd.org/wp-content/uploads/2023/06/2023-Goff-Awards-Ceremony-trophies-web.jpg" // Reuse or add more if available
-                alt="Distinguished Awards"
-                className="w-full h-48 object-cover rounded-2xl mb-4"
-              />
-              <h4 className="font-bold text-[#1E3A8A]">30+ Distinguished Awards</h4>
-              <p className="text-slate-600 text-sm">Recognizing our commitment to education.</p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://egcsd.org/wp-content/uploads/2023/06/2023-Goff-Awards-Ceremony-trophies-web.jpg" // Reuse
-                alt="Football Competition"
-                className="w-full h-48 object-cover rounded-2xl mb-4"
-              />
-              <h4 className="font-bold text-[#1E3A8A]">Runners-up in Iwo Day Football 2025</h4>
-              <p className="text-slate-600 text-sm">Showcasing our students' talents.</p>
-            </div>
-          </div>
-          {/* Placeholder for more awards */}
-          <div className="mt-8 text-center text-slate-500 italic">
-            [Add more awards here as needed]
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- FOUNDER'S SPEECH --- */}
-      {/* New section with placeholder for text, slide-in right */}
-      <motion.section 
-        className="py-24 container mx-auto px-6"
-        variants={slideInRight}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <h2 className="text-4xl font-bold text-[#1E3A8A] mb-8 text-center">Founder's Speech</h2>
-        <div className="max-w-3xl mx-auto bg-slate-50 p-8 rounded-2xl shadow-md">
-          <p className="text-slate-600 leading-relaxed">
-            {/* Placeholder: Paste your speech text here */}
-            Paste the founder's speech text here. This section can include inspirational messages, vision for the school, or any address from the founder.
-          </p>
-        </div>
-      </motion.section>
-
-      {/* --- LEADERSHIP --- */}
-      {/* Enhanced with real/placeholder images, stagger animations */}
-      <motion.section 
-        className="py-24 bg-white"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <motion.h2 variants={fadeInUp} className="text-3xl font-bold text-center text-[#1E3A8A] mb-16">The Visionary Backbone</motion.h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div variants={fadeInUp} className="text-center">
-              <img 
-                src="https://placehold.co/128x128?text=Alhaji" // Placeholder; replace with actual
-                alt="Alhaji Abdul Wasii Abdus Salam"
-                className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-[#1E3A8A]/20 object-cover"
-              />
-              <h5 className="font-bold text-[#1E3A8A]">Alhaji Abdul Wasii Abdus Salam</h5>
-              <p className="text-xs text-[#0EA5E9] font-bold uppercase mt-1">Proprietor & Founder</p>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="text-center">
-              <img 
-                src="https://placehold.co/128x128?text=Alhaja" // Placeholder
-                alt="Alhaja Abdus Salam M.B"
-                className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-[#1E3A8A]/20 object-cover"
-              />
-              <h5 className="font-bold text-[#1E3A8A]">Alhaja Abdus Salam M.B</h5>
-              <p className="text-xs text-[#0EA5E9] font-bold uppercase mt-1">Proprietoress & Administrator</p>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="text-center">
-              <img 
-                src="https://placehold.co/128x128?text=Mr." // Placeholder
-                alt="Mr. Mutiu Oyebanjo (Sheikh)"
-                className="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-[#1E3A8A]/20 object-cover"
-              />
-              <h5 className="font-bold text-[#1E3A8A]">Mr. Mutiu Oyebanjo (Sheikh)</h5>
-              <p className="text-xs text-[#0EA5E9] font-bold uppercase mt-1">Principal & Imam, College</p>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- FEE STRUCTURE --- */}
-      {/* Kept glassmorphism, added fade-in up for rows */}
-      <motion.section 
-        className="py-24 container mx-auto px-6"
-        variants={slideInLeft}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="bg-[#1E3A8A] rounded-[2.5rem] p-8 md:p-16 text-white shadow-2xl overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#0EA5E9] blur-[120px] opacity-30 -mr-20 -mt-20" />
-          <h2 className="text-3xl font-bold mb-10 text-center">School Fees Structure</h2>
-          <motion.div 
-            className="grid gap-4 max-w-3xl mx-auto"
+          {/* Featured News Cards - Staggered Animation */}
+          <motion.div
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
+            viewport={{ once: true }}
           >
             {[
-              { level: "Playgroup", price: "₦17,000" },
-              { level: "Kindergarten 1 & 2", price: "₦19,000" },
-              { level: "Nursery 1 & 2", price: "₦21,000" },
-              { level: "Primary 1 – 5", price: "₦23,000" },
-              { level: "J.S.S 1 – 3 (College)", price: "₦36,000" },
-              { level: "S.S.S 1 – 3 (College)", price: "₦40,000" },
-              { level: "School of Science", price: "₦50,000" },
-            ].map((fee, i) => (
-              <motion.div 
-                key={i} 
+              {
+                title: "Iwo Day Football Tournament – Runners-Up Glory!",
+                date: "November 15, 2025",
+                image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1470",
+                excerpt: "Our boys' team showed incredible teamwork and discipline to reach the final, defeating every public school in the tournament. A proud moment for Crescent Academy!",
+                category: "Sports",
+              },
+              {
+                title: "Qur’anic Recitation Competition Winners",
+                date: "October 28, 2025",
+                image: "https://images.unsplash.com/photo-1580130718646-9f694209b207?auto=format&fit=crop&q=80&w=1470",
+                excerpt: "Our students secured 1st and 2nd place in the regional Qur’anic competition — a testament to our focus on spiritual excellence.",
+                category: "Spiritual",
+              },
+              {
+                title: "Annual Prize-Giving Day 2025",
+                date: "September 13, 2025",
+                image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=1470",
+                excerpt: "Celebrating 15 years of nurturing the Complete Child with awards, speeches, and joyful moments from our growing family.",
+                category: "Events",
+              },
+            ].map((news, i) => (
+              <motion.article
+                key={i}
                 variants={fadeInUp}
-                className="flex justify-between items-center p-4 border-b border-white/10 hover:bg-white/5 transition-colors"
+                transition={{ duration: 0.9, ease: "easeOut", delay: i * 0.1 }}
+                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
               >
-                <span className="font-medium">{fee.level}</span>
-                <span className="font-bold text-[#0EA5E9]">{fee.price}</span>
-              </motion.div>
+                <div className="relative overflow-hidden aspect-[4/3]">
+                  <img
+                    src={news.image}
+                    alt={news.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <span className="absolute bottom-4 left-4 bg-[#0EA5E9] text-white text-xs font-bold px-3 py-1 rounded-full">
+                    {news.category}
+                  </span>
+                </div>
+
+                <div className="p-6 md:p-8">
+                  <p className="text-sm text-slate-500 mb-3">{news.date}</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-[#1E3A8A] mb-4 group-hover:text-[#0EA5E9] transition-colors line-clamp-2">
+                    {news.title}
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed line-clamp-3 mb-6">
+                    {news.excerpt}
+                  </p>
+                  <Link
+                    href="#"
+                    className="inline-flex items-center text-[#0EA5E9] font-medium hover:text-[#0284C7] transition-colors"
+                  >
+                    Read More <ChevronRight className="ml-2 w-5 h-5" />
+                  </Link>
+                </div>
+              </motion.article>
             ))}
+          </motion.div>
+
+          {/* Call to Action / View All */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: "easeOut", delay: 0.8 }}
+            className="text-center mt-16 md:mt-20"
+          >
+            <Link
+              href="/news"
+              className="inline-block px-10 py-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white font-bold rounded-xl shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              View All News & Events
+            </Link>
           </motion.div>
         </div>
       </motion.section>
-
-      {/* --- SCHOOL CALENDAR --- */}
-      {/* New section with illustration image, sample events list, slide-in right */}
-      <motion.section 
-        className="py-24 bg-slate-50"
-        variants={slideInRight}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">School Calendar</h2>
-          <p className="text-slate-500 mb-12 text-center">Upcoming events and important dates.</p>
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            <img 
-              src="https://www.incidentiq.com/wp-content/uploads/2024/06/28.03BlogImage-How-to-Create-a-School-Event-Calendar-scaled.jpg" // Real image: Calendar illustration
-              alt="School Calendar"
-              className="w-full md:w-1/2 h-64 object-cover rounded-2xl"
-            />
-            <div className="w-full md:w-1/2">
-              <ul className="space-y-4">
-                <li className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-                  <Calendar className="text-[#0EA5E9] w-6 h-6" />
-                  <div>
-                    <h5 className="font-bold">Term Start - September 2026</h5>
-                    <p className="text-sm text-slate-600">Welcome back to school!</p>
-                  </div>
-                </li>
-                <li className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-                  <Calendar className="text-[#0EA5E9] w-6 h-6" />
-                  <div>
-                    <h5 className="font-bold">Mid-Term Break - October 2026</h5>
-                    <p className="text-sm text-slate-600">Short holiday for students.</p>
-                  </div>
-                </li>
-                {/* Placeholder for more events */}
-                <li className="text-center text-slate-500 italic">
-                  [Paste more calendar events here]
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- NEWS & EVENTS TEASER --- */}
-      {/* New section with placeholders for news, slide-in left */}
-      <motion.section 
-        className="py-24"
-        variants={slideInLeft}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">Latest News & Events</h2>
-          <p className="text-slate-500 mb-16 text-center">Stay updated with Crescent Academy.</p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-4 rounded-2xl shadow-md">
-                <img 
-                  src={`https://placehold.co/400x200?text=News+${i}`} // Placeholder; replace with actual news images
-                  alt={`News ${i}`}
-                  className="w-full h-32 object-cover rounded-t-2xl"
-                />
-                <h4 className="font-bold mt-4">News Title {i}</h4>
-                <p className="text-sm text-slate-600">Brief description... [Paste news content here]</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <a href="/news" className="text-[#0EA5E9] hover:underline font-bold">View All News</a>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- PHOTO GALLERY TEASER --- */}
-      {/* New section with real images from search, grid layout, slide-in right */}
-      <motion.section 
-        className="py-24 bg-slate-50"
-        variants={slideInRight}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">Photo Gallery</h2>
-          <p className="text-slate-500 mb-16 text-center">Glimpses of life at Crescent Academy.</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <img 
-              src="https://kidsinmuseums.org.uk/wp-content/uploads/2020/04/JayneLloyd_KidsInMusesums_TakeoverDay2019_3332-2-scaled.jpg" // Real image: School activities
-              alt="Gallery 1"
-              className="w-full h-48 object-cover rounded-2xl"
-            />
-            <img 
-              src="https://i0.wp.com/elabraveandtrue.com/wp-content/uploads/2019/10/img_1470.jpg?fit=750%2C563&ssl=1" // Real image: More activities
-              alt="Gallery 2"
-              className="w-full h-48 object-cover rounded-2xl"
-            />
-            {/* Add more placeholders */}
-            <div className="bg-slate-200 flex items-center justify-center rounded-2xl text-slate-400 italic">
-              [Add photo here]
-            </div>
-            <div className="bg-slate-200 flex items-center justify-center rounded-2xl text-slate-400 italic">
-              [Add photo here]
-            </div>
-          </div>
-          <div className="text-center mt-8">
-            <a href="/gallery" className="text-[#0EA5E9] hover:underline font-bold">View Full Gallery</a>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- TESTIMONIALS --- */}
-      {/* New section with quote images/backgrounds, stagger */}
-      <motion.section 
-        className="py-24"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-[#1E3A8A] mb-4 text-center">What Our Community Says</h2>
-          <p className="text-slate-500 mb-16 text-center">Hear from students, parents, and alumni.</p>
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div variants={fadeInUp} className="relative p-6 bg-white rounded-2xl shadow-md">
-              <img 
-                src="https://images.template.net/89529/student-testimonial-template-rs1zc.jpeg" // Real image: Testimonial background
-                alt="Testimonial 1"
-                className="absolute inset-0 w-full h-full object-cover opacity-10 rounded-2xl"
-              />
-              <Quote className="text-[#0EA5E9] w-8 h-8 mb-4" />
-              <p className="text-slate-600 mb-4">"Amazing blend of education and values!"</p>
-              <cite className="block text-right font-bold">- Parent</cite>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="relative p-6 bg-white rounded-2xl shadow-md">
-              <img 
-                src="https://images.template.net/89016/personal-testimonial-template-1jwn8.jpeg" // Real image
-                alt="Testimonial 2"
-                className="absolute inset-0 w-full h-full object-cover opacity-10 rounded-2xl"
-              />
-              <Quote className="text-[#0EA5E9] w-8 h-8 mb-4" />
-              <p className="text-slate-600 mb-4">"Prepared me for university success."</p>
-              <cite className="block text-right font-bold">- Alumnus</cite>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="relative p-6 bg-white rounded-2xl shadow-md">
-              <img 
-                src="https://examstudyexpert.com/wp-content/uploads/2021/07/Motivational-Exam-Quotes-Vidal-Sassoon-1024x724.jpg" // Real image: Quote background
-                alt="Testimonial 3"
-                className="absolute inset-0 w-full h-full object-cover opacity-10 rounded-2xl"
-              />
-              <Quote className="text-[#0EA5E9] w-8 h-8 mb-4" />
-              <p className="text-slate-600 mb-4">"Teachers are truly inspiring."</p>
-              <cite className="block text-right font-bold">- Student</cite>
-            </motion.div>
-          </div>
-          {/* Placeholder for more testimonials */}
-          <div className="mt-8 text-center text-slate-500 italic">
-            [Paste more testimonials here]
-          </div>
-        </div>
-      </motion.section>
-
-      {/* --- CALL-TO-ACTION --- */}
-      {/* Added final CTA section with animation */}
-      <motion.section 
-        className="py-24 bg-[#1E3A8A] text-white text-center"
-        variants={fadeInUp}
-        initial="initial"
-        whileInView="whileInView"
-        viewport={{ once: true }}
-      >
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-6">Join Crescent Academy Today</h2>
-          <p className="max-w-xl mx-auto mb-8 opacity-90">Start your child's journey towards academic excellence and moral uprightness.</p>
-          <button className="bg-[#0EA5E9] hover:bg-white hover:text-[#1E3A8A] text-white px-10 py-4 rounded-xl font-bold transition-all transform hover:scale-105 shadow-xl">
-            Enroll Now
-          </button>
-        </div>
-      </motion.section>
-
     </div>
   );
 }
