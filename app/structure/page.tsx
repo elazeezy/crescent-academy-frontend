@@ -4,6 +4,7 @@
 import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 } as const,
@@ -12,10 +13,11 @@ const fadeInUp = {
     y: 0,
     transition: {
       duration: 0.9,
-      ease: "easeOut" as const,  // ← adding 'as const' helps TypeScript
+      ease: "easeOut" as const,
     },
   },
-} satisfies Variants;  // ← this is the magic line – tells TS it's a valid Variants object
+} satisfies Variants;
+
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -42,7 +44,7 @@ export default function SchoolStructurePage() {
         "Balanced curriculum: English, Math, Science, Social Studies + Islamic Studies & Arabic",
         "Safe, nurturing environment building confidence, curiosity & love for learning",
       ],
-      image: "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070",
+      image: "/images/structure/1-nursery-primary.jpg",
     },
     {
       title: "Crescent College",
@@ -55,7 +57,7 @@ export default function SchoolStructurePage() {
         "Experienced teachers passionate about mentoring & character formation",
         "Environment promoting respect, diligence, focus & self-confidence",
       ],
-      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070",
+      image: "/images/structure/2-secondary-college.jpg",
     },
     {
       title: "Crescent School of Science",
@@ -68,35 +70,48 @@ export default function SchoolStructurePage() {
         "Vocational training: Baking & confectionery, hair plaiting/cosmetology & more",
         "Empowering students to be innovative, self-reliant & productive",
       ],
-      image: "https://images.unsplash.com/photo-1581092580909-2e5c9d4e0b0d?auto=format&fit=crop&q=80&w=2070",
+      image: "/images/structure/3-school-of-science.jpg",
     },
   ];
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
 
-
-
-<Link
-  href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#1E3A8A] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
->
-  ← Back to Home
-</Link>
-
-      {/* Hero */}
+      {/* Hero with real background image + breadcrumb overlay */}
       <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070"
-            alt="Crescent Schools Campus"
+            src="/images/structure/hero-campus.jpg"   // ← Download & place here
+            alt="Crescent Schools Campus Overview"
             fill
-            className="object-cover brightness-[0.75]"
+            className="object-cover brightness-[0.75] contrast-[1.1]"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
 
+        {/* Breadcrumb – top-left overlay (same style as previous pages) */}
+        <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-3 text-base md:text-lg">
+              <li>
+                <Link
+                  href="/"
+                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+                >
+                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                  Home
+                </Link>
+              </li>
+              <li className="text-white/70">›</li>
+              <li className="text-white font-semibold drop-shadow-md">
+                Our School Structure
+              </li>
+            </ol>
+          </nav>
+        </div>
+
+        {/* Original hero content (unchanged) */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,7 +127,7 @@ export default function SchoolStructurePage() {
         </motion.div>
       </section>
 
-      {/* Intro */}
+      {/* Intro (unchanged) */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50">
         <div className="container mx-auto px-6 max-w-5xl text-center">
           <motion.p
@@ -126,7 +141,7 @@ export default function SchoolStructurePage() {
         </div>
       </section>
 
-      {/* Three Sections */}
+      {/* Three Sections – glassmorphic cards with hover glow (content 100% unchanged) */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
@@ -138,7 +153,7 @@ export default function SchoolStructurePage() {
                 whileInView="visible"
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.2 }}
-                className="bg-slate-50 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border border-slate-200 group"
+                className="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:scale-[1.03] transition-all duration-500 group"
               >
                 <div className="relative h-56 overflow-hidden">
                   <Image
@@ -147,10 +162,10 @@ export default function SchoolStructurePage() {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute bottom-6 left-6 right-6">
-                    <h3 className="text-2xl font-bold text-white">{section.title}</h3>
-                    <p className="text-white/90 text-sm mt-1">{section.subtitle}</p>
+                    <h3 className="text-2xl font-bold text-white drop-shadow-md">{section.title}</h3>
+                    <p className="text-white/90 text-sm mt-1 drop-shadow-md">{section.subtitle}</p>
                   </div>
                 </div>
 
@@ -158,7 +173,7 @@ export default function SchoolStructurePage() {
                   {section.locations && (
                     <div className="mb-6">
                       <h4 className="text-lg font-semibold text-[#1E3A8A] mb-2">Locations</h4>
-                      <ul className="space-y-1 text-slate-600">
+                      <ul className="space-y-1 text-slate-600 text-base">
                         {section.locations.map((loc, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <span className="text-[#0EA5E9] mt-1">•</span>
@@ -170,16 +185,16 @@ export default function SchoolStructurePage() {
                   )}
 
                   {section.location && (
-                    <p className="mb-6 text-slate-600">
+                    <p className="mb-6 text-slate-600 text-base">
                       <strong>Location:</strong> {section.location}
                     </p>
                   )}
 
                   <h4 className="text-lg font-semibold text-[#1E3A8A] mb-4">Highlights</h4>
-                  <ul className="space-y-3 text-slate-700">
+                  <ul className="space-y-3 text-slate-700 text-base">
                     {section.highlights.map((highlight, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#0EA5E9] mt-2 flex-shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-[#0EA5E9] mt-2 flex-shrink-0 animate-pulse" />
                         {highlight}
                       </li>
                     ))}
@@ -189,7 +204,7 @@ export default function SchoolStructurePage() {
             ))}
           </div>
 
-          {/* Unified Vision */}
+          {/* Unified Vision (unchanged) */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -210,7 +225,7 @@ export default function SchoolStructurePage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA (polished hover scale – content unchanged) */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
         <div className="container mx-auto px-6 text-center">
           <h3 className="text-3xl md:text-4xl font-bold mb-8">
@@ -219,19 +234,19 @@ export default function SchoolStructurePage() {
           <div className="flex flex-wrap justify-center gap-6">
             <Link
               href="/leadership"
-              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all backdrop-blur-md border border-white/20"
+              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-md border border-white/20"
             >
               Meet Our Leadership
             </Link>
             <Link
               href="/admissions"
-              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all backdrop-blur-md border border-white/20"
+              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-md border border-white/20"
             >
               Admissions Information
             </Link>
             <Link
               href="/portals"
-              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all backdrop-blur-md border border-white/20"
+              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-md border border-white/20"
             >
               Access Portals
             </Link>

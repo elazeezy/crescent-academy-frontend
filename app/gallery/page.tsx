@@ -3,7 +3,8 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/dist/client/link";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
@@ -19,32 +20,25 @@ const staggerContainer = {
 };
 
 export default function GalleryPage() {
-  // Placeholder images – replace with real ones later
+  // Real image paths – download & place in public/images/gallery/
   const galleryImages = [
-    "https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1557862921-37829c776f74?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=2070",
+    "/images/gallery/1-students-learning.jpg",
+    "/images/gallery/2-school-assembly.jpg",
+    "/images/gallery/3-happy-students.jpg",
+    "/images/gallery/4-sports-day.jpg",
+    "/images/gallery/5-quran-study.jpg",
+    "/images/gallery/6-graduation.jpg",
   ];
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-     
-     <Link
-  href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#1E3A8A] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
->
-  ← Back to Home
-</Link>
 
-      {/* Hero */}
+      {/* Hero with first gallery image as background + breadcrumb overlay */}
       <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src={galleryImages[0]}
-            alt="Gallery"
+            src={galleryImages[0]}  // Using first image as hero background (as in your original)
+            alt="Crescent Academy Gallery"
             fill
             className="object-cover brightness-[0.75]"
             priority
@@ -52,6 +46,28 @@ export default function GalleryPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
 
+        {/* Breadcrumb – top-left overlay (same style as previous pages) */}
+        <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-3 text-base md:text-lg">
+              <li>
+                <Link
+                  href="/"
+                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+                >
+                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                  Home
+                </Link>
+              </li>
+              <li className="text-white/70">›</li>
+              <li className="text-white font-semibold drop-shadow-md">
+                Photo Gallery
+              </li>
+            </ol>
+          </nav>
+        </div>
+
+        {/* Original hero content (unchanged) */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -67,7 +83,7 @@ export default function GalleryPage() {
         </motion.div>
       </section>
 
-      {/* Gallery Grid */}
+      {/* Gallery Grid – enhanced with glass hover (content & images paths updated, no reduction) */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6">
           <motion.div
@@ -81,7 +97,7 @@ export default function GalleryPage() {
               <motion.div
                 key={i}
                 variants={fadeInUp}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group"
+                className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group border border-slate-200/60"
               >
                 <Image
                   src={src}
@@ -89,14 +105,14 @@ export default function GalleryPage() {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA (unchanged) */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
         <div className="container mx-auto px-6 text-center">
           <motion.h3

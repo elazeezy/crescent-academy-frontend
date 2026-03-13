@@ -3,6 +3,8 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import { ChevronLeft } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
@@ -54,21 +56,42 @@ export default function AdmissionsPage() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col">
-    
-    <Link
-  href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#1E3A8A] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
->
-  ← Back to Home
-</Link>
 
-      {/* Hero */}
+      {/* Hero with real background image + breadcrumb overlay */}
       <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <div className="w-full h-full bg-gradient-to-br from-[#1E3A8A] via-[#0F2A5E] to-[#0EA5E9]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
+          <Image
+            src="/images/admissions-hero.jpg"   // ← Download & place here
+            alt="Crescent Academy Admissions"
+            fill
+            className="object-cover brightness-[0.75] contrast-[1.1]"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
 
+        {/* Breadcrumb – top-left overlay (same style as About page) */}
+        <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
+          <nav aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-3 text-base md:text-lg">
+              <li>
+                <Link
+                  href="/"
+                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+                >
+                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                  Home
+                </Link>
+              </li>
+              <li className="text-white/70">›</li>
+              <li className="text-white font-semibold drop-shadow-md">
+                Admissions
+              </li>
+            </ol>
+          </nav>
+        </div>
+
+        {/* Original hero text (unchanged) */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -87,7 +110,7 @@ export default function AdmissionsPage() {
         </motion.div>
       </section>
 
-      {/* Intro */}
+      {/* Intro (unchanged) */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50">
         <div className="container mx-auto px-6 max-w-5xl text-center">
           <motion.p
@@ -109,7 +132,7 @@ export default function AdmissionsPage() {
         </div>
       </section>
 
-      {/* Admission Steps */}
+      {/* Admission Steps – glassmorphic cards for beauty (content 100% unchanged) */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6">
           <motion.h2
@@ -132,9 +155,9 @@ export default function AdmissionsPage() {
               <motion.div
                 key={i}
                 variants={fadeInUp}
-                className="bg-slate-50 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-slate-200 text-center group"
+                className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-8 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 text-center group"
               >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#0EA5E9]/10 flex items-center justify-center text-4xl group-hover:bg-[#0EA5E9] group-hover:text-white transition-colors">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#0EA5E9]/10 flex items-center justify-center text-4xl group-hover:bg-[#0EA5E9] group-hover:text-white transition-all duration-300">
                   {step.icon}
                 </div>
 
@@ -155,7 +178,7 @@ export default function AdmissionsPage() {
             ))}
           </motion.div>
 
-          {/* Final Note */}
+          {/* Final Note with added "or contact us" */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -164,13 +187,14 @@ export default function AdmissionsPage() {
             className="mt-16 text-center max-w-4xl mx-auto"
           >
             <p className="text-xl md:text-2xl font-medium text-[#1E3A8A] italic">
-              We look forward to welcoming your child into our nurturing, faith-driven community. Visit us at the HQ in Panada Area to start the process.
+              We look forward to welcoming your child into our nurturing, faith-driven community. 
+              Visit us at the HQ in Panada Area to start the process or contact us at (+234) 8032545074.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA (unchanged) */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
         <div className="container mx-auto px-6 text-center">
           <h3 className="text-3xl md:text-4xl font-bold mb-8">

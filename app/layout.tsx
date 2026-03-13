@@ -4,9 +4,14 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer"; // if you have one
 
-export const metadata: Metadata = {
-  title: "Crescent Academy",
-  description: "Faith-driven centre of excellence nurturing the Complete Child",
+// app/layout.tsx
+
+export const metadata = {
+  title: 'Crescent Academy Portal',
+  description: 'Academic Management System',
+  icons: {
+    icon: '/logo.png', // This will replace your Vercel logo
+  },
 };
 
 export default function RootLayout({

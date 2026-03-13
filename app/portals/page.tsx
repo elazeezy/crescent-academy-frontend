@@ -1,12 +1,11 @@
-// app/portals/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { LogIn, UserCog, Users, BookOpen, Calculator } from "lucide-react";
+import { UserCog, Users, BookOpen, ChevronLeft } from "lucide-react";
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
+  hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -14,7 +13,7 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.2 },
+    transition: { staggerChildren: 0.15 },
   },
 };
 
@@ -22,118 +21,126 @@ export default function PortalsPage() {
   const portalLinks = [
     {
       title: "Student Portal",
-      desc: "Access assignments, results, timetable, and school announcements",
+      desc: "Access your assignments, term results, and school announcements in one place.",
       icon: <BookOpen className="w-10 h-10" />,
-      href: "/portals/student",
-      color: "bg-[#0EA5E9]",
+      href: "/portals/dashboard/student",
+      color: "from-sky-400 to-sky-600",
+      shadow: "shadow-sky-200",
     },
     {
       title: "Admin Portal",
-      desc: "For school administrators (Principal, Vice Principals, Headmaster)",
+      desc: "Administrative management for Principals and school executives.",
       icon: <UserCog className="w-10 h-10" />,
-      href: "/portals/admin",
-      color: "bg-[#1E3A8A]",
+      href: "/portals/dashboard/admin",
+      color: "from-blue-800 to-indigo-950",
+      shadow: "shadow-indigo-200",
     },
     {
       title: "Teacher Portal",
-      desc: "Manage classes, upload results, communicate with parents",
+      desc: "Manage classroom activities, upload results, and track student progress.",
       icon: <Users className="w-10 h-10" />,
-      href: "/portals/teacher",
-      color: "bg-[#0EA5E9]/80",
-    },
-    {
-      title: "Result Checker",
-      desc: "Check academic results and performance reports",
-      icon: <Calculator className="w-10 h-10" />,
-      href: "/portals/result-checker",
-      color: "bg-[#1E3A8A]/80",
+      href: "/portals/dashboard/teacher",
+      color: "from-sky-500/80 to-blue-700/80",
+      shadow: "shadow-blue-200",
     },
   ];
 
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-[#F8FAFC] min-h-screen flex flex-col font-sans">
       
-      <Link
-  href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#1E3A8A] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
->
-  ← Back to Home
-</Link>
+      {/* New Breadcrumb Navigation */}
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
+        <nav aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-3 text-base md:text-lg">
+            <li>
+              <Link
+                href="/"
+                className="group text-white/90 hover:text-sky-300 transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+              >
+                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Home
+              </Link>
+            </li>
+            <li className="text-white/70">›</li>
+            <li className="text-white font-semibold drop-shadow-md">
+              Portals
+            </li>
+          </ol>
+        </nav>
+      </div>
 
-      {/* Hero */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-[45vh] md:h-[55vh] flex items-center justify-center overflow-hidden">
+        {/* Animated Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#0F2A5E] to-[#0EA5E9]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" /> {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent" />
 
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6">
-            School Portals
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight mb-4 drop-shadow-lg">
+            Access Portals
           </h1>
-          <p className="text-lg md:text-2xl max-w-4xl mx-auto opacity-90">
-            Secure access for students, teachers, admins, and parents
+          <p className="text-lg md:text-xl opacity-90 font-medium max-w-2xl mx-auto leading-relaxed">
+            Welcome back. Please select your gateway to access your dashboard.
           </p>
         </motion.div>
       </section>
 
-      {/* Portal Cards */}
-      <section className="py-16 md:py-24 bg-white">
+      {/* Portal Cards Grid */}
+      <section className="flex-grow pb-24 -mt-16 md:-mt-24 relative z-20">
         <div className="container mx-auto px-6">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12"
+            animate="visible"
+            className="grid md:grid-cols-3 gap-8 lg:gap-10 max-w-6xl mx-auto"
           >
             {portalLinks.map((portal, i) => (
               <motion.div
                 key={i}
                 variants={fadeInUp}
-                className="bg-slate-50 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-slate-200 text-center group"
+                className="bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-2xl shadow-slate-200/60 hover:shadow-sky-100 transition-all duration-500 border border-slate-100 flex flex-col items-center text-center group relative overflow-hidden"
               >
-                <div className={`w-20 h-20 mx-auto mb-6 rounded-full ${portal.color} text-white flex items-center justify-center transition-transform group-hover:scale-110`}>
+                {/* Decorative background element */}
+                <div className={`absolute -top-12 -right-12 w-24 h-24 rounded-full bg-gradient-to-br ${portal.color} opacity-5 group-hover:scale-[3] transition-transform duration-700`} />
+
+                <div className={`w-24 h-24 mb-8 rounded-3xl bg-gradient-to-br ${portal.color} ${portal.shadow} text-white flex items-center justify-center transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 shadow-lg`}>
                   {portal.icon}
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold text-[#1E3A8A] mb-4 group-hover:text-[#0EA5E9] transition-colors">
+
+                <h3 className="text-2xl font-extrabold text-[#1E3A8A] mb-4 group-hover:text-sky-600 transition-colors">
                   {portal.title}
                 </h3>
-                <p className="text-slate-700 leading-relaxed mb-6">
+                
+                <p className="text-slate-600 font-medium leading-relaxed mb-10 flex-grow">
                   {portal.desc}
                 </p>
+
                 <Link
                   href={portal.href}
-                  className="inline-block bg-[#0EA5E9] hover:bg-[#0284C7] text-white px-6 py-3 rounded-xl font-medium transition-all"
+                  className={`w-full py-4 rounded-2xl bg-[#1E3A8A] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95`}
                 >
-                  Login
+                  Enter Portal
                 </Link>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Result Checker Placeholder */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8 }}
-            className="mt-16 max-w-2xl mx-auto text-center"
+          {/* Footer Assistance */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="mt-20 text-center"
           >
-            <h3 className="text-2xl md:text-3xl font-bold text-[#1E3A8A] mb-6">
-              Result Checker
-            </h3>
-            <p className="text-lg text-slate-700 mb-8">
-              Enter your student ID and term to view results (coming soon – currently handled at school HQ).
+            <p className="text-slate-400 font-medium">
+              Having trouble logging in? <Link href="/contact" className="text-sky-600 hover:underline">Contact System Administrator</Link>
             </p>
-            <div className="bg-slate-100 p-8 rounded-2xl">
-              <p className="text-slate-600 italic">
-                For now, please visit the school office in Panada Area to collect printed result sheets.
-              </p>
-            </div>
           </motion.div>
         </div>
       </section>
