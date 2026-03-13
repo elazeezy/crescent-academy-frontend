@@ -1,10 +1,14 @@
-// app/api/test-db/route.ts
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb'; // adjust path if your lib folder is named differently
+import dbConnect from '@/lib/mongodb'; // Ensure this points to your clientPromise
 
-export async function GET() 
+export async function GET() {
   try {
-    await dbConnect();
+    // 1. Call the function (wait for it to resolve)
+    const client = await dbConnect(); 
+    
+    // 2. Now access the database from the client
+    const db = client.db(); 
+    
     return NextResponse.json({ status: 'success', message: 'MongoDB connected OK!' });
   } catch (error) {
     console.error('DB connection error:', error);
@@ -13,3 +17,4 @@ export async function GET()
       { status: 500 }
     );
   }
+}
