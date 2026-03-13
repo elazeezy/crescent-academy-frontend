@@ -1,36 +1,13 @@
 import NextAuth from "next-auth";
-import type { NextAuthConfig, User as NextAuthUser } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
 /**
- * 1. FINALIZED TYPE AUGMENTATION
- * Consolidated into one block to fix:
- * - "Invalid module name in augmentation"
- * - "Identical modifiers"
- */
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: string;
-    } & import("next-auth").DefaultSession["user"];
-  }
-
-  interface User {
-    role?: string; // Optional here to match internal library modifiers
-  }
-
-  interface JWT {
-    id: string;
-    role: string;
-  }
-}
-
-/**
- * 2. AUTH CONFIGURATION
+ * AUTH CONFIGURATION FOR CRESCENT ACADEMY
+ * Handles login authentication with MongoDB
  */
 export const authOptions: NextAuthConfig = {
   providers: [
@@ -41,45 +18,55 @@ export const authOptions: NextAuthConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-  try {
-    if (!credentials?.email || !credentials?.password) return null;
+        try {
+          // Validate credentials exist
+          if (!credentials?.email || !credentials?.password) {
+            console.log("❌ Missing email or password");
+            return null;
+          }
 
-    const email = String(credentials.email).trim().toLowerCase();
-    const password = String(credentials.password).trim();
+          const email = String(credentials.email).trim().toLowerCase();
+          const password = String(credentials.password).trim();
 
-    await dbConnect();
+          // Connect to database
+          await dbConnect();
 
-    // The Regex search you added (Correct!)
-    const user = await User.findOne({ 
-      email: { $regex: new RegExp(`^${email}$`, 'i') } 
-    }).lean();
+          const user = await User.findOne({
+  email: { $regex: new RegExp(`^${email}$`, "i") },
+}).lean() as any; // <--- ADD 'as any' HERE to bypass Mongoose strict typing
 
-    // FIX: This "Guard" clears all those "user is possibly null" errors
-    if (!user) {
-      console.log(`No user found for: ${email}`);
-      return null;
-    }
-
-    // Now TypeScript knows 'user' exists for these lines
-    const isPasswordValid = await bcrypt.compare(password, user.password as string);
-    console.log("Password check result:", isPasswordValid);
-    
-    if (!isPasswordValid) {
-      console.log(`Invalid password for: ${email}`);
-      return null;
-    }
-
-    return {
-      id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role, 
-    };
-  } catch (error) {
-    console.error("Authorize error:", error);
-    return null;
-  }
+// Now TypeScript will stop complaining about missing properties on the Mongoose object
+if (!user) {
+  console.log(`❌ No user found for: ${email}`);
+  return null;
 }
+
+          // Verify password
+          const isPasswordValid = await bcrypt.compare(
+            password,
+            user.password as string
+          );
+
+          if (!isPasswordValid) {
+            console.log(`❌ Invalid password for: ${email}`);
+            return null;
+          }
+
+          console.log(`✅ User authenticated: ${email}`);
+
+          // Return user data (must match User interface from types/next-auth.d.ts)
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            assignedClass: user.assignedClass || undefined,
+          };
+        } catch (error) {
+          console.error("❌ Authorization error:", error);
+          return null;
+        }
+      },
     }),
   ],
 
@@ -90,23 +77,30 @@ export const authOptions: NextAuthConfig = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 
   callbacks: {
+    /**
+     * JWT Callback - Store user data in token
+     */
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id as string;
-        token.role = (user as any).role as string;
+        token.id = user.id;
+        token.role = user.role;
+        token.assignedClass = user.assignedClass;
       }
       return token;
     },
 
+    /**
+     * Session Callback - Make user data available to client
+     */
     async session({ session, token }) {
-      // Explicitly casting clears: "Type 'unknown' is not assignable to type 'string'"
       if (session.user && token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.assignedClass = token.assignedClass;
       }
       return session;
     },
@@ -116,6 +110,8 @@ export const authOptions: NextAuthConfig = {
   debug: process.env.NODE_ENV === "development",
 };
 
-// 3. HANDLER EXPORT
+/**
+ * Export NextAuth handlers for Next.js 14 App Router
+ */
 const { handlers } = NextAuth(authOptions);
 export const { GET, POST } = handlers;
