@@ -31,23 +31,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Fetch session after successful sign-in to get the role
-      const sessionResponse = await fetch('/api/auth/session');
-      const session = await sessionResponse.json();
-
-      const rolePaths: Record<string, string> = {
-        admin: '/portals/dashboard/admin',
-        teacher: '/portals/dashboard/teacher',
-        student: '/portals/dashboard/student',
-      };
-
-      const destination = rolePaths[session?.user?.role];
-      if (destination) {
-        router.push(destination);
-      } else {
-        setError('Login succeeded but role is unrecognised. Please contact admin.');
-        setIsLoading(false);
-      }
+      // Middleware reads the JWT cookie and redirects to the correct role dashboard
+      router.push('/portals/dashboard');
     } catch {
       setError('Connection failed. Please check your network.');
       setIsLoading(false);
