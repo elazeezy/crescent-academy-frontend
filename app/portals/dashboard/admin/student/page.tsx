@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import { CLASS_NAMES } from '@/lib/subjects';
 import {
   Upload, FileSpreadsheet, CheckCircle, AlertCircle, ArrowLeft,
-  Download, Search, Users, Eye, X, Loader2, Pencil, Trash2, KeyRound, Plus,
+  Download, Search, Users, Eye, X, Loader2, Pencil, Trash2, KeyRound, Plus, Camera,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -44,6 +44,9 @@ export default function StudentManagement() {
   // Password reset
   const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
   const [resetLoading, setResetLoading] = useState<string | null>(null);
+
+  // Photo upload
+  const [photoLoading, setPhotoLoading] = useState<string | null>(null);
 
   const fetchStudents = useCallback(async () => {
     setListLoading(true);
@@ -127,6 +130,18 @@ export default function StudentManagement() {
       if (res.ok) setResetResult({ name: s.firstName, password: data.tempPassword });
     } finally {
       setResetLoading(null);
+    }
+  };
+
+  // ── PHOTO UPLOAD ──
+  const handlePhotoUpload = async (s: Student, file: File) => {
+    setPhotoLoading(s._id);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      await fetch(`/api/admin/students/${s._id}/photo`, { method: 'POST', body: fd });
+    } finally {
+      setPhotoLoading(null);
     }
   };
 
@@ -251,6 +266,10 @@ export default function StudentManagement() {
                           <button onClick={() => handleReset(s)} title="Reset Password" disabled={resetLoading === s._id} className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-40">
                             {resetLoading === s._id ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
                           </button>
+                          <label title="Upload Photo" className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer">
+                            {photoLoading === s._id ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(s, f); e.target.value = ''; }} />
+                          </label>
                           <button onClick={() => setDeleteId(s._id)} title="Delete" className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={14} /></button>
                         </div>
                       </td>

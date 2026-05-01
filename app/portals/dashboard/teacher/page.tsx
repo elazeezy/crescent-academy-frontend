@@ -18,8 +18,14 @@ export default async function TeacherDashboard() {
 
   const assignedClass = session.user.assignedClass || "";
 
+  // Build a flexible regex that matches both old formats (JSS1, JSS 1) and new (J.S.S. 1)
+  // Strip all dots/spaces from both sides so "J.S.S. 1" matches "JSS1", "JSS 1", "jss1" etc.
+  const normalised = (assignedClass || '').replace(/[\s.]/g, '');
+  const flexPattern = normalised.split('').join('[\\s.]*');
+  const classRegex = normalised.length > 0 ? flexPattern : assignedClass;
+
   const students = await Student.find({
-    currentClass: { $regex: assignedClass, $options: "i" },
+    currentClass: { $regex: classRegex, $options: "i" },
   }).sort({ lastName: 1 }).lean();
 
   const studentIds = students.map((s: any) => s._id);

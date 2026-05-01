@@ -18,7 +18,7 @@ export default async function StudentDashboard() {
   const studentProfile = await Student.findOne({ user: session.user.id }).lean() as any;
 
   const latestResult = studentProfile
-    ? await Result.findOne({ student: studentProfile._id })
+    ? await Result.findOne({ student: studentProfile._id, published: true })
         .sort({ createdAt: -1 })
         .lean() as any
     : null;

@@ -359,7 +359,7 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
           className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/30 active:scale-[0.98]"
         >
           <Save size={20} />
-          {saving ? 'Saving…' : 'Save & Publish Report Card'}
+          {saving ? 'Saving…' : 'Save Results'}
         </button>
         <button
           onClick={() => router.push(`/portals/dashboard/teacher/results/${studentId}/view`)}

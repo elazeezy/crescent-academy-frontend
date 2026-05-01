@@ -144,7 +144,7 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
             <SummaryRow label="No. of Days School Opened" value={(result.attendance?.daysOpened  ?? '—').toString()} />
             <SummaryRow label="No. of Days Present"       value={(result.attendance?.daysPresent ?? '—').toString()} />
             <SummaryRow label="No. of Days Absent"        value={(result.attendance?.daysAbsent  ?? '—').toString()} />
-            <SummaryRow label="Term Ended"                value={result.nextTermBegins ? '—' : '—'} />
+            <SummaryRow label="Term Ended"                value={result.termEnded || '—'} />
           </div>
         </div>
 
