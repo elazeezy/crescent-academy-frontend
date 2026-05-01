@@ -1,137 +1,167 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, BookOpen, FileText, Calendar, CreditCard, 
-  LogOut, Bell, Search, Menu, X 
+import {
+  LayoutDashboard, FileText, LogOut,
+  Bell, Search, Menu, X, GraduationCap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+const navItems = [
+  { icon: LayoutDashboard, label: 'Overview',     href: '/portals/dashboard/student' },
+  { icon: FileText,        label: 'Report Cards', href: '/portals/dashboard/student/results' },
+];
+
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname  = usePathname();
+  const { data: session } = useSession();
 
-  const navItems = [
-    { icon: LayoutDashboard, label: 'Overview', href: '/portals/dashboard/student' },
-    { icon: FileText, label: 'Report Cards', href: '/portals/dashboard/student/results' },
-    { icon: BookOpen, label: 'Coursework', href: '#' },
-    { icon: Calendar, label: 'Schedule', href: '#' },
-    { icon: CreditCard, label: 'Finances', href: '#' },
-  ];
+  const user     = session?.user;
+  const name     = user?.name ?? 'Student';
+  const initials = name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white font-sans flex overflow-hidden">
-      {/* Cinematic Background Orbs */}
+    <div className="min-h-screen bg-[#0a1628] text-white font-sans flex overflow-hidden">
+
+      {/* ── Ambient background ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[-15%] right-[-8%] w-[550px] h-[550px] bg-sky-500/8 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-10%] left-[-8%] w-[450px] h-[450px] bg-blue-700/8 rounded-full blur-[120px]" />
       </div>
 
-      {/* Sidebar Overlay for Mobile */}
+      {/* ── Mobile overlay ── */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[60] lg:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-[70] w-72 bg-[#1E3A8A]/20 backdrop-blur-3xl border-r border-white/10 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:block ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        } flex flex-col`}
-      >
+      {/* ── SIDEBAR ── */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-[70] w-72
+        bg-[#0d1f3c]/80 backdrop-blur-3xl
+        border-r border-white/[0.06]
+        flex flex-col transition-transform duration-300
+        lg:translate-x-0 lg:static lg:flex
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+
         {/* Brand */}
-        <div className="p-8 border-b border-white/5 flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl font-black italic">C</span>
+        <div className="p-7 border-b border-white/[0.06] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-gradient-to-br from-sky-400 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-sky-900/40">
+              <GraduationCap size={22} className="text-white" />
+            </div>
+            <div>
+              <h1 className="font-black text-lg tracking-tight">CRESCENT</h1>
+              <p className="text-[9px] text-sky-400 font-bold tracking-[0.35em] uppercase">Academy</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-bold text-xl tracking-tight">CRESCENT</h2>
-            <p className="text-[10px] text-sky-400 uppercase tracking-widest font-bold">Academy</p>
+          <button onClick={() => setMobileOpen(false)} className="lg:hidden text-slate-500 hover:text-white p-1">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Role badge */}
+        <div className="px-5 pt-5">
+          <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-2.5 flex items-center gap-2">
+            <GraduationCap size={14} className="text-sky-400" />
+            <span className="text-xs font-bold text-sky-300 tracking-wider uppercase">Student Portal</span>
           </div>
         </div>
 
-        {/* Nav Links */}
-        <nav className="p-4 space-y-1.5 flex-grow mt-4">
+        {/* Nav */}
+        <nav className="flex-1 px-4 py-5 space-y-1 mt-2">
+          <p className="text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em] px-3 mb-4">Menu</p>
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/portals/dashboard/student'
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
             return (
               <Link
-                key={item.label}
+                key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-4 px-5 py-3.5 rounded-xl transition-all duration-200 group ${
-                  isActive 
-                    ? 'bg-sky-500/20 text-white border border-sky-500/30 shadow-[0_0_20px_rgba(14,165,233,0.15)]' 
-                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${
+                  isActive
+                    ? 'bg-sky-500/15 text-white border border-sky-500/25 shadow-[0_0_20px_rgba(14,165,233,0.1)]'
+                    : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
                 }`}
               >
-                <item.icon size={20} className={isActive ? 'text-sky-400' : 'group-hover:text-sky-400'} />
-                <span className="font-semibold text-sm tracking-wide">{item.label}</span>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-sky-400 rounded-r-full" />
+                )}
+                <item.icon size={18} className={isActive ? 'text-sky-400' : 'text-slate-500 group-hover:text-sky-400 transition-colors'} />
+                <span className="font-semibold text-sm">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Profile Card */}
-        <div className="p-4 border-t border-white/5 bg-white/5">
-          <div className="flex items-center gap-3 p-2 bg-white/5 rounded-2xl border border-white/5">
-            <div className="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center font-bold text-sm shadow-inner">AM</div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-xs truncate uppercase tracking-tighter">Abdullah M.</p>
-              <p className="text-[10px] text-sky-400 font-medium">JSS 3 Gold</p>
+        {/* Profile + logout */}
+        <div className="p-4 border-t border-white/[0.06] space-y-2">
+          <div className="bg-white/[0.04] rounded-2xl p-3 flex items-center gap-3 border border-white/[0.05]">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-400 font-black text-sm shrink-0">
+              {initials}
             </div>
-            <LogOut size={16} className="text-slate-500 hover:text-red-400 cursor-pointer transition-colors" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-200 truncate">{name}</p>
+              <p className="text-[10px] text-sky-400/70 font-medium capitalize">Student</p>
+            </div>
           </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all text-sm font-semibold group"
+          >
+            <LogOut size={17} className="group-hover:-translate-x-0.5 transition-transform" />
+            Sign Out
+          </button>
         </div>
       </aside>
 
-      {/* Main Viewport */}
-      <div className="flex-1 flex flex-col relative z-10 w-full overflow-hidden h-screen">
-        
-        {/* Responsive Header */}
-        <header className="h-20 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/5 px-4 md:px-8 flex items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <button 
+      {/* ── MAIN AREA ── */}
+      <div className="flex-1 flex flex-col relative z-10 h-screen overflow-hidden w-full">
+
+        {/* Header */}
+        <header className="h-[70px] bg-[#0a1628]/90 backdrop-blur-xl border-b border-white/[0.05] px-5 md:px-8 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-4">
+            <button
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2.5 bg-white/5 rounded-xl border border-white/10 text-white active:scale-95 transition-transform"
+              className="lg:hidden p-2.5 bg-white/[0.05] rounded-xl border border-white/[0.08] text-white"
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
-            <div className="relative max-w-sm w-full hidden sm:block group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-400" size={16} />
+            <div className="relative max-w-xs w-full hidden sm:block group">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-400 transition-colors" size={15} />
               <input
                 placeholder="Search..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-11 text-sm focus:ring-2 focus:ring-sky-500/20 focus:bg-white/10 outline-none transition-all"
+                className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-sky-500/20 focus:bg-white/[0.08] outline-none transition-all text-white placeholder:text-slate-600"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex flex-col items-end mr-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Student Status</span>
-              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" /> Active
-              </span>
+            <div className="hidden md:flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-full px-4 py-1.5">
+              <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse" />
+              <span className="text-xs font-bold text-sky-300">Active</span>
             </div>
-            <button className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors relative">
-              <Bell size={20} className="text-slate-300" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#0f172a]" />
+            <button className="p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] transition-colors relative">
+              <Bell size={18} className="text-slate-400" />
             </button>
           </div>
         </header>
 
-        {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 lg:p-10 scrollbar-hide">
-          <div className="max-w-7xl mx-auto space-y-8">
+        {/* Scrollable content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 md:p-8 scrollbar-hide">
+          <div className="max-w-5xl mx-auto">
             {children}
           </div>
         </main>

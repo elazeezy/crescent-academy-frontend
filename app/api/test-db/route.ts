@@ -1,17 +1,20 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb'; // Ensure this points to your clientPromise
+import dbConnect from '@/lib/dbConnect';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {
-    // 1. Call the function (wait for it to resolve)
-    const client = await dbConnect(); 
-    
-    // 2. Now access the database from the client
-    const db = client.db(); 
-    
-    return NextResponse.json({ status: 'success', message: 'MongoDB connected OK!' });
+    await dbConnect();
+    const state = mongoose.connection.readyState;
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    if (state === 1) {
+      return NextResponse.json({ status: 'success', message: 'MongoDB connected OK!' });
+    }
+    return NextResponse.json(
+      { status: 'error', message: `Unexpected connection state: ${state}` },
+      { status: 500 }
+    );
   } catch (error) {
-    console.error('DB connection error:', error);
     return NextResponse.json(
       { status: 'error', message: 'Failed to connect to MongoDB' },
       { status: 500 }

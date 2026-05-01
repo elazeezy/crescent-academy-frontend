@@ -1,55 +1,77 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect"; 
-import User from "@/models/User";
-import Student from "@/models/Student";
-import bcrypt from "bcryptjs";
-import { auth } from "@/auth";
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/dbConnect';
+import User from '@/models/User';
+import Student from '@/models/Student';
+import { auth } from '@/auth';
 
+const REQUIRED_FIELDS = ['firstName', 'lastName', 'class'] as const;
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (session?.user?.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (session?.user?.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let students: any[];
+  try {
+    const body = await req.json();
+    students = body?.students;
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
+
+  if (!Array.isArray(students) || students.length === 0) {
+    return NextResponse.json({ error: 'No student records provided' }, { status: 400 });
+  }
+
+  // Validate that every row has the required fields
+  for (let i = 0; i < students.length; i++) {
+    for (const field of REQUIRED_FIELDS) {
+      if (!students[i][field] || String(students[i][field]).trim() === '') {
+        return NextResponse.json(
+          { error: `Row ${i + 1} is missing required field: "${field}"` },
+          { status: 400 }
+        );
+      }
+    }
   }
 
   try {
     await dbConnect();
-    const { students } = await req.json();
 
-    const results = await Promise.all(students.map(async (data: any) => {
-      const existingUser = await User.findOne({ email: data.email });
-      if (existingUser) return null; 
+    const results = await Promise.all(
+      students.map(async (data: any) => {
+        const studentId = `STU-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+        const email =
+          data.email?.trim().toLowerCase() ||
+          `${studentId.toLowerCase()}@crescent.edu.ng`;
 
-      const studentId = `STU-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      
-      // FIX: Remove manual hashing. 
-      // The Mongoose pre('save') hook in models/User.ts will handle this.
-      const plainPassword = "Crescent123"; 
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return null;
 
-      // Create User
-      const newUser = await User.create({
-        email: data.email || `${studentId.toLowerCase()}@crescent.edu.ng`,
-        password: plainPassword, // Send plain text here
-        role: "student",
-        name: `${data.firstName} ${data.lastName}`
-      });
+        const newUser = await User.create({
+          email,
+          password: 'Crescent123', // hashed by User pre-save hook
+          role: 'student',
+          name: `${String(data.firstName).trim()} ${String(data.lastName).trim()}`,
+        });
 
-      // Create Student Linked to User
-      return await Student.create({
-        user: newUser._id,
-        studentId: studentId,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        gender: (data.gender || 'male').toLowerCase(),
-        currentClass: data.class,
-        parentPhone: data.parentPhone || "0000000000",
-      });
-    }));
+        return await Student.create({
+          user: newUser._id,
+          studentId,
+          firstName: String(data.firstName).trim(),
+          lastName: String(data.lastName).trim(),
+          gender: String(data.gender || 'male').toLowerCase(),
+          currentClass: String(data.class).trim(),
+          parentPhone: String(data.parentPhone || '0000000000').trim(),
+        });
+      })
+    );
 
-    const finalCount = results.filter(r => r !== null).length;
-    return NextResponse.json({ success: true, count: finalCount });
-  } catch (error) {
-    console.error("Bulk Import Error:", error);
-    return NextResponse.json({ error: "Failed to process student list" }, { status: 500 });
+    const count = results.filter((r) => r !== null).length;
+    const skipped = results.length - count;
+    return NextResponse.json({ success: true, count, skipped });
+  } catch {
+    return NextResponse.json({ error: 'Failed to process student list' }, { status: 500 });
   }
 }

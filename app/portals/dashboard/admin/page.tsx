@@ -1,83 +1,110 @@
-// app/portals/dashboard/admin/page.tsx
-"use client";
+import Link from 'next/link';
+import { Users, Briefcase, GraduationCap, FileText, ArrowRight, TrendingUp, Globe } from 'lucide-react';
+import dbConnect from '@/lib/dbConnect';
+import Student from '@/models/Student';
+import Teacher from '@/models/Teacher';
+import Result from '@/models/Result';
 
-import Link from "next/link";
-import { LayoutDashboard, Users, GraduationCap, Briefcase } from "lucide-react";
-import { motion } from "framer-motion";
+export default async function AdminDashboardPage() {
+  await dbConnect();
 
-export default function AdminDashboardPage() {
+  const [studentCount, teacherCount, resultCount] = await Promise.all([
+    Student.countDocuments(),
+    Teacher.countDocuments(),
+    Result.countDocuments(),
+  ]);
+
+  const stats = [
+    { label: 'Total Students', value: studentCount, icon: <Users size={22} />, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-100' },
+    { label: 'Total Staff', value: teacherCount, icon: <Briefcase size={22} />, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+    { label: 'Results Submitted', value: resultCount, icon: <FileText size={22} />, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100' },
+  ];
+
+  const actions = [
+    {
+      href: '/portals/dashboard/admin/student',
+      icon: <Users size={26} />,
+      label: 'Student Management',
+      desc: 'View all students, upload in bulk via Excel',
+      color: 'text-sky-600',
+      bg: 'bg-sky-50',
+      hover: 'hover:border-sky-300 hover:shadow-sky-100',
+    },
+    {
+      href: '/portals/dashboard/admin/teacher',
+      icon: <Briefcase size={26} />,
+      label: 'Staff Management',
+      desc: 'View all teachers, assign classes via Excel',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+      hover: 'hover:border-emerald-300 hover:shadow-emerald-100',
+    },
+    {
+      href: '/portals/dashboard/admin/results',
+      icon: <GraduationCap size={26} />,
+      label: 'Academic Results',
+      desc: 'Review, add principal comment, and publish report cards',
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      hover: 'hover:border-purple-300 hover:shadow-purple-100',
+    },
+    {
+      href: '/portals/dashboard/admin/website',
+      icon: <Globe size={26} />,
+      label: 'Website Images',
+      desc: 'Upload and manage images shown on the public website',
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      hover: 'hover:border-indigo-300 hover:shadow-indigo-100',
+    },
+  ];
+
   return (
-    <div className="space-y-8 md:space-y-10">
+    <div className="space-y-10 max-w-6xl">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
-        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Admin Overview
-        </h1>
-      </motion.div>
+      <div>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Overview</h1>
+        <p className="text-slate-500 text-sm mt-1">Manage your school's students, staff, and academic records.</p>
+      </div>
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Student Management */}
-        <Link
-          href="/portals/dashboard/admin/student"
-          className="group relative overflow-hidden bg-white dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl hover:border-[#0EA5E9]/60 dark:hover:border-[#0EA5E9]/50 transition-all duration-300 hover:-translate-y-1"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0EA5E9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative flex items-center gap-5">
-            <div className="p-4 bg-[#0EA5E9]/10 dark:bg-[#0EA5E9]/20 rounded-xl text-[#0EA5E9] group-hover:bg-[#0EA5E9] group-hover:text-white transition-colors duration-300">
-              <Users size={28} />
-            </div>
+      {/* Live Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {stats.map((s) => (
+          <div key={s.label} className={`bg-white border ${s.border} rounded-2xl p-6 flex items-center gap-5 shadow-sm`}>
+            <div className={`${s.bg} ${s.color} p-3 rounded-xl`}>{s.icon}</div>
             <div>
-              <h3 className="font-bold text-xl text-slate-900 dark:text-white group-hover:text-[#0EA5E9] transition-colors">
-                Student Management
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Upload bulk data via Excel
-              </p>
+              <p className="text-2xl font-black text-slate-900">{s.value}</p>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">{s.label}</p>
             </div>
           </div>
-        </Link>
+        ))}
+      </div>
 
-        {/* Staff/Teacher Management */}
-        <Link
-          href="/portals/dashboard/admin/teacher"
-          className="group relative overflow-hidden bg-white dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl hover:border-emerald-500/60 dark:hover:border-emerald-500/50 transition-all duration-300 hover:-translate-y-1"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="relative flex items-center gap-5">
-            <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-              <Briefcase size={28} />
-            </div>
-            <div>
-              <h3 className="font-bold text-xl text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                Staff Management
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Manage teachers & assignments
-              </p>
-            </div>
-          </div>
-        </Link>
+      {/* Quick actions */}
+      <div>
+        <div className="flex items-center gap-2 mb-5">
+          <TrendingUp size={16} className="text-slate-400" />
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Quick Actions</h2>
+        </div>
 
-        {/* Academic Records – Coming Soon */}
-        <div className="relative overflow-hidden bg-white/70 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/40 dark:border-slate-700/40 rounded-2xl p-6 md:p-8 shadow-lg opacity-75 cursor-not-allowed flex items-center gap-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent" />
-          <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600 dark:text-purple-400">
-            <GraduationCap size={28} />
-          </div>
-          <div>
-            <h3 className="font-bold text-xl text-slate-900 dark:text-white">
-              Academic Records
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Coming Soon
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {actions.map((a) => (
+            <Link
+              key={a.label}
+              href={a.href}
+              className={`group bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-lg ${a.hover} transition-all duration-200`}
+            >
+              <div className={`${a.bg} ${a.color} w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
+                {a.icon}
+              </div>
+              <h3 className="font-bold text-slate-800 text-base">{a.label}</h3>
+              <p className="text-xs text-slate-500 mt-1">{a.desc}</p>
+              <div className={`flex items-center gap-1 mt-4 text-xs font-bold ${a.color}`}>
+                Open <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          )
+          )}
         </div>
       </div>
     </div>

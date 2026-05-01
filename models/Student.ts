@@ -9,7 +9,11 @@ const StudentSchema = new mongoose.Schema({
   currentClass: { type: String, required: true }, // Grade 10A, JSS1, etc. [cite: 79]
   parentPhone: { type: String, required: true }, // For SMS/Notifications [cite: 79]
   address: { type: String },
-  admissionDate: { type: Date, default: Date.now } // [cite: 79]
+  admissionDate: { type: Date, default: Date.now },
+  dateOfBirth:   { type: Date },
+  weight:        { type: String },  // e.g. "45kg"
+  height:        { type: String },  // e.g. "152cm"
+  photo:         { type: String },  // URL to student photo
 }, { timestamps: true });
 
 export default mongoose.models.Student || mongoose.model("Student", StudentSchema);

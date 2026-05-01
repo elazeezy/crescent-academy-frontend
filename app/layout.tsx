@@ -1,32 +1,24 @@
-// app/layout.tsx
-import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer"; // if you have one
 
-// app/layout.tsx
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata = {
-  title: 'Crescent Academy Portal',
-  description: 'Academic Management System',
-  icons: {
-    icon: '/logo.png', // This will replace your Vercel logo
-  },
+  title: "Crescent Academy — Nurturing the Complete Child",
+  description:
+    "Crescent Academy, Iwo — A faith-driven institution dedicated to academic excellence, moral uprightness, and authentic Islamic values since 2010.",
+  icons: { icon: "/logo.png" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-white text-slate-900 antialiased">
-        <Navbar />
-        <main className="pt-0 md:pt-0 flex-grow"> {/* ← no top padding if navbar is fixed */}
-          {children}
-        </main>
-        <Footer /> {/* if you have Footer */}
+    <html lang="en" className={inter.variable}>
+      <body className="bg-white text-slate-900 antialiased font-sans">
+        {children}
       </body>
     </html>
   );

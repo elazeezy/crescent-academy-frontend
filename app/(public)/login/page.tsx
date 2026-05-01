@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Lock, Mail, ChevronRight } from 'lucide-react';
 
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +31,7 @@ export default function LoginPage() {
         return;
       }
 
+      // Fetch session after successful sign-in to get the role
       const sessionResponse = await fetch('/api/auth/session');
       const session = await sessionResponse.json();
 
@@ -38,8 +41,14 @@ export default function LoginPage() {
         student: '/portals/dashboard/student',
       };
 
-      window.location.href = rolePaths[session?.user?.role] || '/';
-    } catch (err) {
+      const destination = rolePaths[session?.user?.role];
+      if (destination) {
+        router.push(destination);
+      } else {
+        setError('Login succeeded but role is unrecognised. Please contact admin.');
+        setIsLoading(false);
+      }
+    } catch {
       setError('Connection failed. Please check your network.');
       setIsLoading(false);
     }
