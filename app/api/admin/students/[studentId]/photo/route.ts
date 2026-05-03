@@ -6,12 +6,14 @@ import cloudinary from '@/lib/cloudinary';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { studentId: string } }
+  { params }: { params: Promise<{ studentId: string }> }
 ) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const { studentId } = await params;
 
   try {
     const formData = await req.formData();
@@ -19,7 +21,7 @@ export async function POST(
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
     await dbConnect();
-    const student = await Student.findById(params.studentId);
+    const student = await Student.findById(studentId);
     if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 
     // Delete old photo if exists
