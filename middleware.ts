@@ -8,15 +8,15 @@ const ROLE_PATHS: Record<string, string> = {
   student: '/portals/dashboard/student',
 };
 
+const SECRET = process.env.NEXTAUTH_SECRET;
+
+// Read both cookie names in parallel — one call each, resolved together
 async function resolveToken(req: NextRequest) {
-  const secret = process.env.NEXTAUTH_SECRET;
-  // Try both cookie names — works on HTTP (local) and HTTPS (Vercel)
-  const secure = await getToken({ req, secret, cookieName: '__Secure-authjs.session-token' });
-  if (secure) return secure;
-  const plain = await getToken({ req, secret, cookieName: 'authjs.session-token' });
-  if (plain) return plain;
-  // Fallback: let next-auth pick the right cookie automatically
-  return getToken({ req, secret });
+  const [secure, plain] = await Promise.all([
+    getToken({ req, secret: SECRET, cookieName: '__Secure-authjs.session-token' }),
+    getToken({ req, secret: SECRET, cookieName: 'authjs.session-token' }),
+  ]);
+  return secure ?? plain;
 }
 
 export async function middleware(req: NextRequest) {

@@ -22,27 +22,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         try {
           await dbConnect();
 
-          const user = await User.findOne({
-            email: { $regex: new RegExp(`^${email}$`, "i") },
-          }).lean() as any;
-
+          // Direct index hit on email (email field has unique index) — no regex needed
+          const user = await User.findOne({ email }).lean() as any;
           if (!user) return null;
 
-          const isValid = await bcrypt.compare(password, user.password as string);
-          if (!isValid) return null;
+          // Run bcrypt in parallel with teacher lookup — saves one full round-trip for teachers
+          const [isValid, teacher] = await Promise.all([
+            bcrypt.compare(password, user.password as string),
+            user.role === "teacher"
+              ? Teacher.findOne({ user: user._id }, { assignedClass: 1 }).lean()
+              : Promise.resolve(null),
+          ]);
 
-          let assignedClass: string | undefined;
-          if (user.role === "teacher") {
-            const teacher = await Teacher.findOne({ user: user._id }).lean() as any;
-            assignedClass = teacher?.assignedClass;
-          }
+          if (!isValid) return null;
 
           return {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
             role: user.role,
-            assignedClass,
+            assignedClass: (teacher as any)?.assignedClass,
           };
         } catch {
           return null;

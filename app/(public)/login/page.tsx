@@ -1,10 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Lock, Mail, ChevronRight } from 'lucide-react';
+
+const ROLE_PATHS: Record<string, string> = {
+  admin:   '/portals/dashboard/admin',
+  teacher: '/portals/dashboard/teacher',
+  student: '/portals/dashboard/student',
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,8 +37,11 @@ export default function LoginPage() {
         return;
       }
 
-      // Middleware reads the JWT cookie and redirects to the correct role dashboard
-      router.push('/portals/dashboard');
+      // Read the session to get role, then jump directly to the right dashboard
+      // — skips the /portals/dashboard middleware redirect hop entirely
+      const session = await getSession();
+      const role = (session?.user as any)?.role;
+      router.push(ROLE_PATHS[role] ?? '/portals/dashboard');
     } catch {
       setError('Connection failed. Please check your network.');
       setIsLoading(false);
