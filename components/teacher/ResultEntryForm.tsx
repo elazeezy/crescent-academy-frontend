@@ -6,7 +6,7 @@ import { calculateGrade } from '@/lib/grading';
 import { AFFECTIVE_TRAITS, PSYCHOMOTOR_SKILLS } from '@/lib/subjects';
 import {
   Save, ChevronLeft, CheckCircle2, AlertCircle,
-  BookOpen, Brain, Activity, CalendarDays, MessageSquare,
+  BookOpen, Brain, Activity, CalendarDays, MessageSquare, Camera, Loader2,
 } from 'lucide-react';
 
 const TERMS   = ['1st Term', '2nd Term', '3rd Term'];
@@ -75,10 +75,25 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
   const [nextTermBegins,    setNextTermBegins]    = useState(existingResult?.nextTermBegins    ?? '');
   const [termEnded,         setTermEnded]         = useState(existingResult?.termEnded         ?? '');
 
-  const [saving,  setSaving]  = useState(false);
-  const [message, setMessage] = useState<{ type: 'success'|'error'; text: string }|null>(null);
+  const [saving,       setSaving]       = useState(false);
+  const [message,      setMessage]      = useState<{ type: 'success'|'error'; text: string }|null>(null);
+  const [photoUrl,     setPhotoUrl]     = useState<string>(student.photo || '');
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   const daysAbsent = Math.max(0, daysOpened - daysPresent);
+
+  const handlePhotoUpload = async (file: File) => {
+    setPhotoLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res  = await fetch(`/api/admin/students/${studentId}/photo`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok && data.photo) setPhotoUrl(data.photo);
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
 
   const handleScore = useCallback((sub: string, field: ScoreKey, raw: string) => {
     let v = parseFloat(raw);
@@ -334,6 +349,44 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
                 className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
               />
             </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── SECTION 6: STUDENT PASSPORT PHOTO ── */}
+      <Section icon={<Camera size={18} />} title="Student Passport Photo" subtitle="Photo will appear on the printed report card">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          {/* Preview */}
+          <div className="w-24 h-32 rounded-xl border-2 border-white/10 bg-slate-800/60 overflow-hidden flex items-center justify-center shrink-0">
+            {photoUrl
+              ? <img src={photoUrl} alt="Passport" className="w-full h-full object-cover" />
+              : (
+                <div className="flex flex-col items-center gap-1 text-slate-600">
+                  <Camera size={28} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">No Photo</span>
+                </div>
+              )
+            }
+          </div>
+          {/* Upload */}
+          <div className="flex-1 space-y-3">
+            <p className="text-sm text-slate-400">Upload a clear passport-size photo. It will be cropped to face automatically.</p>
+            <label className="inline-flex items-center gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95">
+              {photoLoading
+                ? <><Loader2 size={16} className="animate-spin" /> Uploading…</>
+                : <><Camera size={16} /> {photoUrl ? 'Replace Photo' : 'Upload Photo'}</>
+              }
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={photoLoading}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); e.target.value = ''; }}
+              />
+            </label>
+            {photoUrl && (
+              <p className="text-xs text-emerald-400 font-medium">✓ Photo saved — will appear on report card</p>
+            )}
           </div>
         </div>
       </Section>

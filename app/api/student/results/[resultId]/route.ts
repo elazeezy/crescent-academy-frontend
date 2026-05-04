@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Student from '@/models/Student';
 import Result from '@/models/Result';
+import { getSiteImages } from '@/lib/getSiteImages';
 
 // GET /api/student/results/[resultId]
 // Returns: full result + computed classStats (only if published)
@@ -73,9 +74,12 @@ export async function GET(
     const gpas = allResults.map((r: any) => r.gpa).sort((a: number, b: number) => b - a);
     const positionInClass = gpas.indexOf(resultData.gpa) + 1;
 
+    const siteImages = await getSiteImages();
+
     return NextResponse.json({
-      result:  JSON.parse(JSON.stringify(resultData)),
-      student: JSON.parse(JSON.stringify(student)),
+      result:     JSON.parse(JSON.stringify(resultData)),
+      student:    JSON.parse(JSON.stringify(student)),
+      schoolLogo: siteImages['school-logo'] || null,
       classStats: {
         totalStudents:   classmates.length,
         positionInClass,

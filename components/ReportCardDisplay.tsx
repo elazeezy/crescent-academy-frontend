@@ -18,6 +18,7 @@ interface Props {
   result:     any;
   student:    any;
   classStats?: ClassStats;
+  schoolLogo?: string; // URL to uploaded school logo
 }
 
 function ordinal(n: number) {
@@ -35,12 +36,15 @@ function calcAge(dob?: string | Date): string {
   return `${age} yrs`;
 }
 
-export default function ReportCardDisplay({ result, student, classStats }: Props) {
+export default function ReportCardDisplay({ result, student, classStats, schoolLogo }: Props) {
   const subjectStats = classStats?.subjectStats ?? {};
   const totalScore   = result.subjects?.reduce((s: number, r: any) => s + r.total, 0) ?? 0;
   const avgScore     = result.subjects?.length > 0 ? (totalScore / result.subjects.length).toFixed(2) : '0';
   const highestAvg   = classStats?.highestAvg?.toFixed(2) ?? avgScore;
   const overall      = getOverallPerformance(parseFloat(avgScore));
+
+  // Use uploaded logo if available, fall back to /logo.png
+  const logoSrc = schoolLogo || '/logo.png';
 
   return (
     <>
@@ -79,9 +83,17 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
       >
         {/* ── HEADER ── */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b-4 border-[#1a5276]">
-          {/* Logo */}
-          <div className="w-16 h-16 rounded-full border-2 border-[#1a5276] flex items-center justify-center bg-[#1a5276] text-white font-black text-[8px] text-center leading-tight p-1">
-            THE<br/>CRESCENT<br/>COLLEGE
+          {/* School logo */}
+          <div className="w-16 h-16 rounded-full border-2 border-[#1a5276] flex items-center justify-center overflow-hidden bg-white shrink-0">
+            <img
+              src={logoSrc}
+              alt="School Logo"
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                // Fallback to text if logo fails
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
 
           <div className="text-center flex-1 px-4">
@@ -91,29 +103,34 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
             <p className="text-[11px] text-gray-600 mt-0.5">Iwo, Osun State</p>
             <p className="text-[10px] text-gray-500">Phone No: 08032545074 &nbsp;|&nbsp; Email: info@crescentcollege.edu.ng</p>
             <div className="mt-1.5 bg-[#1a5276] text-white text-[12px] font-bold py-1 px-6 rounded inline-block tracking-widest uppercase">
-              {student?.currentClass ?? result.term}
+              STUDENT REPORT CARD — {result.term?.toUpperCase()} · {result.session}
             </div>
           </div>
 
-          {/* Student photo placeholder */}
-          <div className="w-16 h-20 border-2 border-gray-300 flex items-center justify-center bg-gray-100 text-gray-400 text-[9px] text-center rounded shrink-0">
+          {/* Student passport photo */}
+          <div className="w-16 h-20 border-2 border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 text-[9px] text-center rounded shrink-0 overflow-hidden">
             {student?.photo
               ? <img src={student.photo} alt="Student" className="w-full h-full object-cover" />
-              : <span>Photo<br/>Here</span>
+              : (
+                <div className="flex flex-col items-center gap-0.5 text-gray-400">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                  </svg>
+                  <span className="text-[8px]">Passport<br/>Photo</span>
+                </div>
+              )
             }
           </div>
         </div>
 
         {/* ── INFO GRID ── */}
         <div className="grid grid-cols-2 gap-0 border-b border-gray-300">
-          {/* Left info */}
           <div className="border-r border-gray-300 p-2 space-y-1">
-            <InfoRow label="Session"         value={`${result.session} / Term ${result.term}`} />
-            <InfoRow label="Name of Student" value={`${student?.firstName ?? ''} ${student?.lastName ?? ''}`.trim() || '—'} bold />
-            <InfoRow label="Class"           value={student?.currentClass ?? '—'} />
+            <InfoRow label="Session"          value={result.session} />
+            <InfoRow label="Name of Student"  value={`${student?.firstName ?? ''} ${student?.lastName ?? ''}`.trim() || '—'} bold />
+            <InfoRow label="Class"            value={student?.currentClass ?? '—'} />
             <InfoRow label="Next Term Begins" value={result.nextTermBegins || '—'} />
           </div>
-          {/* Right info */}
           <div className="p-2 space-y-1">
             <InfoRow label="Term"    value={result.term} />
             <InfoRow label="Reg. No" value={student?.studentId ?? '—'} />
@@ -134,10 +151,10 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
             <SummaryRow label="Highest Average in Class Section" value={parseFloat(highestAvg).toFixed(2)} />
           </div>
           <div className="border-r border-gray-300 p-2 space-y-0.5">
-            <SummaryRow label="No. of Students in Class"          value={(classStats?.totalStudents ?? '—').toString()} />
-            <SummaryRow label="No. of Students in Class Section"  value={(classStats?.totalStudents ?? '—').toString()} />
-            <SummaryRow label="Class Section Average Score"       value={classStats ? classStats.classAvgScore.toFixed(2) : '—'} />
-            <SummaryRow label="Lowest Average in Class Section"   value={classStats ? classStats.lowestAvg.toFixed(2) : '—'} />
+            <SummaryRow label="No. of Students in Class"         value={(classStats?.totalStudents ?? '—').toString()} />
+            <SummaryRow label="No. of Students in Class Section" value={(classStats?.totalStudents ?? '—').toString()} />
+            <SummaryRow label="Class Section Average Score"      value={classStats ? classStats.classAvgScore.toFixed(2) : '—'} />
+            <SummaryRow label="Lowest Average in Class Section"  value={classStats ? classStats.lowestAvg.toFixed(2) : '—'} />
             <SummaryRow label="Overall Performance"              value={overall} />
           </div>
           <div className="p-2 space-y-0.5">
@@ -168,8 +185,8 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
           </thead>
           <tbody>
             {result.subjects?.map((sub: any, i: number) => {
-              const ss = subjectStats[sub.subjectName];
-              const rowBg = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+              const ss     = subjectStats[sub.subjectName];
+              const rowBg  = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
               return (
                 <tr key={i} className={rowBg}>
                   <td className="border border-gray-300 p-1 font-semibold">{sub.subjectName}</td>
@@ -189,7 +206,6 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
                 </tr>
               );
             })}
-            {/* Filler rows */}
             {Array.from({ length: Math.max(0, 2 - (result.subjects?.length ?? 0)) }).map((_, i) => (
               <tr key={`fill-${i}`} className="h-5">
                 {Array.from({ length: 12 }).map((_, j) => <td key={j} className="border border-gray-200" />)}
@@ -200,7 +216,6 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
 
         {/* ── AFFECTIVE + KEY ── */}
         <div className="grid grid-cols-2 border-t border-gray-300 text-[10px]">
-          {/* Affective Traits */}
           <div className="border-r border-gray-300">
             <div className="bg-[#1a5276] text-white font-bold p-1 text-center tracking-wide">AFFECTIVE TRAITS</div>
             <div className="grid grid-cols-2 p-1 gap-x-2 gap-y-0.5">
@@ -216,7 +231,6 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
             </div>
           </div>
 
-          {/* Score Range Key */}
           <div>
             <div className="bg-[#1a5276] text-white font-bold p-1 text-center tracking-wide">SCORE RANGE / GRADE / MEANING</div>
             <table className="w-full text-[10px]">
@@ -237,8 +251,6 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
                 ))}
               </tbody>
             </table>
-
-            {/* KEY */}
             <div className="mt-1 p-1 border-t border-gray-300">
               <div className="font-bold text-[10px] mb-0.5 uppercase text-[#1a5276]">Key</div>
               {[
@@ -279,14 +291,46 @@ export default function ReportCardDisplay({ result, student, classStats }: Props
           <CommentRow label="Principal's Report"        value={result.principalComment  || '—'} />
         </div>
 
-        {/* ── SIGNATURES ── */}
-        <div className="border-t border-gray-300 grid grid-cols-3 text-[10px] p-2 gap-4">
-          {['Form Master / Class Teacher', "Principal's Signature", 'Date'].map((label) => (
-            <div key={label} className="text-center">
-              <div className="h-8 border-b border-gray-400 mb-1" />
-              <span className="text-gray-600">{label}</span>
+        {/* ── SIGNATURES / STAMP ── */}
+        <div className="border-t-2 border-[#1a5276] p-3 text-[10px]">
+          <div className="grid grid-cols-3 gap-6">
+
+            {/* Form Master */}
+            <div className="text-center">
+              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 flex items-end justify-center pb-1 text-[8px] text-gray-300 italic">
+                sign here
+              </div>
+              <div className="border-t border-gray-500 pt-1 font-semibold text-gray-700">Form Master / Class Teacher</div>
             </div>
-          ))}
+
+            {/* School Stamp — scannable area */}
+            <div className="text-center">
+              <div className="h-14 border-2 border-dashed border-[#1a5276]/40 rounded-full mx-auto w-14 flex items-center justify-center text-[8px] text-[#1a5276]/40 font-bold text-center leading-tight">
+                SCHOOL<br/>STAMP
+              </div>
+              <div className="border-t border-gray-500 pt-1 mt-1 font-semibold text-gray-700">Official Stamp</div>
+            </div>
+
+            {/* Principal */}
+            <div className="text-center">
+              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 flex items-end justify-center pb-1 text-[8px] text-gray-300 italic">
+                sign here
+              </div>
+              <div className="border-t border-gray-500 pt-1 font-semibold text-gray-700">Principal's Signature</div>
+            </div>
+
+          </div>
+
+          {/* Date line */}
+          <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-600">
+            <span className="font-semibold">Date Issued:</span>
+            <span className="border-b border-gray-400 flex-1 max-w-40">&nbsp;</span>
+          </div>
+
+          {/* Footer note */}
+          <div className="mt-2 text-center text-[9px] text-gray-400 italic border-t border-gray-200 pt-1">
+            This report card is only valid with the school stamp and principal's signature.
+          </div>
         </div>
 
       </div>

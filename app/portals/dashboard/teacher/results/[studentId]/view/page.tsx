@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import Result from "@/models/Result";
 import Student from "@/models/Student";
 import ReportCardDisplay from "@/components/ReportCardDisplay";
+import { getSiteImages } from "@/lib/getSiteImages";
 import { redirect } from "next/navigation";
 
 export default async function ViewReportCard({
@@ -89,6 +90,7 @@ export default async function ViewReportCard({
   const highestAvg = gpas[0] ?? 0;
   const lowestAvg  = gpas[gpas.length - 1] ?? 0;
 
+  const siteImages  = await getSiteImages();
   const safeResult  = JSON.parse(JSON.stringify(resultDoc));
   const safeStudent = JSON.parse(JSON.stringify(student));
 
@@ -96,6 +98,7 @@ export default async function ViewReportCard({
     <ReportCardDisplay
       result={safeResult}
       student={safeStudent}
+      schoolLogo={siteImages['school-logo'] || undefined}
       classStats={{
         totalStudents:   totalStudentsInClass,
         positionInClass,

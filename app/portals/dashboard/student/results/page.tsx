@@ -8,10 +8,11 @@ interface TermOption { label: string; term: string; session: string; resultId: s
 
 export default function StudentResultView() {
   const [termOptions,  setTermOptions]  = useState<TermOption[]>([]);
-  const [selected,     setSelected]     = useState<string>('');   // resultId
+  const [selected,     setSelected]     = useState<string>('');
   const [result,       setResult]       = useState<any>(null);
   const [student,      setStudent]      = useState<any>(null);
   const [classStats,   setClassStats]   = useState<any>(null);
+  const [schoolLogo,   setSchoolLogo]   = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
   const [loadingCard,  setLoadingCard]  = useState(false);
   const [error,        setError]        = useState('');
@@ -42,6 +43,7 @@ export default function StudentResultView() {
         if (data.error) { setError(data.error); return; }
         setResult(data.result ?? null);
         setClassStats(data.classStats ?? null);
+        setSchoolLogo(data.schoolLogo ?? null);
       })
       .catch(() => setError('Failed to load report card.'))
       .finally(() => setLoadingCard(false));
@@ -126,6 +128,7 @@ export default function StudentResultView() {
             result={result}
             student={student}
             classStats={classStats}
+            schoolLogo={schoolLogo ?? undefined}
           />
         ) : (
           <div className="py-24 text-center text-slate-400">
