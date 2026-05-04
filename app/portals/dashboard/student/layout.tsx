@@ -29,8 +29,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
       {/* ── Ambient background ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-15%] right-[-8%] w-[550px] h-[550px] bg-sky-500/8 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-10%] left-[-8%] w-[450px] h-[450px] bg-blue-700/8 rounded-full blur-[120px]" />
+        <div className="absolute top-[-15%] right-[-8%] w-137.5 h-137.5 bg-sky-500/8 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-10%] left-[-8%] w-112.5 h-112.5 bg-blue-700/8 rounded-full blur-[120px]" />
       </div>
 
       {/* ── Mobile overlay ── */}
@@ -39,25 +39,25 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[60] lg:hidden"
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm z-60 lg:hidden"
           />
         )}
       </AnimatePresence>
 
       {/* ── SIDEBAR ── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[70] w-72
+        fixed inset-y-0 left-0 z-70 w-72
         bg-[#0d1f3c]/80 backdrop-blur-3xl
-        border-r border-white/[0.06]
+        border-r border-white/6
         flex flex-col transition-transform duration-300
         lg:translate-x-0 lg:static lg:flex
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
 
         {/* Brand */}
-        <div className="p-7 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="p-7 border-b border-white/6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-sky-400 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-sky-900/40">
+            <div className="w-11 h-11 bg-linear-to-br from-sky-400 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-sky-900/40">
               <GraduationCap size={22} className="text-white" />
             </div>
             <div>
@@ -93,7 +93,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${
                   isActive
                     ? 'bg-sky-500/15 text-white border border-sky-500/25 shadow-[0_0_20px_rgba(14,165,233,0.1)]'
-                    : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
                 {isActive && (
@@ -107,8 +107,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </nav>
 
         {/* Profile + logout */}
-        <div className="p-4 border-t border-white/[0.06] space-y-2">
-          <div className="bg-white/[0.04] rounded-2xl p-3 flex items-center gap-3 border border-white/[0.05]">
+        <div className="p-4 border-t border-white/6 space-y-2">
+          <div className="bg-white/4 rounded-2xl p-3 flex items-center gap-3 border border-white/5">
             <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-400 font-black text-sm shrink-0">
               {initials}
             </div>
@@ -131,11 +131,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       <div className="flex-1 flex flex-col relative z-10 h-screen overflow-hidden w-full">
 
         {/* Header */}
-        <header className="h-[70px] bg-[#0a1628]/90 backdrop-blur-xl border-b border-white/[0.05] px-5 md:px-8 flex items-center justify-between shrink-0">
+        <header className="h-17.5 bg-[#0a1628]/90 backdrop-blur-xl border-b border-white/5 px-5 md:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2.5 bg-white/[0.05] rounded-xl border border-white/[0.08] text-white"
+              className="lg:hidden p-2.5 bg-white/5 rounded-xl border border-white/8 text-white"
             >
               <Menu size={19} />
             </button>
@@ -143,7 +143,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-sky-400 transition-colors" size={15} />
               <input
                 placeholder="Search..."
-                className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-sky-500/20 focus:bg-white/[0.08] outline-none transition-all text-white placeholder:text-slate-600"
+                className="w-full bg-white/5 border border-white/8 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-sky-500/20 focus:bg-white/8 outline-none transition-all text-white placeholder:text-slate-600"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse" />
               <span className="text-xs font-bold text-sky-300">Active</span>
             </div>
-            <button className="p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.1] transition-colors relative">
+            <button className="p-2.5 rounded-xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors relative">
               <Bell size={18} className="text-slate-400" />
             </button>
           </div>
