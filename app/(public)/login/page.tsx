@@ -1,16 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Lock, Mail, ChevronRight } from 'lucide-react';
-
-const ROLE_PATHS: Record<string, string> = {
-  admin:   '/portals/dashboard/admin',
-  teacher: '/portals/dashboard/teacher',
-  student: '/portals/dashboard/student',
-};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,17 +25,15 @@ export default function LoginPage() {
         password,
       });
 
-      if (result?.error) {
+      if (result?.error || !result?.ok) {
         setError('Invalid credentials. Please verify your account.');
         setIsLoading(false);
         return;
       }
 
-      // Read the session to get role, then jump directly to the right dashboard
-      // — skips the /portals/dashboard middleware redirect hop entirely
-      const session = await getSession();
-      const role = (session?.user as any)?.role;
-      router.push(ROLE_PATHS[role] ?? '/portals/dashboard');
+      // Redirect to the portal router which reads the session server-side
+      // and sends the user to the correct dashboard immediately.
+      router.push('/portals/dashboard');
     } catch {
       setError('Connection failed. Please check your network.');
       setIsLoading(false);
@@ -62,7 +54,7 @@ export default function LoginPage() {
         className="w-full max-w-md relative z-10"
       >
         <div className="bg-[#0f172a]/60 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-[2.5rem] shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
-          
+
           <div className="text-center mb-10">
             <div className="w-20 h-20 mx-auto bg-gradient-to-tr from-sky-600 to-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-sky-900/20">
               <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain" />

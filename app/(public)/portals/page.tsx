@@ -2,7 +2,10 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { UserCog, Users, BookOpen, ChevronLeft } from "lucide-react";
+import { UserCog, Users, BookOpen, ChevronLeft, Loader2 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -18,12 +21,16 @@ const staggerContainer = {
 };
 
 export default function PortalsPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loadingPortal, setLoadingPortal] = useState<string | null>(null);
+
   const portalLinks = [
     {
       title: "Student Portal",
       desc: "Access your assignments, term results, and school announcements in one place.",
       icon: <BookOpen className="w-10 h-10" />,
-      href: "/portals/dashboard/student",
+      role: "student",
       color: "from-sky-400 to-sky-600",
       shadow: "shadow-sky-200",
     },
@@ -31,7 +38,7 @@ export default function PortalsPage() {
       title: "Admin Portal",
       desc: "Administrative management for Principals and school executives.",
       icon: <UserCog className="w-10 h-10" />,
-      href: "/portals/dashboard/admin",
+      role: "admin",
       color: "from-blue-800 to-indigo-950",
       shadow: "shadow-indigo-200",
     },
@@ -39,16 +46,30 @@ export default function PortalsPage() {
       title: "Teacher Portal",
       desc: "Manage classroom activities, upload results, and track student progress.",
       icon: <Users className="w-10 h-10" />,
-      href: "/portals/dashboard/teacher",
+      role: "teacher",
       color: "from-sky-500/80 to-blue-700/80",
       shadow: "shadow-blue-200",
     },
   ];
 
+  const handleEnterPortal = async (role: string) => {
+    setLoadingPortal(role);
+    try {
+      if (session) {
+        // Sign out silently without redirecting — we will redirect ourselves
+        await signOut({ redirect: false });
+      }
+      // Always go to login — login page will redirect to the right dashboard after credentials are verified
+      router.push("/login");
+    } catch {
+      router.push("/login");
+    }
+  };
+
   return (
     <div className="bg-[#F8FAFC] min-h-screen flex flex-col font-sans">
-      
-      {/* New Breadcrumb Navigation */}
+
+      {/* Breadcrumb Navigation */}
       <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
         <nav aria-label="Breadcrumb">
           <ol className="flex items-center space-x-3 text-base md:text-lg">
@@ -71,9 +92,8 @@ export default function PortalsPage() {
 
       {/* Hero Section */}
       <section className="relative h-[45vh] md:h-[55vh] flex items-center justify-center overflow-hidden">
-        {/* Animated Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#0F2A5E] to-[#0EA5E9]" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" /> {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent" />
 
         <motion.div
@@ -116,23 +136,28 @@ export default function PortalsPage() {
                 <h3 className="text-2xl font-extrabold text-[#1E3A8A] mb-4 group-hover:text-sky-600 transition-colors">
                   {portal.title}
                 </h3>
-                
+
                 <p className="text-slate-600 font-medium leading-relaxed mb-10 flex-grow">
                   {portal.desc}
                 </p>
 
-                <Link
-                  href={portal.href}
-                  className={`w-full py-4 rounded-2xl bg-[#1E3A8A] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95`}
+                <button
+                  onClick={() => handleEnterPortal(portal.role)}
+                  disabled={loadingPortal !== null}
+                  className={`w-full py-4 rounded-2xl bg-[#1E3A8A] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed`}
                 >
-                  Enter Portal
-                </Link>
+                  {loadingPortal === portal.role ? (
+                    <><Loader2 size={18} className="animate-spin" /> Signing out…</>
+                  ) : (
+                    "Enter Portal"
+                  )}
+                </button>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Footer Assistance */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}

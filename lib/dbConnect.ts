@@ -18,11 +18,11 @@ async function dbConnect() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI!, {
       bufferCommands: false,
-      maxPoolSize: 10,           // reuse up to 10 connections — avoids new TCP handshake per request
-      minPoolSize: 2,            // keep 2 warm so cold starts are rare
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
-      socketTimeoutMS: 30000,
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 20000,
       heartbeatFrequencyMS: 10000,
     });
   }

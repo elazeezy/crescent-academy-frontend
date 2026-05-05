@@ -4,6 +4,8 @@ import dbConnect from '@/lib/dbConnect';
 import SiteImage from '@/models/SiteImage';
 import cloudinary from '@/lib/cloudinary';
 
+export const maxDuration = 30;
+
 // GET /api/admin/site-images — return all zones with current images
 export async function GET() {
   try {
@@ -17,8 +19,9 @@ export async function GET() {
 
 // POST /api/admin/site-images — upload image for a zone
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user || session.user.role !== 'admin') {
+  const [session] = await Promise.all([auth(), dbConnect()]);
+
+  if (!session?.user || (session.user as any).role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -31,8 +34,6 @@ export async function POST(req: NextRequest) {
     if (!file || !zoneId || !zoneName) {
       return NextResponse.json({ error: 'Missing file, zoneId, or zoneName' }, { status: 400 });
     }
-
-    await dbConnect();
 
     // Delete old Cloudinary image if exists
     const existing = await SiteImage.findOne({ zoneId });

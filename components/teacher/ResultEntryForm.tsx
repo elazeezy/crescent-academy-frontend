@@ -6,7 +6,7 @@ import { calculateGrade } from '@/lib/grading';
 import { AFFECTIVE_TRAITS, PSYCHOMOTOR_SKILLS } from '@/lib/subjects';
 import {
   Save, ChevronLeft, CheckCircle2, AlertCircle,
-  BookOpen, Brain, Activity, CalendarDays, MessageSquare, Camera, Loader2,
+  BookOpen, Brain, Activity, CalendarDays, MessageSquare, Camera, Loader2, Stamp,
 } from 'lucide-react';
 
 const TERMS   = ['1st Term', '2nd Term', '3rd Term'];
@@ -29,6 +29,7 @@ interface Props {
   student:   any;
   existingResult: any | null;
   subjects:  string[];
+  resultId?: string;
 }
 
 function buildInitialScores(subjects: string[], existing: any): Record<string, SubjectRow> {
@@ -52,7 +53,7 @@ function buildInitialTraits(keys: {key:string}[], existing: any): Record<string,
   return map;
 }
 
-export default function ResultEntryForm({ studentId, student, existingResult, subjects }: Props) {
+export default function ResultEntryForm({ studentId, student, existingResult, subjects, resultId: initialResultId }: Props) {
   const router = useRouter();
 
   const [term,    setTerm]    = useState(existingResult?.term    ?? '1st Term');
@@ -79,6 +80,13 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
   const [message,      setMessage]      = useState<{ type: 'success'|'error'; text: string }|null>(null);
   const [photoUrl,     setPhotoUrl]     = useState<string>(student.photo || '');
   const [photoLoading, setPhotoLoading] = useState(false);
+
+  // Signature / stamp state
+  const [savedResultId, setSavedResultId] = useState<string>(initialResultId ?? existingResult?._id?.toString() ?? '');
+  const [formMasterSig, setFormMasterSig] = useState<string>(existingResult?.formMasterSignature ?? '');
+  const [principalSig,  setPrincipalSig]  = useState<string>(existingResult?.principalSignature  ?? '');
+  const [schoolStamp,   setSchoolStamp]   = useState<string>(existingResult?.schoolStamp          ?? '');
+  const [sigLoading,    setSigLoading]    = useState<string | null>(null);
 
   const daysAbsent = Math.max(0, daysOpened - daysPresent);
 
@@ -112,6 +120,26 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
   const totalScore = subjects.reduce((acc, s) => acc + (scores[s]?.total ?? 0), 0);
   const avgScore   = subjects.length > 0 ? (totalScore / subjects.length).toFixed(1) : '0';
 
+  const handleSignatureUpload = async (
+    file: File,
+    type: 'formMasterSignature' | 'principalSignature' | 'schoolStamp',
+    setter: (url: string) => void
+  ) => {
+    if (!savedResultId) return;
+    setSigLoading(type);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('resultId', savedResultId);
+      fd.append('type', type);
+      const res  = await fetch('/api/teacher/upload-signature', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok && data.url) setter(data.url);
+    } finally {
+      setSigLoading(null);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMessage(null);
@@ -144,7 +172,8 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage({ type: 'success', text: 'Results saved! Report card is now live on the student portal.' });
+        if (data.data?._id) setSavedResultId(data.data._id.toString());
+        setMessage({ type: 'success', text: 'Results saved! You can now upload signatures and stamp below.' });
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to save.' });
       }
@@ -391,6 +420,43 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
         </div>
       </Section>
 
+      {/* ── SECTION 7: SIGNATURES & STAMP ── */}
+      <Section icon={<Stamp size={18} />} title="Signatures & School Stamp" subtitle="Upload once after saving results — appears on the printed report card">
+        {!savedResultId ? (
+          <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl px-5 py-4 text-sm text-amber-300 font-semibold">
+            <AlertCircle size={18} className="shrink-0" />
+            Save the results above first, then come back here to upload signatures and stamp.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <SignatureUploader
+              label="Form Master / Class Teacher Signature"
+              hint="Clear signature on white background"
+              url={formMasterSig}
+              loading={sigLoading === 'formMasterSignature'}
+              shape="rect"
+              onUpload={(file) => handleSignatureUpload(file, 'formMasterSignature', setFormMasterSig)}
+            />
+            <SignatureUploader
+              label="School Stamp"
+              hint="Circular stamp image (PNG with transparent background works best)"
+              url={schoolStamp}
+              loading={sigLoading === 'schoolStamp'}
+              shape="circle"
+              onUpload={(file) => handleSignatureUpload(file, 'schoolStamp', setSchoolStamp)}
+            />
+            <SignatureUploader
+              label="Principal's Signature"
+              hint="Clear signature on white background"
+              url={principalSig}
+              loading={sigLoading === 'principalSignature'}
+              shape="rect"
+              onUpload={(file) => handleSignatureUpload(file, 'principalSignature', setPrincipalSig)}
+            />
+          </div>
+        )}
+      </Section>
+
       {/* ── SAVE + MESSAGE ── */}
       {message && (
         <div className={`flex items-start gap-3 p-4 rounded-2xl text-sm font-semibold border ${
@@ -485,6 +551,55 @@ function NumField({ label, value, onChange, max, color }: {
         }}
         className={`w-full bg-transparent text-3xl font-black ${color} focus:outline-none border-b-2 border-white/10 focus:border-emerald-500/50 pb-1 transition-colors`}
       />
+    </div>
+  );
+}
+
+function SignatureUploader({ label, hint, url, loading, shape, onUpload }: {
+  label: string;
+  hint: string;
+  url: string;
+  loading: boolean;
+  shape: 'rect' | 'circle';
+  onUpload: (file: File) => void;
+}) {
+  const previewClass = shape === 'circle'
+    ? 'w-24 h-24 rounded-full mx-auto'
+    : 'w-full h-20 rounded-xl';
+
+  return (
+    <div className="flex flex-col items-center gap-3 bg-white/2 border border-white/5 rounded-2xl p-5 text-center">
+      <p className="text-xs font-bold text-slate-300 uppercase tracking-wider leading-snug">{label}</p>
+
+      {/* Preview box */}
+      <div className={`${previewClass} border-2 border-dashed border-white/15 bg-slate-800/50 overflow-hidden flex items-center justify-center`}>
+        {url
+          ? <img src={url} alt={label} className="w-full h-full object-contain" />
+          : <span className="text-[10px] text-slate-600 font-medium">No image</span>
+        }
+      </div>
+
+      <p className="text-[10px] text-slate-500 leading-snug">{hint}</p>
+
+      <label className={`inline-flex items-center gap-2 cursor-pointer text-xs font-bold px-4 py-2 rounded-xl transition-all active:scale-95 ${
+        url
+          ? 'bg-white/8 hover:bg-white/12 text-slate-300 border border-white/10'
+          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+      }`}>
+        {loading
+          ? <><Loader2 size={13} className="animate-spin" /> Uploading…</>
+          : url ? '↑ Replace' : '↑ Upload'
+        }
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={loading}
+          onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ''; }}
+        />
+      </label>
+
+      {url && <p className="text-[10px] text-emerald-400 font-semibold">✓ Uploaded</p>}
     </div>
   );
 }

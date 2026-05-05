@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, FileText, LogOut,
-  Bell, Search, Menu, X, GraduationCap,
+  Bell, Search, Menu, X, GraduationCap, Home,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -117,8 +117,15 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <p className="text-[10px] text-sky-400/70 font-medium capitalize">Student</p>
             </div>
           </div>
+          <Link
+            href="/"
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-200 hover:bg-white/5 rounded-xl transition-all text-sm font-semibold"
+          >
+            <Home size={17} />
+            Back to Website
+          </Link>
           <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={() => signOut({ callbackUrl: window.location.origin + '/login' })}
             className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all text-sm font-semibold group"
           >
             <LogOut size={17} className="group-hover:-translate-x-0.5 transition-transform" />

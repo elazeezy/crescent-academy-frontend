@@ -297,24 +297,33 @@ export default function ReportCardDisplay({ result, student, classStats, schoolL
 
             {/* Form Master */}
             <div className="text-center">
-              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 flex items-end justify-center pb-1 text-[8px] text-gray-300 italic">
-                sign here
+              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 overflow-hidden flex items-center justify-center">
+                {result.formMasterSignature
+                  ? <img src={result.formMasterSignature} alt="Form Master Signature" className="max-h-full max-w-full object-contain" />
+                  : <span className="text-[8px] text-gray-300 italic">sign here</span>
+                }
               </div>
               <div className="border-t border-gray-500 pt-1 font-semibold text-gray-700">Form Master / Class Teacher</div>
             </div>
 
-            {/* School Stamp — scannable area */}
+            {/* School Stamp */}
             <div className="text-center">
-              <div className="h-14 border-2 border-dashed border-[#1a5276]/40 rounded-full mx-auto w-14 flex items-center justify-center text-[8px] text-[#1a5276]/40 font-bold text-center leading-tight">
-                SCHOOL<br/>STAMP
+              <div className="h-14 w-14 border-2 border-dashed border-[#1a5276]/40 rounded-full mx-auto overflow-hidden flex items-center justify-center">
+                {result.schoolStamp
+                  ? <img src={result.schoolStamp} alt="School Stamp" className="w-full h-full object-contain" />
+                  : <span className="text-[8px] text-[#1a5276]/40 font-bold text-center leading-tight">SCHOOL<br/>STAMP</span>
+                }
               </div>
               <div className="border-t border-gray-500 pt-1 mt-1 font-semibold text-gray-700">Official Stamp</div>
             </div>
 
             {/* Principal */}
             <div className="text-center">
-              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 flex items-end justify-center pb-1 text-[8px] text-gray-300 italic">
-                sign here
+              <div className="h-14 border border-dashed border-gray-400 rounded mb-1 overflow-hidden flex items-center justify-center">
+                {result.principalSignature
+                  ? <img src={result.principalSignature} alt="Principal Signature" className="max-h-full max-w-full object-contain" />
+                  : <span className="text-[8px] text-gray-300 italic">sign here</span>
+                }
               </div>
               <div className="border-t border-gray-500 pt-1 font-semibold text-gray-700">Principal's Signature</div>
             </div>

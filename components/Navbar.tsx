@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Phone, Mail, Menu, ChevronDown, GraduationCap, X } from "lucide-react";
+import { Phone, Mail, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
@@ -15,7 +15,6 @@ const navLinks = [
   { href: "/achievements", label: "Achievements" },
   { href: "/fees",         label: "Fees" },
   { href: "/alumni",       label: "Alumni" },
-  { href: "/portals",      label: "Portals" },
   { href: "/contact",      label: "Contact" },
 ];
 
@@ -49,10 +48,6 @@ export default function Navbar() {
                 <span className="hidden sm:inline">info@crescentacademy.edu.ng</span>
               </a>
             </div>
-            <Link href="/portals" className="hidden sm:inline-flex items-center gap-1.5 px-5 py-1.5 bg-white text-[#0145F2] hover:bg-[#EDF1F5] font-bold rounded-full shadow transition-all duration-200 text-xs whitespace-nowrap">
-              <GraduationCap size={13} />
-              Portal Login
-            </Link>
           </div>
         </div>
       </div>
@@ -91,9 +86,6 @@ export default function Navbar() {
 
             {/* CTA + mobile toggle */}
             <div className="flex items-center gap-2 lg:hidden">
-              <Link href="/portals" className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0145F2] hover:bg-[#0030C9] text-white rounded-full text-xs font-bold transition-all shadow whitespace-nowrap">
-                <GraduationCap size={13} /> Portal
-              </Link>
               <button onClick={() => setIsOpen(!isOpen)}
                 className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
                 aria-label="Toggle menu" aria-expanded={isOpen}>

@@ -29,6 +29,9 @@ export interface IResult extends Document {
   teacherComment: string;
   formMasterComment: string;
   principalComment?: string;
+  formMasterSignature?: string;
+  principalSignature?: string;
+  schoolStamp?: string;
   gpa: number;
   published: boolean;
   publishedAt?: Date;
@@ -67,6 +70,10 @@ const ResultSchema = new Schema<IResult>(
     teacherComment:     { type: String, default: '' },
     formMasterComment:  { type: String, default: '' },
     principalComment:   { type: String, default: '' },
+
+    formMasterSignature: { type: String, default: '' },
+    principalSignature:  { type: String, default: '' },
+    schoolStamp:         { type: String, default: '' },
 
     termEnded:    { type: String, default: '' },
     published:    { type: Boolean, default: false },

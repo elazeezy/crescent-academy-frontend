@@ -1,23 +1,30 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Users, Briefcase, GraduationCap, FileText, ArrowRight, TrendingUp, Globe } from 'lucide-react';
-import dbConnect from '@/lib/dbConnect';
-import Student from '@/models/Student';
-import Teacher from '@/models/Teacher';
-import Result from '@/models/Result';
+import { Users, Briefcase, GraduationCap, FileText, ArrowRight, TrendingUp, Globe, Loader2 } from 'lucide-react';
 
-export default async function AdminDashboardPage() {
-  await dbConnect();
+interface Stats {
+  studentCount: number;
+  teacherCount: number;
+  resultCount: number;
+}
 
-  const [studentCount, teacherCount, resultCount] = await Promise.all([
-    Student.countDocuments(),
-    Teacher.countDocuments(),
-    Result.countDocuments(),
-  ]);
+export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [statsError, setStatsError] = useState(false);
 
-  const stats = [
-    { label: 'Total Students', value: studentCount, icon: <Users size={22} />, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-100' },
-    { label: 'Total Staff', value: teacherCount, icon: <Briefcase size={22} />, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
-    { label: 'Results Submitted', value: resultCount, icon: <FileText size={22} />, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100' },
+  useEffect(() => {
+    fetch('/api/admin/stats')
+      .then((r) => r.json())
+      .then((d) => setStats(d))
+      .catch(() => setStatsError(true));
+  }, []);
+
+  const statCards = [
+    { label: 'Total Students', value: stats?.studentCount, icon: <Users size={22} />, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-100' },
+    { label: 'Total Staff',    value: stats?.teacherCount, icon: <Briefcase size={22} />, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+    { label: 'Results Submitted', value: stats?.resultCount, icon: <FileText size={22} />, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100' },
   ];
 
   const actions = [
@@ -64,16 +71,22 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Overview</h1>
-        <p className="text-slate-500 text-sm mt-1">Manage your school's students, staff, and academic records.</p>
+        <p className="text-slate-500 text-sm mt-1">Manage your school&apos;s students, staff, and academic records.</p>
       </div>
 
       {/* Live Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        {stats.map((s) => (
+        {statCards.map((s) => (
           <div key={s.label} className={`bg-white border ${s.border} rounded-2xl p-6 flex items-center gap-5 shadow-sm`}>
             <div className={`${s.bg} ${s.color} p-3 rounded-xl`}>{s.icon}</div>
             <div>
-              <p className="text-2xl font-black text-slate-900">{s.value}</p>
+              {statsError ? (
+                <p className="text-sm text-red-400 font-semibold">—</p>
+              ) : s.value === undefined ? (
+                <Loader2 size={20} className="animate-spin text-slate-300" />
+              ) : (
+                <p className="text-2xl font-black text-slate-900">{s.value}</p>
+              )}
               <p className="text-xs text-slate-500 font-semibold mt-0.5">{s.label}</p>
             </div>
           </div>
@@ -103,8 +116,7 @@ export default async function AdminDashboardPage() {
                 Open <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
-          )
-          )}
+          ))}
         </div>
       </div>
     </div>

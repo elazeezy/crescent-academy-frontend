@@ -50,6 +50,7 @@ export default async function ResultEntryPage({
       student={safeStudent}
       existingResult={safeResult}
       subjects={subjects}
+      resultId={safeResult?._id?.toString()}
     />
   );
 }

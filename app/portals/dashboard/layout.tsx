@@ -1,9 +1,8 @@
 import { auth } from "../../../auth";
 import { redirect } from "next/navigation";
 
-// Each role (admin, teacher, student) has its own layout file.
-// This root layout just guards the /portals/dashboard entry point
-// and passes through to the role-specific layout below.
+// Guards the entire /portals/dashboard/* tree.
+// Role-based redirect lives in page.tsx (only fires on the bare /portals/dashboard route).
 export default async function DashboardLayout({
   children,
 }: {
