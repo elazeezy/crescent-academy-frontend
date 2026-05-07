@@ -1,198 +1,179 @@
-// app/leadership/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Quote } from "lucide-react";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import StaggerContainer, { StaggerItem } from "@/components/ui/StaggerContainer";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0 },
-};
+const TEAM = [
+  { name: "Alhaji Abdul Wasii Abdus Salam", role: "Proprietor & Founder",                              image: "/images/leadership/1-proprietor.jpg",        initials: "AW", bio: "The visionary behind The Crescent Academy, whose commitment to faith-based excellence, discipline, and quality education continues to shape the direction of the institution.", featured: true },
+  { name: "Alhaja Abdus Salam M.B",         role: "Proprietoress & Administrator, Nursery & Primary",  image: "/images/leadership/2-proprietoress.jpg",     initials: "AM", bio: "A pillar of administrative strength whose dedication has significantly contributed to the growth and stability of the Nursery and Primary sections." },
+  { name: "Mr. Mutiu Oyebanjo (Sheikh)",    role: "Principal & Imam, The Crescent College",            image: "/images/leadership/3-principal.jpg",         initials: "MO", bio: "Provides strong academic leadership and spiritual guidance, ensuring discipline, moral uprightness, and excellence within the College." },
+  { name: "Mr. Yusuf Ogunyemi",            role: "Vice Principal I, The Crescent College",            image: "/images/leadership/4-vp1.jpg",               initials: "YO", bio: "Supports academic coordination and student development, contributing to effective administration of the College." },
+  { name: "Mr. Sarafa Adam",                role: "Vice Principal II, The Crescent College",           image: "/images/leadership/5-vp2.jpg",               initials: "SA", bio: "Assists in maintaining discipline, academic standards, and smooth daily operations within the secondary section." },
+  { name: "Mr. Abdul Waheed Kehinde",       role: "Principal, The Crescent School of Science",        image: "/images/leadership/6-science-principal.jpg", initials: "AK", bio: "Leads the School of Science with a focus on innovation, structured learning, and advancement of technical education." },
+  { name: "Mr. Abdul Wasiu Amade",          role: "Headmaster, Primary Section",                      image: "/images/leadership/7-headmaster.jpg",        initials: "AA", bio: "Oversees the academic and moral development of pupils at the Primary level, ensuring a solid educational foundation." },
+];
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
-};
+const proprietor = TEAM[0];
+const teamMembers = TEAM.slice(1);
+
+const IslamicPattern = ({ id }: { id: string }) => (
+  <svg aria-hidden className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
+    <defs><pattern id={id} x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse"><polygon points="40,4 47,20 62,13 55,28 72,35 55,42 62,57 47,50 40,66 33,50 18,57 25,42 8,35 25,28 18,13 33,20" fill="none" stroke="white" strokeWidth="0.7" /></pattern></defs>
+    <rect width="100%" height="100%" fill={`url(#${id})`} />
+  </svg>
+);
 
 export default function LeadershipPage() {
-  const leaders = [
-    {
-      name: "Alhaji Abdul Wasii Abdus Salam",
-      role: "Proprietor & Founder",
-      bio: "The visionary behind Crescent Schools, whose commitment to faith-based excellence, discipline, and quality education continues to shape the direction and progress of the institution.",
-      image: "/images/leadership/1-proprietor.jpg",
-    },
-    {
-      name: "Alhaja Abdus Salam M.B",
-      role: "Proprietoress & Administrator, Nursery & Primary Section",
-      bio: "A pillar of administrative strength whose dedication and oversight have significantly contributed to the growth, stability, and development of the Nursery and Primary sections.",
-      image: "/images/leadership/2-proprietoress.jpg",
-    },
-    {
-      name: "Mr. Mutiu Oyebanjo (Sheikh)",
-      role: "Principal & Imam, The Crescent College",
-      bio: "Provides strong academic leadership and spiritual guidance, ensuring discipline, moral uprightness, and academic excellence within the College.",
-      image: "/images/leadership/3-principal.jpg",
-    },
-    {
-      name: "Mr. Yusuf Ogunyemi",
-      role: "Vice Principal I, The Crescent College",
-      bio: "Supports academic coordination and student development, contributing to the effective administration of the College.",
-      image: "/images/leadership/4-vp1.jpg",
-    },
-    {
-      name: "Mr. Sarafa Adam",
-      role: "Vice Principal II, The Crescent College",
-      bio: "Assists in maintaining discipline, academic standards, and smooth daily operations within the secondary section.",
-      image: "/images/leadership/5-vp2.jpg",
-    },
-    {
-      name: "Mr. Abdul Waheed Kehinde",
-      role: "Principal, The Crescent School of Science",
-      bio: "Leads the School of Science with a focus on innovation, structured learning, and the advancement of scientific and technical education.",
-      image: "/images/leadership/6-science-principal.jpg",
-    },
-    {
-      name: "Mr. Abdul Wasiu Amade",
-      role: "Headmaster, Primary Section",
-      bio: "Oversees the academic and moral development of pupils at the Primary level, ensuring a solid educational foundation.",
-      image: "/images/leadership/7-headmaster.jpg",
-    },
-  ];
-
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
-      {/* Hero with real background image + breadcrumb overlay */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/leadership/1-proprietor.jpg"  // Using first leader image as hero bg (or replace with a team/group photo)
-            alt="Crescent Academy Leadership"
-            fill
-            className="object-cover brightness-[0.75] contrast-[1.1]"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+      {/* Hero */}
+      <section className="relative h-[50vh] min-h-64 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+        <IslamicPattern id="ldp" />
+        <img src="/images/leadership/1-proprietor.jpg" alt="" aria-hidden
+          className="absolute inset-0 w-full h-full object-cover opacity-15"
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <div className="absolute inset-0" style={{ background: "rgba(6,14,28,0.80)" }} />
+        <div className="absolute top-6 left-6 z-20">
+          <Link href="/" className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors"
+            style={{ fontFamily: "var(--font-body, sans-serif)" }}>
+            <ChevronLeft size={16} /> Home
+          </Link>
         </div>
-
-        {/* Breadcrumb – top-left overlay (same style as previous pages) */}
-        <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-3 text-base md:text-lg">
-              <li>
-                <Link
-                  href="/"
-                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
-                >
-                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                  Home
-                </Link>
-              </li>
-              <li className="text-white/70">›</li>
-              <li className="text-white font-semibold drop-shadow-md">
-                Our Leadership Team
-              </li>
-            </ol>
-          </nav>
-        </div>
-
-        {/* Original hero content (unchanged) */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto"
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6">
-            Our Leadership Team
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
+          className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 w-full">
+          <p className="text-xs tracking-[0.2em] uppercase mb-3 font-medium"
+            style={{ color: "#2196C4", fontFamily: "var(--font-body, sans-serif)" }}>Our Team</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight"
+            style={{ fontFamily: "var(--font-display, 'Cormorant Garamond', serif)" }}>
+            Meet Our <span className="italic" style={{ color: "#3BADD9" }}>Leadership</span>
           </h1>
-          <p className="text-lg md:text-2xl max-w-4xl mx-auto opacity-90">
-            Guided by vision, integrity, and dedication — shaping the future with faith and excellence
-          </p>
         </motion.div>
       </section>
 
-      {/* Intro (unchanged) */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50">
-        <div className="container mx-auto px-6 max-w-5xl text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="text-lg md:text-xl text-slate-700 leading-relaxed"
-          >
-            The strength and steady growth of Crescent Schools are built upon visionary leadership, dedicated administration, and a firm commitment to excellence. The foundation of the institution rests on the guidance, discipline, and integrity of the following distinguished leaders.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Leadership Grid – smoother UI with glass cards & hover glow (content 100% unchanged) */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
-            {leaders.map((leader, i) => (
-              <motion.div
-                key={i}
-                variants={fadeInUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                className="bg-white/90 backdrop-blur-xl border border-slate-200/60 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:scale-[1.03] transition-all duration-500 group text-center p-8 md:p-10"
-              >
-                <div className="relative w-48 h-48 md:w-56 md:h-56 mx-auto mb-6 rounded-full overflow-hidden shadow-2xl border-4 border-[#0EA5E9]/80 group-hover:border-[#0EA5E9] transition-all duration-500">
-                  <Image
-                    src={leader.image}
-                    alt={leader.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+      {/* Proprietor Feature */}
+      <section className="py-20 md:py-28" style={{ background: "#fff" }}>
+        <div className="max-w-6xl mx-auto px-6 sm:px-10">
+          <div className="grid lg:grid-cols-[2fr_3fr] gap-14 items-center">
+            <ScrollReveal direction="left">
+              <div className="relative">
+                <div className="absolute -top-4 -left-4 w-24 h-24 border-2 rounded-3xl pointer-events-none"
+                  style={{ borderColor: "rgba(33,150,196,0.25)" }} />
+                <div className="relative rounded-3xl overflow-hidden aspect-[4/5] shadow-2xl z-10"
+                  style={{ background: "#112847", boxShadow: "0 0 0 4px rgba(33,150,196,0.15)" }}>
+                  <img src={proprietor.image} alt={proprietor.name} className="w-full h-full object-cover object-top"
+                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#060E1C]/70 via-transparent to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <p className="text-white font-bold text-lg" style={{ fontFamily: "var(--font-body, sans-serif)" }}>{proprietor.name}</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-body, sans-serif)" }}>{proprietor.role}</p>
+                  </div>
                 </div>
+              </div>
+            </ScrollReveal>
 
-                <h3 className="text-xl md:text-2xl font-bold text-[#1E3A8A] mb-2 group-hover:text-[#0EA5E9] transition-colors">
-                  {leader.name}
-                </h3>
-                <p className="text-[#0EA5E9] font-medium mb-4 text-lg">
-                  {leader.role}
+            <ScrollReveal direction="right">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs tracking-[0.2em] uppercase mb-3 font-medium flex items-center gap-2"
+                    style={{ color: "#2196C4", fontFamily: "var(--font-body, sans-serif)" }}>
+                    <span className="w-6 h-px" style={{ background: "#2196C4" }} /> A Word from our Founder
+                  </p>
+                  <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-6"
+                    style={{ color: "#0B1F3A", fontFamily: "var(--font-display, 'Cormorant Garamond', serif)" }}>
+                    Visionary Leadership,<br /><span className="italic" style={{ color: "#2196C4" }}>Faithful Purpose</span>
+                  </h2>
+                </div>
+                <div className="relative pl-6" style={{ borderLeft: "2px solid rgba(33,150,196,0.4)" }}>
+                  <Quote size={30} className="absolute -top-2 -left-0.5" style={{ color: "rgba(33,150,196,0.2)" }} />
+                  <p className="leading-relaxed italic" style={{ color: "#4B5563", fontFamily: "var(--font-body, sans-serif)" }}>{proprietor.bio}</p>
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: "#6B7280", fontFamily: "var(--font-body, sans-serif)" }}>
+                  With the blessing of Allah, The Crescent Academy was founded to provide a harmonious blend of conventional and authentic Islamic education — producing graduates who are not only academically excellent but morally grounded, spiritually alive, and socially responsible.
                 </p>
-                <p className="text-slate-700 leading-relaxed text-base md:text-lg">
-                  {leader.bio}
-                </p>
-              </motion.div>
-            ))}
+                <blockquote className="rounded-r-xl px-5 py-4"
+                  style={{ background: "rgba(33,150,196,0.06)", borderLeft: "4px solid #2196C4" }}>
+                  <p className="italic text-lg leading-relaxed font-medium"
+                    style={{ color: "#0B1F3A", fontFamily: "var(--font-display, 'Cormorant Garamond', serif)" }}>
+                    "We seek to raise the Complete Child — one who carries both knowledge and character into the world."
+                  </p>
+                  <footer className="text-xs font-medium mt-2 uppercase tracking-wide"
+                    style={{ color: "#2196C4", fontFamily: "var(--font-body, sans-serif)" }}>— {proprietor.name}</footer>
+                </blockquote>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* CTA (polished hover scale – content unchanged) */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
-        <div className="container mx-auto px-6 text-center">
-          <motion.h3
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-3xl md:text-4xl font-bold mb-8"
-          >
-            Join Our Journey
-          </motion.h3>
-          <div className="flex flex-wrap justify-center gap-6">
-            <Link
-              href="/admissions"
-              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-md border border-white/20"
-            >
-              Admissions
-            </Link>
-            <Link
-              href="/contact"
-              className="bg-white/15 hover:bg-white/25 px-8 py-4 rounded-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl backdrop-blur-md border border-white/20"
-            >
-              Contact Us
-            </Link>
+      {/* Team Grid */}
+      <section className="py-16 md:py-20 relative overflow-hidden" style={{ background: "#0B1F3A" }}>
+        <IslamicPattern id="ldteam" />
+        <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-10">
+          <div className="text-center mb-12">
+            <p className="text-xs tracking-[0.14em] uppercase mb-3 font-medium flex items-center gap-3 justify-center"
+              style={{ color: "#3BADD9", fontFamily: "var(--font-body, sans-serif)" }}>
+              <span className="w-8 h-px" style={{ background: "#3BADD9" }} />The Team<span className="w-8 h-px" style={{ background: "#3BADD9" }} />
+            </p>
+            <h2 className="text-3xl font-bold text-white"
+              style={{ fontFamily: "var(--font-display, 'Cormorant Garamond', serif)" }}>
+              Our Senior <span className="italic" style={{ color: "#3BADD9" }}>Leaders</span>
+            </h2>
+            <p className="mt-3 max-w-lg mx-auto text-sm"
+              style={{ color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-body, sans-serif)" }}>
+              Dedicated educators and administrators guiding The Crescent Academy's three sections.
+            </p>
+            <div className="w-12 h-0.5 rounded-full mx-auto mt-4" style={{ background: "#2196C4" }} />
           </div>
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {teamMembers.map((leader, i) => (
+              <StaggerItem key={i}>
+                <div className="group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(33,150,196,0.35)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center shrink-0 relative"
+                      style={{ background: "#112847", border: "2px solid rgba(33,150,196,0.3)" }}>
+                      <img src={leader.image} alt={leader.name} className="w-full h-full object-cover object-top"
+                        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-lg pointer-events-none select-none">
+                        {leader.initials}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white text-base leading-snug" style={{ fontFamily: "var(--font-body, sans-serif)" }}>{leader.name}</h3>
+                      <p className="text-xs mt-0.5" style={{ color: "#3BADD9", fontFamily: "var(--font-body, sans-serif)" }}>{leader.role}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-body, sans-serif)" }}>{leader.bio}</p>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-16" style={{ background: "#F7F5F1" }}>
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-bold mb-3"
+            style={{ color: "#0B1F3A", fontFamily: "var(--font-display, 'Cormorant Garamond', serif)" }}>
+            Interested in Joining Our Team?
+          </h2>
+          <p className="text-sm mb-6" style={{ color: "#6B7280", fontFamily: "var(--font-body, sans-serif)" }}>
+            We occasionally have openings for qualified, dedicated educators who share our values.
+          </p>
+          <Link href="/contact"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-sm transition-all hover:-translate-y-0.5"
+            style={{ background: "#2196C4", color: "#fff", fontFamily: "var(--font-body, sans-serif)" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#3BADD9")}
+            onMouseLeave={e => (e.currentTarget.style.background = "#2196C4")}>
+            Contact Us
+          </Link>
         </div>
       </section>
     </div>

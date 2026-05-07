@@ -28,7 +28,7 @@ export default function AlumniPage() {
         <div className="absolute inset-0">
           <Image
             src="/images/alumni-hero.jpg"   // ← Download & place here
-            alt="Crescent Academy Alumni"
+            alt="The Crescent Academy Alumni"
             fill
             className="object-cover brightness-[0.75] contrast-[1.1]"
             priority
@@ -43,7 +43,7 @@ export default function AlumniPage() {
               <li>
                 <Link
                   href="/"
-                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+                  className="text-white/90 hover:text-[#C9A84C] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
                 >
                   <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                   Home
@@ -80,7 +80,7 @@ export default function AlumniPage() {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-[#1E3A8A] mb-8"
+            className="text-4xl md:text-5xl font-bold text-[#0A1628] mb-8"
           >
             Coming Soon
           </motion.h2>
@@ -100,7 +100,7 @@ export default function AlumniPage() {
           >
             <Link
               href="/contact"
-              className="inline-block px-10 py-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white font-bold rounded-xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.05]"
+              className="inline-block px-10 py-4 bg-[#C9A84C] hover:bg-[#2D6A4F] text-white font-bold rounded-xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.05]"
             >
               Get in Touch with Alumni Team
             </Link>

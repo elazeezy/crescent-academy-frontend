@@ -93,7 +93,7 @@ export default function Footer() {
             <Link href="/" className="inline-flex items-center gap-3 group">
               <img
                 src="/logo.png"
-                alt="The Crescent Academy"
+                alt="The The Crescent Academy"
                 className="h-11 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={e => { e.currentTarget.style.display = "none"; }}
               />
@@ -209,7 +209,7 @@ export default function Footer() {
       {/* ── Bottom bar ── */}
       <div className="relative border-t border-white/8 bg-[#0a1628]/60">
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Crescent Academy, Iwo. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} The Crescent Academy, Iwo. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
             Built with <Heart size={11} className="text-red-400 fill-red-400" /> for authentic education
           </p>

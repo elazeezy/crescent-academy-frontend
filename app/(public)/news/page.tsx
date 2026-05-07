@@ -23,7 +23,7 @@ export default function NewsPage() {
     {
       title: "Iwo Day Football Tournament – Runners-Up Glory!",
       date: "November 15, 2025",
-      excerpt: "Our boys' team showed incredible teamwork and discipline to reach the final, defeating every public school. A proud moment for Crescent Academy!",
+      excerpt: "Our boys' team showed incredible teamwork and discipline to reach the final, defeating every public school. A proud moment for The Crescent Academy!",
       image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1470",
       category: "Sports",
     },
@@ -56,7 +56,7 @@ export default function NewsPage() {
 
     <Link
   href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#1E3A8A] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
+  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#0A1628] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
 >
   ← Back to Home
 </Link>
@@ -84,7 +84,7 @@ export default function NewsPage() {
             News & Events
           </h1>
           <p className="text-lg md:text-2xl max-w-4xl mx-auto opacity-90">
-            Stay updated with the latest happenings, achievements, and celebrations at Crescent Academy
+            Stay updated with the latest happenings, achievements, and celebrations at The Crescent Academy
           </p>
         </motion.div>
       </section>
@@ -113,14 +113,14 @@ export default function NewsPage() {
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <span className="absolute top-4 left-4 bg-[#0EA5E9] text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="absolute top-4 left-4 bg-[#C9A84C] text-white text-xs font-bold px-3 py-1 rounded-full">
                     {item.category}
                   </span>
                 </div>
 
                 <div className="p-6 md:p-8">
                   <p className="text-sm text-slate-500 mb-3">{item.date}</p>
-                  <h3 className="text-xl md:text-2xl font-bold text-[#1E3A8A] mb-4 group-hover:text-[#0EA5E9] transition-colors">
+                  <h3 className="text-xl md:text-2xl font-bold text-[#0A1628] mb-4 group-hover:text-[#C9A84C] transition-colors">
                     {item.title}
                   </h3>
                   <p className="text-slate-700 leading-relaxed mb-6 line-clamp-3">
@@ -128,7 +128,7 @@ export default function NewsPage() {
                   </p>
                   <Link
                     href="#"
-                    className="inline-flex items-center text-[#0EA5E9] font-medium hover:text-[#0284C7] transition-colors"
+                    className="inline-flex items-center text-[#C9A84C] font-medium hover:text-[#2D6A4F] transition-colors"
                   >
                     Read More →
                   </Link>
@@ -140,7 +140,7 @@ export default function NewsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
+      <section className="py-16 md:py-24 bg-gradient-to-r from-[#0A1628] to-[#0A1628] text-white">
         <div className="container mx-auto px-6 text-center">
           <motion.h3
             initial={{ opacity: 0, y: 40 }}

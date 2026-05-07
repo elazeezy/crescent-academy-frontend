@@ -8,7 +8,7 @@ const faqs = [
   { q: "How do I apply for admission?", a: "Visit our Admissions page or call us. New intakes are in September each year. Requirements: birth certificate, last school report card, and passport photographs." },
   { q: "What levels do you offer?", a: "We offer Nursery & Primary, Secondary (Crescent College), and Vocational (Crescent School of Science) — all under one vision since 2010." },
   { q: "What are your school fees?", a: "Fees vary by level and term. Visit the Fees page for a full breakdown. Payment plans are available — contact us to discuss." },
-  { q: "Is the school co-educational?", a: "Yes. Crescent Academy is a co-educational institution that maintains Islamic values, discipline, and a safe learning environment for all." },
+  { q: "Is the school co-educational?", a: "Yes. The Crescent Academy is a co-educational institution that maintains Islamic values, discipline, and a safe learning environment for all." },
   { q: "Where are you located?", a: "Panada Area, Beside Car Wash, Along Water Works, Iwo, Osun State, Nigeria." },
 ];
 
@@ -20,7 +20,7 @@ export default function ChatWidget() {
   const [sent, setSent]   = useState(false);
 
   const sendWA = () => {
-    const text = msg.trim() || "Hello, I'd like to enquire about The Crescent Academy.";
+    const text = msg.trim() || "Hello, I'd like to enquire about The The Crescent Academy.";
     window.open(`https://wa.me/2348032545074?text=${encodeURIComponent(text)}`, "_blank");
     setSent(true);
     setMsg("");
@@ -72,7 +72,7 @@ export default function ChatWidget() {
                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               </div>
               <div>
-                <p className="text-white font-black text-sm leading-none">The Crescent Academy</p>
+                <p className="text-white font-black text-sm leading-none">The The Crescent Academy</p>
                 <p className="text-white/70 text-[11px] mt-0.5 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
                   Online · Iwo, Osun State

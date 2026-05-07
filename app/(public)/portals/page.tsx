@@ -92,7 +92,7 @@ export default function PortalsPage() {
 
       {/* Hero Section */}
       <section className="relative h-[45vh] md:h-[55vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#0F2A5E] to-[#0EA5E9]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0A1628] to-[#C9A84C]" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent" />
 
@@ -133,7 +133,7 @@ export default function PortalsPage() {
                   {portal.icon}
                 </div>
 
-                <h3 className="text-2xl font-extrabold text-[#1E3A8A] mb-4 group-hover:text-sky-600 transition-colors">
+                <h3 className="text-2xl font-extrabold text-[#0A1628] mb-4 group-hover:text-sky-600 transition-colors">
                   {portal.title}
                 </h3>
 
@@ -144,7 +144,7 @@ export default function PortalsPage() {
                 <button
                   onClick={() => handleEnterPortal(portal.role)}
                   disabled={loadingPortal !== null}
-                  className={`w-full py-4 rounded-2xl bg-[#1E3A8A] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed`}
+                  className={`w-full py-4 rounded-2xl bg-[#0A1628] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed`}
                 >
                   {loadingPortal === portal.role ? (
                     <><Loader2 size={18} className="animate-spin" /> Signing out…</>

@@ -67,7 +67,7 @@ export default function PoliciesPage() {
         <div className="absolute inset-0">
           <Image
             src="/images/policies-hero.jpg"   // ← Download & place here
-            alt="Crescent Academy Policies & Discipline"
+            alt="The Crescent Academy Policies & Discipline"
             fill
             className="object-cover brightness-[0.75] contrast-[1.1]"
             priority
@@ -82,7 +82,7 @@ export default function PoliciesPage() {
               <li>
                 <Link
                   href="/"
-                  className="text-white/90 hover:text-[#0EA5E9] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
+                  className="text-white/90 hover:text-[#C9A84C] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
                 >
                   <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                   Home
@@ -121,7 +121,7 @@ export default function PoliciesPage() {
             transition={{ duration: 1 }}
             className="text-lg md:text-xl text-slate-700 leading-relaxed"
           >
-            Crescent Academy operates strictly according to Islamic teachings and moral principles. These policies ensure a safe, respectful, and disciplined environment where every child can thrive academically, spiritually, and socially.
+            The Crescent Academy operates strictly according to Islamic teachings and moral principles. These policies ensure a safe, respectful, and disciplined environment where every child can thrive academically, spiritually, and socially.
           </motion.p>
         </div>
       </section>
@@ -142,7 +142,7 @@ export default function PoliciesPage() {
                 variants={fadeInUp}
                 className="flex items-start gap-4 bg-white/90 backdrop-blur-xl border border-slate-200/60 p-6 rounded-2xl shadow-md hover:shadow-xl hover:scale-[1.01] transition-all duration-300 group"
               >
-                <span className="text-[#0EA5E9] text-2xl flex-shrink-0 mt-1 group-hover:scale-125 transition-transform">•</span>
+                <span className="text-[#C9A84C] text-2xl flex-shrink-0 mt-1 group-hover:scale-125 transition-transform">•</span>
                 <p className="text-slate-800 leading-relaxed text-lg">{policy}</p>
               </motion.li>
             ))}
@@ -151,7 +151,7 @@ export default function PoliciesPage() {
       </section>
 
       {/* CTA (polished hover scale – content unchanged) */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-[#1E3A8A] to-[#0F2A5E] text-white">
+      <section className="py-16 md:py-24 bg-gradient-to-r from-[#0A1628] to-[#0A1628] text-white">
         <div className="container mx-auto px-6 text-center">
           <motion.h3
             initial={{ opacity: 0, y: 40 }}
