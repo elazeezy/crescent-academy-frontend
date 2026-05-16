@@ -31,8 +31,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to the portal router which reads the session server-side
-      // and sends the user to the correct dashboard immediately.
       router.push('/portals/dashboard');
     } catch {
       setError('Connection failed. Please check your network.');
@@ -42,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020617] p-4 relative overflow-hidden">
-      {/* Dynamic Background Mesh */}
+      {/* Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-sky-500/10 rounded-full blur-[120px]" />
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-emerald-500/10 rounded-full blur-[120px]" />
@@ -100,13 +98,20 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-white hover:bg-slate-200 text-slate-900 font-black py-4 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2"
             >
-              {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Sign In"}
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Sign In'}
               {!isLoading && <ChevronRight size={20} />}
             </button>
           </form>
 
           <p className="text-center text-slate-500 mt-8 text-xs font-medium">
-            Forgot password? <a href="/reset-password" className="text-sky-400 hover:text-sky-300 underline underline-offset-4">Reset here</a>
+            Forgot password?{' '}
+            <a href="/reset-password" className="text-sky-400 hover:text-sky-300 underline underline-offset-4">
+              Reset here
+            </a>
+          </p>
+
+          <p className="text-center text-slate-600 mt-4 text-xs">
+            <a href="/portals" className="hover:text-slate-400 transition-colors">← Back to Portals</a>
           </p>
         </div>
       </motion.div>

@@ -35,7 +35,7 @@ export default function CreateAdminPage() {
     }
   };
 
-  const inputCls = "w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400 bg-white";
+  const inputCls = "w-full text-sm text-slate-900 bg-white placeholder-slate-400 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-400/30 focus:border-purple-400";
   const labelCls = "block text-xs font-bold text-slate-500 mb-1.5";
 
   return (

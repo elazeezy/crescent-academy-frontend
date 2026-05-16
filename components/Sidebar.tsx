@@ -15,6 +15,7 @@ import {
   ShieldPlus,
   Globe,
   Home,
+  Bell,
 } from 'lucide-react';
 
 interface NavItem {
@@ -28,6 +29,7 @@ const adminNav: NavItem[] = [
   { href: '/portals/dashboard/admin/student', icon: <Users size={18} />, label: 'Students' },
   { href: '/portals/dashboard/admin/teacher', icon: <Briefcase size={18} />, label: 'Staff' },
   { href: '/portals/dashboard/admin/results', icon: <FileText size={18} />, label: 'Results' },
+  { href: '/portals/dashboard/admin/notifications', icon: <Bell size={18} />, label: 'Notifications' },
   { href: '/portals/dashboard/admin/website', icon: <Globe size={18} />, label: 'Website Images' },
   { href: '/portals/dashboard/admin/create-admin', icon: <ShieldPlus size={18} />, label: 'Create Admin' },
 ];
@@ -35,11 +37,14 @@ const adminNav: NavItem[] = [
 const teacherNav: NavItem[] = [
   { href: '/portals/dashboard/teacher', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
   { href: '/portals/dashboard/teacher/results', icon: <FileText size={18} />, label: 'Results' },
+  { href: '/portals/dashboard/teacher/materials', icon: <BookOpen size={18} />, label: 'Materials' },
+  { href: '/portals/dashboard/teacher/notifications', icon: <Bell size={18} />, label: 'Notifications' },
 ];
 
 const studentNav: NavItem[] = [
   { href: '/portals/dashboard/student', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-  { href: '/portals/dashboard/student/results', icon: <BookOpen size={18} />, label: 'My Results' },
+  { href: '/portals/dashboard/student/results', icon: <FileText size={18} />, label: 'Report Cards' },
+  { href: '/portals/dashboard/student/materials', icon: <BookOpen size={18} />, label: 'Learning Hub' },
 ];
 
 function getNav(role: string) {

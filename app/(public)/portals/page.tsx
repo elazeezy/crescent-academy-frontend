@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { UserCog, Users, BookOpen, ChevronLeft, Loader2 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -54,16 +54,17 @@ export default function PortalsPage() {
 
   const handleEnterPortal = async (role: string) => {
     setLoadingPortal(role);
-    try {
-      if (session) {
-        // Sign out silently without redirecting — we will redirect ourselves
-        await signOut({ redirect: false });
-      }
-      // Always go to login — login page will redirect to the right dashboard after credentials are verified
-      router.push("/login");
-    } catch {
-      router.push("/login");
+    // If already logged in, go straight to the dashboard
+    if (session?.user) {
+      const dest =
+        session.user.role === 'admin'   ? '/portals/dashboard/admin' :
+        session.user.role === 'teacher' ? '/portals/dashboard/teacher' :
+        session.user.role === 'student' ? '/portals/dashboard/student' :
+        '/login';
+      router.push(dest);
+      return;
     }
+    router.push("/login");
   };
 
   return (
@@ -147,7 +148,7 @@ export default function PortalsPage() {
                   className={`w-full py-4 rounded-2xl bg-[#0A1628] hover:bg-sky-600 text-white font-bold tracking-wide transition-all duration-300 shadow-md hover:shadow-xl active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed`}
                 >
                   {loadingPortal === portal.role ? (
-                    <><Loader2 size={18} className="animate-spin" /> Signing out…</>
+                    <><Loader2 size={18} className="animate-spin" /> Loading…</>
                   ) : (
                     "Enter Portal"
                   )}

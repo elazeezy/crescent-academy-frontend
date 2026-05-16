@@ -6,12 +6,14 @@ import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, ClipboardList,
-  LogOut, Bell, Menu, X, GraduationCap, BookOpen, Home,
+  LogOut, Bell, Menu, X, GraduationCap, BookOpen, Home, Upload,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/portals/dashboard/teacher',         icon: LayoutDashboard, label: 'Dashboard'   },
-  { href: '/portals/dashboard/teacher/results', icon: ClipboardList,   label: 'Results'     },
+  { href: '/portals/dashboard/teacher',               icon: LayoutDashboard, label: 'Dashboard'     },
+  { href: '/portals/dashboard/teacher/results',       icon: ClipboardList,   label: 'Results'       },
+  { href: '/portals/dashboard/teacher/materials',     icon: Upload,          label: 'Materials'     },
+  { href: '/portals/dashboard/teacher/notifications', icon: Bell,            label: 'Notifications' },
 ];
 
 export default function TeacherPortalLayout({ children }: { children: React.ReactNode }) {

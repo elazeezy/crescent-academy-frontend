@@ -7,6 +7,7 @@ import { AFFECTIVE_TRAITS, PSYCHOMOTOR_SKILLS } from '@/lib/subjects';
 import {
   Save, ChevronLeft, CheckCircle2, AlertCircle,
   BookOpen, Brain, Activity, CalendarDays, MessageSquare, Camera, Loader2, Stamp,
+  Upload, Globe, GlobeLock,
 } from 'lucide-react';
 
 const TERMS   = ['1st Term', '2nd Term', '3rd Term'];
@@ -76,9 +77,11 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
   const [nextTermBegins,    setNextTermBegins]    = useState(existingResult?.nextTermBegins    ?? '');
   const [termEnded,         setTermEnded]         = useState(existingResult?.termEnded         ?? '');
 
-  const [saving,       setSaving]       = useState(false);
-  const [message,      setMessage]      = useState<{ type: 'success'|'error'; text: string }|null>(null);
-  const [photoUrl,     setPhotoUrl]     = useState<string>(student.photo || '');
+  const [saving,         setSaving]         = useState(false);
+  const [publishing,     setPublishing]     = useState(false);
+  const [published,      setPublished]      = useState<boolean>(existingResult?.published ?? false);
+  const [message,        setMessage]        = useState<{ type: 'success'|'error'; text: string }|null>(null);
+  const [photoUrl,       setPhotoUrl]       = useState<string>(student.photo || '');
   const [photoLoading, setPhotoLoading] = useState(false);
 
   // Signature / stamp state
@@ -137,6 +140,30 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
       if (res.ok && data.url) setter(data.url);
     } finally {
       setSigLoading(null);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!savedResultId) return;
+    setPublishing(true);
+    setMessage(null);
+    try {
+      const res  = await fetch('/api/teacher/publish-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resultId: savedResultId, publish: !published }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPublished(data.published);
+        setMessage({ type: 'success', text: data.message });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed.' });
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Network error.' });
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -471,6 +498,31 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
         </div>
       )}
 
+      {/* ── PUBLISH STATUS BANNER ── */}
+      {savedResultId && (
+        <div className={`flex items-center justify-between rounded-2xl px-5 py-4 border ${
+          published
+            ? 'bg-emerald-500/10 border-emerald-500/20'
+            : 'bg-amber-500/10 border-amber-500/20'
+        }`}>
+          <div className="flex items-center gap-3">
+            {published
+              ? <Globe size={18} className="text-emerald-400 shrink-0" />
+              : <GlobeLock size={18} className="text-amber-400 shrink-0" />}
+            <div>
+              <p className={`text-sm font-bold ${published ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {published ? 'Result is live on student portal' : 'Result not yet visible to student'}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {published
+                  ? 'Student can now view and print their report card.'
+                  : 'Save results then click "Upload to Student Portal" below.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <button
           onClick={handleSave}
@@ -480,9 +532,29 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
           <Save size={20} />
           {saving ? 'Saving…' : 'Save Results'}
         </button>
+
+        {savedResultId && (
+          <button
+            onClick={handlePublish}
+            disabled={publishing}
+            className={`sm:w-56 py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] border ${
+              published
+                ? 'bg-red-500/15 hover:bg-red-500/25 text-red-400 border-red-500/30'
+                : 'bg-sky-600 hover:bg-sky-500 text-white border-sky-600 shadow-lg shadow-sky-900/30'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {publishing
+              ? <Loader2 size={18} className="animate-spin" />
+              : published ? <GlobeLock size={18} /> : <Upload size={18} />}
+            {publishing
+              ? 'Updating…'
+              : published ? 'Unpublish' : 'Upload to Student Portal'}
+          </button>
+        )}
+
         <button
           onClick={() => router.push(`/portals/dashboard/teacher/results/${studentId}/view`)}
-          className="sm:w-48 bg-white/8 hover:bg-white/12 text-slate-300 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all border border-white/10"
+          className="sm:w-40 bg-white/8 hover:bg-white/12 text-slate-300 py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all border border-white/10"
         >
           Preview Card
         </button>

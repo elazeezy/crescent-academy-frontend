@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ studentId: string }> }
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'admin') {
+  if (!session?.user || !['admin', 'teacher'].includes(session.user.role as string)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

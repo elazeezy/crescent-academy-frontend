@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, FileText, LogOut,
-  Bell, Search, Menu, X, GraduationCap, Home,
+  Bell, Search, Menu, X, GraduationCap, Home, BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,6 +13,7 @@ import { usePathname } from 'next/navigation';
 const navItems = [
   { icon: LayoutDashboard, label: 'Overview',     href: '/portals/dashboard/student' },
   { icon: FileText,        label: 'Report Cards', href: '/portals/dashboard/student/results' },
+  { icon: BookOpen,        label: 'Learning Hub', href: '/portals/dashboard/student/materials' },
 ];
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
