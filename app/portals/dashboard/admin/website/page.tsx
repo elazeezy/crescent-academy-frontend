@@ -5,24 +5,49 @@ import { Image as ImageIcon, Upload, Trash2, CheckCircle2, AlertCircle, RefreshC
 
 // All image zones on the public website
 const ZONES = [
-  { id: 'hero_1',         name: 'Hero Slide 1',           desc: 'Main hero carousel — first slide background' },
-  { id: 'hero_2',         name: 'Hero Slide 2',           desc: 'Main hero carousel — second slide background' },
-  { id: 'hero_3',         name: 'Hero Slide 3',           desc: 'Main hero carousel — third slide background' },
-  { id: 'about_main',     name: 'About Page — Main',      desc: 'Featured image on the About page' },
-  { id: 'gallery_1',      name: 'Gallery Image 1',        desc: 'Gallery page — slot 1' },
-  { id: 'gallery_2',      name: 'Gallery Image 2',        desc: 'Gallery page — slot 2' },
-  { id: 'gallery_3',      name: 'Gallery Image 3',        desc: 'Gallery page — slot 3' },
-  { id: 'gallery_4',      name: 'Gallery Image 4',        desc: 'Gallery page — slot 4' },
-  { id: 'gallery_5',      name: 'Gallery Image 5',        desc: 'Gallery page — slot 5' },
-  { id: 'gallery_6',      name: 'Gallery Image 6',        desc: 'Gallery page — slot 6' },
-  { id: 'principal_photo',name: 'Principal Photo',        desc: 'Leadership page — principal portrait' },
-  { id: 'staff_1',        name: 'Staff Photo 1',          desc: 'Leadership page — staff slot 1' },
-  { id: 'staff_2',        name: 'Staff Photo 2',          desc: 'Leadership page — staff slot 2' },
-  { id: 'staff_3',        name: 'Staff Photo 3',          desc: 'Leadership page — staff slot 3' },
-  { id: 'announcement_1', name: 'Announcement Banner 1',  desc: 'News page — featured announcement image' },
-  { id: 'announcement_2', name: 'Announcement Banner 2',  desc: 'News page — second announcement image' },
-  { id: 'school_logo',    name: 'School Logo',            desc: 'Used in navbar, report cards, and public pages' },
-  { id: 'admissions_bg',  name: 'Admissions Page Image',  desc: 'Background/feature image on admissions page' },
+  // ── Site-wide ──────────────────────────────────────────────
+  { id: 'school_logo',       name: 'School Logo',              desc: 'Used in navbar, report cards, and public pages',         group: 'Site' },
+  { id: 'hero_1',            name: 'Hero Slide 1',             desc: 'Main hero carousel — first slide background',            group: 'Site' },
+  { id: 'hero_2',            name: 'Hero Slide 2',             desc: 'Main hero carousel — second slide background',           group: 'Site' },
+  { id: 'hero_3',            name: 'Hero Slide 3',             desc: 'Main hero carousel — third slide background',            group: 'Site' },
+  { id: 'about_main',        name: 'About Page — Main',        desc: 'Featured image on the About page',                      group: 'Site' },
+  { id: 'admissions_bg',     name: 'Admissions Page Image',    desc: 'Background/feature image on admissions page',           group: 'Site' },
+  { id: 'announcement_1',    name: 'Announcement Banner 1',    desc: 'News page — featured announcement image',               group: 'Site' },
+  { id: 'announcement_2',    name: 'Announcement Banner 2',    desc: 'News page — second announcement image',                 group: 'Site' },
+
+  // ── Gallery — Classroom ────────────────────────────────────
+  { id: 'gallery_1',         name: 'Classroom 1',              desc: 'Gallery · Classroom category — slot 1',                 group: 'Gallery' },
+  { id: 'gallery_2',         name: 'Classroom 2',              desc: 'Gallery · Classroom category — slot 2',                 group: 'Gallery' },
+  { id: 'gallery_3',         name: 'Classroom 3',              desc: 'Gallery · Classroom category — slot 3',                 group: 'Gallery' },
+
+  // ── Gallery — Assembly ─────────────────────────────────────
+  { id: 'gallery_4',         name: 'Assembly 1',               desc: 'Gallery · Assembly category — slot 1',                  group: 'Gallery' },
+  { id: 'gallery_5',         name: 'Assembly 2',               desc: 'Gallery · Assembly category — slot 2',                  group: 'Gallery' },
+
+  // ── Gallery — Sports ───────────────────────────────────────
+  { id: 'gallery_6',         name: 'Sports 1',                 desc: 'Gallery · Sports category — slot 1',                    group: 'Gallery' },
+  { id: 'gallery_7',         name: 'Sports 2',                 desc: 'Gallery · Sports category — slot 2',                    group: 'Gallery' },
+  { id: 'gallery_8',         name: 'Sports 3',                 desc: 'Gallery · Sports category — slot 3',                    group: 'Gallery' },
+
+  // ── Gallery — Qur'anic Studies ─────────────────────────────
+  { id: 'gallery_9',         name: "Qur'anic Studies 1",       desc: "Gallery · Qur'anic Studies category — slot 1",          group: 'Gallery' },
+  { id: 'gallery_10',        name: "Qur'anic Studies 2",       desc: "Gallery · Qur'anic Studies category — slot 2",          group: 'Gallery' },
+  { id: 'gallery_11',        name: "Qur'anic Studies 3",       desc: "Gallery · Qur'anic Studies category — slot 3",          group: 'Gallery' },
+
+  // ── Gallery — Science Lab ──────────────────────────────────
+  { id: 'gallery_12',        name: 'Science Lab 1',            desc: 'Gallery · Science Lab category — slot 1',               group: 'Gallery' },
+  { id: 'gallery_13',        name: 'Science Lab 2',            desc: 'Gallery · Science Lab category — slot 2',               group: 'Gallery' },
+
+  // ── Gallery — Awards ───────────────────────────────────────
+  { id: 'gallery_14',        name: 'Awards 1',                 desc: 'Gallery · Awards category — slot 1',                    group: 'Gallery' },
+  { id: 'gallery_15',        name: 'Awards 2',                 desc: 'Gallery · Awards category — slot 2',                    group: 'Gallery' },
+  { id: 'gallery_16',        name: 'Awards 3',                 desc: 'Gallery · Awards category — slot 3',                    group: 'Gallery' },
+
+  // ── Gallery — Events ───────────────────────────────────────
+  { id: 'gallery_17',        name: 'Events 1',                 desc: 'Gallery · Events category — slot 1',                    group: 'Gallery' },
+  { id: 'gallery_18',        name: 'Events 2',                 desc: 'Gallery · Events category — slot 2',                    group: 'Gallery' },
+  { id: 'gallery_19',        name: 'Events 3',                 desc: 'Gallery · Events category — slot 3',                    group: 'Gallery' },
+  { id: 'gallery_20',        name: 'Events 4',                 desc: 'Gallery · Events category — slot 4',                    group: 'Gallery' },
 ];
 
 interface ZoneImage {
@@ -127,107 +152,98 @@ export default function WebsiteContentManager() {
       {loading ? (
         <div className="py-20 text-center text-slate-400 font-semibold">Loading image zones…</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {ZONES.map((zone) => {
-            const img     = images[zone.id];
-            const st      = status[zone.id];
-            const isLoading = st?.type === 'loading';
-
-            return (
-              <div
-                key={zone.id}
-                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                {/* Image preview */}
-                <div className="relative h-44 bg-slate-100 flex items-center justify-center overflow-hidden">
-                  {img?.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img.url}
-                      alt={zone.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-400">
-                      <ImageIcon size={32} />
-                      <span className="text-xs font-medium">No image uploaded</span>
-                    </div>
-                  )}
-
-                  {/* Loading overlay */}
-                  {isLoading && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                      <RefreshCw size={24} className="text-sky-500 animate-spin" />
-                    </div>
-                  )}
-
-                  {/* Uploaded badge */}
-                  {img?.url && !isLoading && (
-                    <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      Live
-                    </div>
-                  )}
-                </div>
-
-                {/* Info + actions */}
-                <div className="p-4 space-y-3">
-                  <div>
-                    <p className="font-bold text-slate-800 text-sm">{zone.name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{zone.desc}</p>
-                  </div>
-
-                  {/* Status message */}
-                  {st && st.type !== 'loading' && (
-                    <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg ${
-                      st.type === 'success'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                        : 'bg-red-50 text-red-700 border border-red-100'
-                    }`}>
-                      {st.type === 'success'
-                        ? <CheckCircle2 size={13} />
-                        : <AlertCircle  size={13} />}
-                      {st.text}
-                    </div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => fileRefs.current[zone.id]?.click()}
-                      disabled={isLoading}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-xl transition-all active:scale-95"
+        <div className="space-y-10">
+          {(['Site', 'Gallery'] as const).map(group => (
+            <div key={group}>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
+                {group === 'Site' ? 'Site-wide Images' : 'Gallery Images'}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {ZONES.filter(z => z.group === group).map((zone) => {
+                  const img = images[zone.id];
+                  const st  = status[zone.id];
+                  const isLoading = st?.type === 'loading';
+                  return (
+                    <div
+                      key={zone.id}
+                      className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <Upload size={13} />
-                      {img?.url ? 'Replace' : 'Upload'}
-                    </button>
+                      {/* Image preview */}
+                      <div className="relative h-44 bg-slate-100 flex items-center justify-center overflow-hidden">
+                        {img?.url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={img.url} alt={zone.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-slate-400">
+                            <ImageIcon size={32} />
+                            <span className="text-xs font-medium">No image uploaded</span>
+                          </div>
+                        )}
+                        {isLoading && (
+                          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                            <RefreshCw size={24} className="text-sky-500 animate-spin" />
+                          </div>
+                        )}
+                        {img?.url && !isLoading && (
+                          <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            Live
+                          </div>
+                        )}
+                      </div>
 
-                    {img?.url && (
-                      <button
-                        onClick={() => handleDelete(zone.id)}
-                        disabled={isLoading}
-                        className="flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold py-2 px-3 rounded-xl border border-red-100 transition-all active:scale-95"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={el => { fileRefs.current[zone.id] = el; }}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUpload(zone.id, zone.name, file);
-                      e.target.value = '';
-                    }}
-                  />
-                </div>
+                      {/* Info + actions */}
+                      <div className="p-4 space-y-3">
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">{zone.name}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{zone.desc}</p>
+                        </div>
+                        {st && st.type !== 'loading' && (
+                          <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg ${
+                            st.type === 'success'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                              : 'bg-red-50 text-red-700 border border-red-100'
+                          }`}>
+                            {st.type === 'success' ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+                            {st.text}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => fileRefs.current[zone.id]?.click()}
+                            disabled={isLoading}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-xl transition-all active:scale-95"
+                          >
+                            <Upload size={13} />
+                            {img?.url ? 'Replace' : 'Upload'}
+                          </button>
+                          {img?.url && (
+                            <button
+                              onClick={() => handleDelete(zone.id)}
+                              disabled={isLoading}
+                              className="flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 text-xs font-bold py-2 px-3 rounded-xl border border-red-100 transition-all active:scale-95"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          ref={el => { fileRefs.current[zone.id] = el; }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(zone.id, zone.name, file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
     </div>

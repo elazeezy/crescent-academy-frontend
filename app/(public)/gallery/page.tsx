@@ -18,16 +18,36 @@ interface GalleryItem {
   tall?: boolean;
 }
 
-const GALLERY_ZONE_IDS = ["gallery_1", "gallery_2", "gallery_3", "gallery_4", "gallery_5", "gallery_6"];
-
-const FALLBACK_ITEMS: GalleryItem[] = [
-  { src: "/images/gallery/1-students-learning.jpg", alt: "Students learning in class", caption: "Classroom Excellence",  category: "Classroom", tall: true },
-  { src: "/images/gallery/2-school-assembly.jpg",   alt: "Morning school assembly",   caption: "Morning Assembly",      category: "Assembly" },
-  { src: "/images/gallery/3-happy-students.jpg",    alt: "Happy students",             caption: "Student Life",          category: "Classroom" },
-  { src: "/images/gallery/4-sports-day.jpg",        alt: "Sports day activities",      caption: "Sports Day",            category: "Sports", tall: true },
-  { src: "/images/gallery/5-quran-study.jpg",       alt: "Qur'anic studies session",  caption: "Qur'anic Studies",      category: "Qur'anic Studies" },
-  { src: "/images/gallery/6-graduation.jpg",        alt: "Prize giving ceremony",      caption: "Prize Giving Day",      category: "Awards" },
+const GALLERY_ZONES: { id: string; category: Exclude<Category, "All">; caption: string; alt: string; tall?: boolean }[] = [
+  { id: "gallery_1",  category: "Classroom",        caption: "Classroom Excellence",      alt: "Students learning in class", tall: true },
+  { id: "gallery_2",  category: "Classroom",        caption: "Student Life",              alt: "Happy students in class" },
+  { id: "gallery_3",  category: "Classroom",        caption: "Learning Together",         alt: "Classroom session" },
+  { id: "gallery_4",  category: "Assembly",         caption: "Morning Assembly",          alt: "School morning assembly", tall: true },
+  { id: "gallery_5",  category: "Assembly",         caption: "School Gathering",          alt: "Students at assembly" },
+  { id: "gallery_6",  category: "Sports",           caption: "Sports Day",                alt: "Sports day activities", tall: true },
+  { id: "gallery_7",  category: "Sports",           caption: "Athletic Excellence",       alt: "Students playing sports" },
+  { id: "gallery_8",  category: "Sports",           caption: "Team Spirit",               alt: "Team sports activity" },
+  { id: "gallery_9",  category: "Qur'anic Studies", caption: "Qur'anic Studies",          alt: "Qur'anic studies session", tall: true },
+  { id: "gallery_10", category: "Qur'anic Studies", caption: "Memorisation Circle",       alt: "Students in Quran class" },
+  { id: "gallery_11", category: "Qur'anic Studies", caption: "Islamic Learning",          alt: "Islamic education session" },
+  { id: "gallery_12", category: "Science Lab",      caption: "Science Lab",               alt: "Students in science lab", tall: true },
+  { id: "gallery_13", category: "Science Lab",      caption: "Practical Science",         alt: "Science experiment" },
+  { id: "gallery_14", category: "Awards",           caption: "Prize Giving Day",          alt: "Prize giving ceremony", tall: true },
+  { id: "gallery_15", category: "Awards",           caption: "Academic Excellence",       alt: "Award presentation" },
+  { id: "gallery_16", category: "Awards",           caption: "Celebrating Achievement",   alt: "Students receiving awards" },
+  { id: "gallery_17", category: "Events",           caption: "School Event",              alt: "School event", tall: true },
+  { id: "gallery_18", category: "Events",           caption: "Special Occasion",          alt: "Students at school event" },
+  { id: "gallery_19", category: "Events",           caption: "Cultural Celebration",      alt: "School cultural event" },
+  { id: "gallery_20", category: "Events",           caption: "Community Gathering",       alt: "School community event" },
 ];
+
+const FALLBACK_ITEMS: GalleryItem[] = GALLERY_ZONES.map(z => ({
+  src: "",
+  alt: z.alt,
+  caption: z.caption,
+  category: z.category,
+  tall: z.tall,
+}));
 
 export default function GalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>(FALLBACK_ITEMS);
@@ -39,7 +59,10 @@ export default function GalleryPage() {
       .then((r) => r.json())
       .then((data) => {
         const map: Record<string, string> = data.images ?? {};
-        setItems(FALLBACK_ITEMS.map((item, i) => ({ ...item, src: map[GALLERY_ZONE_IDS[i]] || item.src })));
+        const loaded = GALLERY_ZONES
+          .map(z => ({ src: map[z.id] || "", alt: z.alt, caption: z.caption, category: z.category, tall: z.tall }))
+          .filter(item => item.src);
+        if (loaded.length > 0) setItems(loaded);
       })
       .catch(() => {});
   }, []);

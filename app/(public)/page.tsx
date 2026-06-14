@@ -594,8 +594,8 @@ export default function HomePage() {
                 style={{ border: "4px solid #E8F6FC", aspectRatio: "4/5" }}
               >
                 <img
-                  src="/images/principal.jpg"
-                  alt="School Proprietor"
+                  src="/images/leadership/1-proprietor.jpg"
+                  alt="Abdulwasii Abdulssalam Oluwatoyin — Proprietor"
                   className="w-full h-full object-cover object-top"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
