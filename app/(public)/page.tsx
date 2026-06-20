@@ -288,6 +288,9 @@ export default function HomePage() {
               src={slide.image}
               alt=""
               aria-hidden
+              fetchPriority={current === 0 ? "high" : "auto"}
+              loading="eager"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
               style={{ opacity: 0.35 }}
               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
@@ -320,8 +323,8 @@ export default function HomePage() {
           <circle cx="158" cy="72" r="5.5" />
         </svg>
 
-        {/* Left-aligned content */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16" style={{ paddingTop: "5rem" }}>
+        {/* Content — centered on mobile, left-aligned from sm up */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16" style={{ paddingTop: "2.5rem" }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={`hero-${current}`}
@@ -329,32 +332,36 @@ export default function HomePage() {
               animate="visible"
               exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }}
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
+              className="flex flex-col items-center text-center sm:items-start sm:text-left mx-auto sm:mx-0"
               style={{ maxWidth: 680 }}
             >
               {/* Eyebrow pill */}
               <motion.div
                 variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, delay: 0.3 } } }}
-                className="inline-flex items-center mb-6"
+                className="inline-flex items-center mb-5 sm:mb-6"
                 style={{
                   border: "1px solid rgba(33,150,196,0.45)",
                   background: "rgba(33,150,196,0.1)",
                   borderRadius: 99,
-                  padding: "6px 18px",
+                  padding: "6px 16px",
                 }}
               >
-                <span style={{ fontFamily: bodyFont, fontSize: 11, color: "#6CC4E8", letterSpacing: "0.1em" }}>
+                <span className="hidden sm:inline" style={{ fontFamily: bodyFont, fontSize: 11, color: "#6CC4E8", letterSpacing: "0.1em" }}>
                   {slide.eyebrow}
+                </span>
+                <span className="sm:hidden" style={{ fontFamily: bodyFont, fontSize: 11, color: "#6CC4E8", letterSpacing: "0.08em" }}>
+                  THE CRESCENT ACADEMY
                 </span>
               </motion.div>
 
               {/* Headline */}
-              <div style={{ marginBottom: "1.5rem" }}>
-                <div className="overflow-hidden leading-none">
+              <div className="w-full" style={{ marginBottom: "1.25rem" }}>
+                <div className="overflow-hidden leading-none flex justify-center sm:justify-start">
                   <motion.h1
                     variants={{ hidden: { y: "105%" }, visible: { y: 0, transition: { duration: 0.95, ease: [0.16, 1, 0.3, 1] as const, delay: 0.5 } } }}
                     style={{
                       fontFamily: displayFont,
-                      fontSize: "clamp(3.2rem, 7vw, 6rem)",
+                      fontSize: "clamp(2.5rem, 10vw, 6rem)",
                       fontWeight: 600,
                       lineHeight: 1.05,
                       color: "#fff",
@@ -364,12 +371,12 @@ export default function HomePage() {
                     {slide.line1}
                   </motion.h1>
                 </div>
-                <div className="overflow-hidden leading-none">
+                <div className="overflow-hidden leading-none flex justify-center sm:justify-start">
                   <motion.h1
                     variants={{ hidden: { y: "105%" }, visible: { y: 0, transition: { duration: 0.95, ease: [0.16, 1, 0.3, 1] as const, delay: 0.57 } } }}
                     style={{
                       fontFamily: displayFont,
-                      fontSize: "clamp(3.2rem, 7vw, 6rem)",
+                      fontSize: "clamp(2.5rem, 10vw, 6rem)",
                       fontWeight: 700,
                       fontStyle: "italic",
                       lineHeight: 1.05,
@@ -382,7 +389,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Subtitle */}
+              {/* Subtitle — desktop only, mobile keeps it clean */}
               <motion.p
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.75, delay: 0.7 } } }}
                 style={{ fontFamily: bodyFont, fontSize: 18, color: "rgba(255,255,255,0.72)", maxWidth: 480, lineHeight: 1.65, marginBottom: "2rem" }}
@@ -393,12 +400,12 @@ export default function HomePage() {
 
               {/* CTA buttons */}
               <motion.div
-                variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, delay: 0.9 } } }}
-                className="flex flex-wrap gap-3 mb-8"
+                variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, delay: 0.85 } } }}
+                className="flex flex-col sm:flex-row w-full sm:w-auto gap-3"
               >
                 <Link
                   href="/admissions"
-                  className="inline-flex items-center gap-2 font-semibold text-sm rounded-full transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-full transition-all duration-200 w-full sm:w-auto"
                   style={{
                     fontFamily: bodyFont,
                     background: "#2196C4",
@@ -413,7 +420,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/about"
-                  className="inline-flex items-center gap-2 font-semibold text-sm rounded-full transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-full transition-all duration-200 w-full sm:w-auto"
                   style={{
                     fontFamily: bodyFont,
                     background: "transparent",
@@ -429,10 +436,10 @@ export default function HomePage() {
                 </Link>
               </motion.div>
 
-              {/* Stat pills */}
+              {/* Stat pills — desktop only; same numbers repeat in the Stats Bar right below on mobile */}
               <motion.div
                 variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, delay: 1.1 } } }}
-                className="flex flex-wrap gap-3"
+                className="hidden sm:flex flex-wrap gap-3 mt-8"
               >
                 {["16+ Years", "150+ Prizes", "3 School Sections"].map(pill => (
                   <span
