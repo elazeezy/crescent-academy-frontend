@@ -268,7 +268,7 @@ export default function HomePage() {
           § 1  HERO
       ══════════════════════════════════════════════════════ */}
       <section
-        className="relative flex items-center overflow-hidden"
+        className="relative flex items-center overflow-hidden pt-16 sm:pt-0"
         style={{ height: "100dvh", minHeight: 560 }}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
@@ -311,11 +311,11 @@ export default function HomePage() {
 
         <IslamicPattern opacity={0.06} />
 
-        {/* Large faint crescent watermark — top right */}
+        {/* Large faint crescent watermark — top right, desktop only */}
         <svg
           aria-hidden
           viewBox="0 0 200 200"
-          className="absolute -right-16 -top-16 pointer-events-none select-none"
+          className="absolute -right-16 -top-16 pointer-events-none select-none hidden sm:block"
           style={{ width: 500, height: 500, opacity: 0.06, color: "#fff", fill: "currentColor" }}
         >
           <path d="M100,10 A90,90 0 1,1 100,190 A62,62 0 1,0 100,10 Z" />
@@ -324,7 +324,7 @@ export default function HomePage() {
         </svg>
 
         {/* Content — centered on mobile, left-aligned from sm up */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16" style={{ paddingTop: "2.5rem" }}>
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 sm:pt-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={`hero-${current}`}
@@ -401,36 +401,36 @@ export default function HomePage() {
               {/* CTA buttons */}
               <motion.div
                 variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, delay: 0.85 } } }}
-                className="flex flex-col sm:flex-row w-full sm:w-auto gap-3"
+                className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2 sm:mt-0"
               >
                 <Link
                   href="/admissions"
-                  className="inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-full transition-all duration-200 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200 w-full sm:w-auto"
                   style={{
                     fontFamily: bodyFont,
+                    fontSize: 14,
                     background: "#2196C4",
                     color: "#fff",
-                    padding: "14px 32px",
-                    height: 52,
+                    padding: "11px 28px",
                   }}
                   onMouseEnter={e => { e.currentTarget.style.background = "#3BADD9"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "#2196C4"; e.currentTarget.style.transform = "translateY(0)"; }}
                 >
-                  Apply for Admission <ArrowRight size={16} />
+                  Apply for Admission <ArrowRight size={15} />
                 </Link>
                 <Link
                   href="/about"
-                  className="inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-full transition-all duration-200 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200 w-full sm:w-auto"
                   style={{
                     fontFamily: bodyFont,
+                    fontSize: 14,
                     background: "transparent",
-                    border: "1px solid rgba(255,255,255,0.5)",
+                    border: "1px solid rgba(255,255,255,0.45)",
                     color: "#fff",
-                    padding: "14px 32px",
-                    height: 52,
+                    padding: "11px 28px",
                   }}
                   onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#0B1F3A"; e.currentTarget.style.borderColor = "#fff"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)"; }}
                 >
                   Discover Our Story
                 </Link>
