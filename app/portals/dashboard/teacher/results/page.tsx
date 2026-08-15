@@ -6,6 +6,7 @@ import Teacher from '@/models/Teacher';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ClipboardList, Eye, CheckCircle2, Clock, ChevronLeft, Users } from 'lucide-react';
+import { classNameRegex } from '@/lib/subjects';
 
 export default async function TeacherResultsPage() {
   const session = await auth();
@@ -14,12 +15,11 @@ export default async function TeacherResultsPage() {
   await dbConnect();
 
   const assignedClass = session.user.assignedClass || '';
-  const normalised    = assignedClass.replace(/[\s.]/g, '');
-  const flexPattern   = normalised.split('').join('[\\s.]*');
-  const classRegex    = normalised.length > 0 ? flexPattern : assignedClass;
+  const section        = session.user.section || 'college';
+  const classRegex     = classNameRegex(assignedClass);
 
   const [students, teacher] = await Promise.all([
-    Student.find({ currentClass: { $regex: classRegex, $options: 'i' } })
+    Student.find({ section, currentClass: { $regex: classRegex, $options: 'i' } })
       .sort({ lastName: 1 }).lean(),
     Teacher.findOne({ user: session.user.id }).lean() as any,
   ]);

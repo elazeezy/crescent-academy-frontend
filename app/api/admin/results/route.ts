@@ -12,7 +12,7 @@ export async function GET() {
     const results = await Result.find({})
       .populate({
         path: 'student',
-        select: 'firstName lastName currentClass studentId',
+        select: 'firstName lastName currentClass section studentId',
         populate: { path: 'user', select: 'name email' },
       })
       .sort({ createdAt: -1 })

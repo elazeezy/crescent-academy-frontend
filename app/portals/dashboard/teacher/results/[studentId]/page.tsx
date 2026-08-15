@@ -27,6 +27,19 @@ export default async function ResultEntryPage({
     );
   }
 
+  const teacher = await Teacher.findOne({ user: session.user.id }).lean() as any;
+
+  const normalise = (s: string) => s?.replace(/[\s.]/g, '').toLowerCase();
+  const sameClass   = teacher?.assignedClass && normalise(student.currentClass) === normalise(teacher.assignedClass);
+  const sameSection = (teacher?.section || 'college') === (student.section || 'college');
+  if (!sameClass || !sameSection) {
+    return (
+      <div className="p-10 text-center text-slate-400">
+        This student is not in your assigned class.
+      </div>
+    );
+  }
+
   // Load existing result for pre-populating the form
   const existingResult = await Result.findOne({
     student: studentId,
@@ -35,7 +48,6 @@ export default async function ResultEntryPage({
     .lean() as any;
 
   // Determine subjects list
-  const teacher = await Teacher.findOne({ user: session.user.id }).lean() as any;
   const subjects = getSubjectsForClass(
     student.currentClass,
     teacher?.subjects

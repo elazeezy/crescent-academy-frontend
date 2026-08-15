@@ -30,7 +30,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           const [isValid, teacher] = await Promise.all([
             bcrypt.compare(password, user.password as string),
             user.role === "teacher"
-              ? Teacher.findOne({ user: user._id }, { assignedClass: 1 }).lean()
+              ? Teacher.findOne({ user: user._id }, { assignedClass: 1, section: 1 }).lean()
               : Promise.resolve(null),
           ]);
 
@@ -42,6 +42,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             email: user.email,
             role: user.role,
             assignedClass: (teacher as any)?.assignedClass,
+            section: (teacher as any)?.section,
           };
         } catch {
           return null;
@@ -59,6 +60,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.assignedClass = user.assignedClass;
+        token.section = user.section;
       }
       return token;
     },
@@ -67,6 +69,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.assignedClass = token.assignedClass as string;
+        session.user.section = token.section as string;
       }
       return session;
     },

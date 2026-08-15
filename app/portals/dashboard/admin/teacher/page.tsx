@@ -2,22 +2,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { CLASS_NAMES } from '@/lib/subjects';
+import { getClassNamesForSection, SECTIONS, type Section } from '@/lib/subjects';
 import {
   Upload, FileSpreadsheet, CheckCircle, AlertCircle, ArrowLeft,
   Download, Search, Briefcase, Eye, X, Loader2, Pencil, Trash2, KeyRound, Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface StaffRow { name: string; email: string; assignedClass: string; subjects?: string; }
-interface Teacher { _id: string; assignedClass: string; subjects: string[]; user: { _id: string; name: string; email: string } }
+interface StaffRow { name: string; email: string; assignedClass: string; subjects?: string; section?: string; }
+interface Teacher { _id: string; assignedClass: string; section: Section; subjects: string[]; user: { _id: string; name: string; email: string } }
 type Tab = 'list' | 'upload';
+
+const sectionLabel = (s: Section) => SECTIONS.find(x => x.value === s)?.label ?? s;
 
 export default function TeacherManagement() {
   const [tab, setTab] = useState<Tab>('list');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sectionFilter, setSectionFilter] = useState<'' | Section>('');
 
   const [preview, setPreview] = useState<StaffRow[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -25,12 +28,12 @@ export default function TeacherManagement() {
   const [uploadError, setUploadError] = useState('');
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', assignedClass: '', subjects: '' });
+  const [addForm, setAddForm] = useState({ name: '', email: '', assignedClass: '', subjects: '', section: 'college' as Section });
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
 
   const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', assignedClass: '', subjects: '' });
+  const [editForm, setEditForm] = useState({ name: '', assignedClass: '', subjects: '', section: 'college' as Section });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
 
@@ -62,14 +65,14 @@ export default function TeacherManagement() {
       const data = await res.json();
       if (!res.ok) { setAddError(data.error ?? 'Failed'); return; }
       setShowAddModal(false);
-      setAddForm({ name: '', email: '', assignedClass: '', subjects: '' });
+      setAddForm({ name: '', email: '', assignedClass: '', subjects: '', section: 'college' });
       fetchTeachers();
     } finally { setAddLoading(false); }
   };
 
   const openEdit = (t: Teacher) => {
     setEditTeacher(t);
-    setEditForm({ name: t.user?.name ?? '', assignedClass: t.assignedClass, subjects: t.subjects?.join(', ') ?? '' });
+    setEditForm({ name: t.user?.name ?? '', assignedClass: t.assignedClass, subjects: t.subjects?.join(', ') ?? '', section: t.section || 'college' });
     setEditError('');
   };
   const handleEdit = async () => {
@@ -113,8 +116,8 @@ export default function TeacherManagement() {
 
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['name', 'email', 'assignedClass', 'subjects'],
-      ['Mr. Ibrahim Salami', 'salami@crescent.edu.ng', 'JSS 1 Gold', 'Mathematics,English'],
+      ['name', 'email', 'assignedClass', 'subjects', 'section'],
+      ['Mr. Ibrahim Salami', 'salami@crescent.edu.ng', 'JSS 1 Gold', 'Mathematics,English', 'college'],
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Staff');
@@ -151,11 +154,14 @@ export default function TeacherManagement() {
     finally { setUploading(false); }
   };
 
-  const filtered = teachers.filter((t) =>
-    t.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    t.user?.email?.toLowerCase().includes(search.toLowerCase()) ||
-    t.assignedClass?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = teachers.filter((t) => {
+    const matchSearch =
+      t.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      t.user?.email?.toLowerCase().includes(search.toLowerCase()) ||
+      t.assignedClass?.toLowerCase().includes(search.toLowerCase());
+    const matchSection = !sectionFilter || t.section === sectionFilter;
+    return matchSearch && matchSection;
+  });
 
   const inputCls = "w-full text-sm text-slate-900 bg-white placeholder-slate-400 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400";
   const labelCls = "block text-xs font-bold text-slate-500 mb-1";
@@ -193,6 +199,11 @@ export default function TeacherManagement() {
                 className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400" />
             </div>
             {search && <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>}
+            <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as '' | Section)}
+              className="text-sm border border-slate-200 rounded-xl px-3 py-2 text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400">
+              <option value="">All Sections</option>
+              {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
           </div>
           {listLoading ? (
             <div className="flex items-center justify-center py-20 text-slate-400 gap-2"><Loader2 size={20} className="animate-spin" /> Loading…</div>
@@ -202,7 +213,7 @@ export default function TeacherManagement() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                  <tr>{['Name', 'Email', 'Class', 'Subjects', 'Actions'].map((h) => <th key={h} className="px-4 py-3 text-left font-bold">{h}</th>)}</tr>
+                  <tr>{['Name', 'Email', 'Class', 'Section', 'Subjects', 'Actions'].map((h) => <th key={h} className="px-4 py-3 text-left font-bold">{h}</th>)}</tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map((t) => (
@@ -210,6 +221,9 @@ export default function TeacherManagement() {
                       <td className="px-4 py-3 font-semibold text-slate-800">{t.user?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-500 text-xs">{t.user?.email ?? '—'}</td>
                       <td className="px-4 py-3"><span className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-bold">{t.assignedClass}</span></td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${t.section === 'science' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}`}>{sectionLabel(t.section || 'college')}</span>
+                      </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">{t.subjects?.length > 0 ? t.subjects.join(', ') : '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
@@ -256,7 +270,7 @@ export default function TeacherManagement() {
               <div className="overflow-x-auto max-h-64">
                 <table className="w-full text-xs">
                   <thead className="bg-slate-50 sticky top-0">
-                    <tr>{['#', 'Name', 'Email', 'Class', 'Subjects'].map((h) => <th key={h} className="px-4 py-2.5 text-left text-slate-500 font-bold">{h}</th>)}</tr>
+                    <tr>{['#', 'Name', 'Email', 'Class', 'Section', 'Subjects'].map((h) => <th key={h} className="px-4 py-2.5 text-left text-slate-500 font-bold">{h}</th>)}</tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {preview.map((row, i) => (
@@ -265,6 +279,7 @@ export default function TeacherManagement() {
                         <td className="px-4 py-2 font-medium">{row.name || <span className="text-red-500">MISSING</span>}</td>
                         <td className="px-4 py-2">{row.email || <span className="text-red-500">MISSING</span>}</td>
                         <td className="px-4 py-2">{row.assignedClass || <span className="text-red-500">MISSING</span>}</td>
+                        <td className="px-4 py-2">{row.section === 'science' ? 'Science' : 'College'}</td>
                         <td className="px-4 py-2 text-slate-400">{row.subjects ?? '—'}</td>
                       </tr>
                     ))}
@@ -290,10 +305,15 @@ export default function TeacherManagement() {
           <div className="space-y-3">
             <div><label className={labelCls}>Full Name *</label><input className={inputCls} value={addForm.name} onChange={(e) => setAddForm({ ...addForm, name: e.target.value })} placeholder="Mr. Ibrahim Salami" /></div>
             <div><label className={labelCls}>Email *</label><input className={inputCls} type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="salami@crescent.edu.ng" /></div>
+            <div><label className={labelCls}>Section *</label>
+              <select className={inputCls} value={addForm.section} onChange={(e) => setAddForm({ ...addForm, section: e.target.value as Section, assignedClass: '' })}>
+                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
             <div><label className={labelCls}>Assigned Class *</label>
               <select className={inputCls} value={addForm.assignedClass} onChange={(e) => setAddForm({ ...addForm, assignedClass: e.target.value })}>
                 <option value="">— Select class —</option>
-                {CLASS_NAMES.map(c => <option key={c} value={c}>{c}</option>)}
+                {getClassNamesForSection(addForm.section).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div><label className={labelCls}>Subjects (comma separated)</label><input className={inputCls} value={addForm.subjects} onChange={(e) => setAddForm({ ...addForm, subjects: e.target.value })} placeholder="Mathematics, English" /></div>
@@ -313,10 +333,15 @@ export default function TeacherManagement() {
         <Modal title={`Edit — ${editTeacher.user?.name}`} onClose={() => setEditTeacher(null)}>
           <div className="space-y-3">
             <div><label className={labelCls}>Full Name</label><input className={inputCls} value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} /></div>
+            <div><label className={labelCls}>Section</label>
+              <select className={inputCls} value={editForm.section} onChange={(e) => setEditForm({ ...editForm, section: e.target.value as Section, assignedClass: '' })}>
+                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
             <div><label className={labelCls}>Assigned Class</label>
               <select className={inputCls} value={editForm.assignedClass} onChange={(e) => setEditForm({ ...editForm, assignedClass: e.target.value })}>
                 <option value="">— Select class —</option>
-                {CLASS_NAMES.map(c => <option key={c} value={c}>{c}</option>)}
+                {getClassNamesForSection(editForm.section).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div><label className={labelCls}>Subjects (comma separated)</label><input className={inputCls} value={editForm.subjects} onChange={(e) => setEditForm({ ...editForm, subjects: e.target.value })} /></div>

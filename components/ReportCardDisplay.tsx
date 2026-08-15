@@ -98,10 +98,12 @@ export default function ReportCardDisplay({ result, student, classStats, schoolL
 
           <div className="text-center flex-1 px-4">
             <h1 className="text-[22px] font-black text-[#1a5276] uppercase tracking-wide leading-tight">
-              The Crescent College
+              {student?.section === 'science' ? 'Crescent School of Science' : 'The Crescent College'}
             </h1>
             <p className="text-[11px] text-gray-600 mt-0.5">Iwo, Osun State</p>
-            <p className="text-[10px] text-gray-500">Phone No: 08032545074 &nbsp;|&nbsp; Email: info@crescentcollege.edu.ng</p>
+            <p className="text-[10px] text-gray-500">
+              Phone No: 08032545074 &nbsp;|&nbsp; Email: {student?.section === 'science' ? 'info@crescentschoolofscience.edu.ng' : 'info@crescentcollege.edu.ng'}
+            </p>
             <div className="mt-1.5 bg-[#1a5276] text-white text-[12px] font-bold py-1 px-6 rounded inline-block tracking-widest uppercase">
               STUDENT REPORT CARD — {result.term?.toUpperCase()} · {result.session}
             </div>

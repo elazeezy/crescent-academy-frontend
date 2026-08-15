@@ -66,6 +66,33 @@ export const CLASS_NAMES = [
   'S.S. 3',
 ];
 
+// Crescent School of Science currently only runs J.S.S. 1 – S.S.S. 1
+export const SCIENCE_CLASS_NAMES = [
+  'J.S.S. 1',
+  'J.S.S. 2',
+  'J.S.S. 3',
+  'S.S.S. 1',
+];
+
+export type Section = 'college' | 'science';
+
+export const SECTIONS: { value: Section; label: string }[] = [
+  { value: 'college', label: 'Crescent College' },
+  { value: 'science', label: 'Crescent School of Science' },
+];
+
+export function getClassNamesForSection(section: Section): string[] {
+  return section === 'science' ? SCIENCE_CLASS_NAMES : CLASS_NAMES;
+}
+
+// Builds a regex that matches a class name loosely (ignoring dots/spaces/case),
+// e.g. "J.S.S. 1" matches "JSS1", "JSS 1", "jss1", etc.
+export function classNameRegex(className: string): string {
+  const normalised = (className || '').replace(/[\s.]/g, '');
+  if (!normalised) return className || '';
+  return normalised.split('').join('[\\s.]*');
+}
+
 export function getSubjectsForClass(className: string, teacherSubjects?: string[]): string[] {
   if (teacherSubjects && teacherSubjects.length > 0) return teacherSubjects;
   const upper = (className || '').toUpperCase();

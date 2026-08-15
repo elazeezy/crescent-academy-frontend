@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
   if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });
 
   const normalise = (s: string) => s?.replace(/[\s.]/g, '').toLowerCase();
-  if (teacher?.assignedClass && normalise(student.currentClass) !== normalise(teacher.assignedClass)) {
+  const sameClass   = teacher?.assignedClass && normalise(student.currentClass) === normalise(teacher.assignedClass);
+  const sameSection = (teacher?.section || 'college') === (student.section || 'college');
+  if (!sameClass || !sameSection) {
     return NextResponse.json({ error: 'Not your student' }, { status: 403 });
   }
 

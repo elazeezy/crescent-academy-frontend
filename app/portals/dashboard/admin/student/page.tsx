@@ -2,22 +2,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { CLASS_NAMES } from '@/lib/subjects';
+import { getClassNamesForSection, SECTIONS, type Section } from '@/lib/subjects';
 import {
   Upload, FileSpreadsheet, CheckCircle, AlertCircle, ArrowLeft,
   Download, Search, Users, Eye, X, Loader2, Pencil, Trash2, KeyRound, Plus, Camera,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface StudentRow { firstName: string; lastName: string; class: string; gender: string; email?: string; parentPhone?: string; }
-interface Student { _id: string; studentId: string; firstName: string; lastName: string; currentClass: string; gender: string; parentPhone: string; user: { _id: string; name: string; email: string } }
+interface StudentRow { firstName: string; lastName: string; class: string; gender: string; email?: string; parentPhone?: string; section?: string; }
+interface Student { _id: string; studentId: string; firstName: string; lastName: string; currentClass: string; section: Section; gender: string; parentPhone: string; user: { _id: string; name: string; email: string } }
 type Tab = 'list' | 'upload';
+
+const sectionLabel = (s: Section) => SECTIONS.find(x => x.value === s)?.label ?? s;
 
 export default function StudentManagement() {
   const [tab, setTab] = useState<Tab>('list');
   const [students, setStudents] = useState<Student[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sectionFilter, setSectionFilter] = useState<'' | Section>('');
 
   // Upload state
   const [preview, setPreview] = useState<StudentRow[]>([]);
@@ -27,13 +30,13 @@ export default function StudentManagement() {
 
   // Add single student modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '' });
+  const [addForm, setAddForm] = useState({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' as Section });
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
 
   // Edit modal
   const [editStudent, setEditStudent] = useState<Student | null>(null);
-  const [editForm, setEditForm] = useState({ firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '' });
+  const [editForm, setEditForm] = useState({ firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' as Section });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
 
@@ -73,7 +76,7 @@ export default function StudentManagement() {
       const data = await res.json();
       if (!res.ok) { setAddError(data.error ?? 'Failed to create student'); return; }
       setShowAddModal(false);
-      setAddForm({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '' });
+      setAddForm({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' });
       fetchStudents();
     } finally {
       setAddLoading(false);
@@ -83,7 +86,7 @@ export default function StudentManagement() {
   // ── EDIT STUDENT ──
   const openEdit = (s: Student) => {
     setEditStudent(s);
-    setEditForm({ firstName: s.firstName, lastName: s.lastName, currentClass: s.currentClass, gender: s.gender, parentPhone: s.parentPhone });
+    setEditForm({ firstName: s.firstName, lastName: s.lastName, currentClass: s.currentClass, gender: s.gender, parentPhone: s.parentPhone, section: s.section || 'college' });
     setEditError('');
   };
   const handleEdit = async () => {
@@ -148,8 +151,8 @@ export default function StudentManagement() {
   // ── EXCEL UPLOAD ──
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['firstName', 'lastName', 'class', 'gender', 'email', 'parentPhone'],
-      ['Fatima', 'Adeyemi', 'JSS 1 Gold', 'female', 'fatima@example.com', '08012345678'],
+      ['firstName', 'lastName', 'class', 'gender', 'email', 'parentPhone', 'section'],
+      ['Fatima', 'Adeyemi', 'JSS 1 Gold', 'female', 'fatima@example.com', '08012345678', 'college'],
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
@@ -186,11 +189,14 @@ export default function StudentManagement() {
     finally { setUploading(false); }
   };
 
-  const filtered = students.filter((s) =>
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
-    s.studentId.toLowerCase().includes(search.toLowerCase()) ||
-    s.currentClass.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = students.filter((s) => {
+    const matchSearch =
+      `${s.firstName} ${s.lastName}`.toLowerCase().includes(search.toLowerCase()) ||
+      s.studentId.toLowerCase().includes(search.toLowerCase()) ||
+      s.currentClass.toLowerCase().includes(search.toLowerCase());
+    const matchSection = !sectionFilter || s.section === sectionFilter;
+    return matchSearch && matchSection;
+  });
 
   const inputCls = "w-full text-sm text-slate-900 bg-white placeholder-slate-400 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400";
   const labelCls = "block text-xs font-bold text-slate-500 mb-1";
@@ -230,6 +236,11 @@ export default function StudentManagement() {
                 className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/30 focus:border-sky-400" />
             </div>
             {search && <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>}
+            <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value as '' | Section)}
+              className="text-sm border border-slate-200 rounded-xl px-3 py-2 text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400">
+              <option value="">All Sections</option>
+              {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
           </div>
 
           {listLoading ? (
@@ -244,7 +255,7 @@ export default function StudentManagement() {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                   <tr>
-                    {['Student ID', 'Name', 'Class', 'Gender', 'Email', 'Phone', 'Actions'].map((h) => (
+                    {['Student ID', 'Name', 'Class', 'Section', 'Gender', 'Email', 'Phone', 'Actions'].map((h) => (
                       <th key={h} className="px-4 py-3 text-left font-bold">{h}</th>
                     ))}
                   </tr>
@@ -255,6 +266,9 @@ export default function StudentManagement() {
                       <td className="px-4 py-3 font-mono text-xs text-sky-600 font-bold">{s.studentId}</td>
                       <td className="px-4 py-3 font-semibold text-slate-800">{s.firstName} {s.lastName}</td>
                       <td className="px-4 py-3 text-slate-600">{s.currentClass}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${s.section === 'science' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}`}>{sectionLabel(s.section || 'college')}</span>
+                      </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${s.gender === 'female' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600'}`}>{s.gender}</span>
                       </td>
@@ -317,7 +331,7 @@ export default function StudentManagement() {
               <div className="overflow-x-auto max-h-72">
                 <table className="w-full text-xs">
                   <thead className="bg-slate-50 sticky top-0">
-                    <tr>{['#', 'First Name', 'Last Name', 'Class', 'Gender', 'Email', 'Phone'].map((h) => <th key={h} className="px-4 py-2.5 text-left text-slate-500 font-bold">{h}</th>)}</tr>
+                    <tr>{['#', 'First Name', 'Last Name', 'Class', 'Section', 'Gender', 'Email', 'Phone'].map((h) => <th key={h} className="px-4 py-2.5 text-left text-slate-500 font-bold">{h}</th>)}</tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {preview.map((row, i) => (
@@ -326,6 +340,7 @@ export default function StudentManagement() {
                         <td className="px-4 py-2 font-medium">{row.firstName || <span className="text-red-500">MISSING</span>}</td>
                         <td className="px-4 py-2 font-medium">{row.lastName || <span className="text-red-500">MISSING</span>}</td>
                         <td className="px-4 py-2">{row.class || <span className="text-red-500">MISSING</span>}</td>
+                        <td className="px-4 py-2">{row.section === 'science' ? 'Science' : 'College'}</td>
                         <td className="px-4 py-2">{row.gender ?? '—'}</td>
                         <td className="px-4 py-2 text-slate-400">{row.email ?? '—'}</td>
                         <td className="px-4 py-2 text-slate-400">{row.parentPhone ?? '—'}</td>
@@ -367,10 +382,15 @@ export default function StudentManagement() {
               <div><label className={labelCls}>Last Name *</label><input className={inputCls} value={addForm.lastName} onChange={(e) => setAddForm({ ...addForm, lastName: e.target.value, name: `${addForm.firstName} ${e.target.value}` })} placeholder="Adeyemi" /></div>
             </div>
             <div><label className={labelCls}>Email (optional — auto-generated if blank)</label><input className={inputCls} type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="student@example.com" /></div>
+            <div><label className={labelCls}>Section *</label>
+              <select className={inputCls} value={addForm.section} onChange={(e) => setAddForm({ ...addForm, section: e.target.value as Section, currentClass: '' })}>
+                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
             <div><label className={labelCls}>Class *</label>
               <select className={inputCls} value={addForm.currentClass} onChange={(e) => setAddForm({ ...addForm, currentClass: e.target.value })}>
                 <option value="">— Select class —</option>
-                {CLASS_NAMES.map(c => <option key={c} value={c}>{c}</option>)}
+                {getClassNamesForSection(addForm.section).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -400,10 +420,15 @@ export default function StudentManagement() {
               <div><label className={labelCls}>First Name</label><input className={inputCls} value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} /></div>
               <div><label className={labelCls}>Last Name</label><input className={inputCls} value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} /></div>
             </div>
+            <div><label className={labelCls}>Section</label>
+              <select className={inputCls} value={editForm.section} onChange={(e) => setEditForm({ ...editForm, section: e.target.value as Section, currentClass: '' })}>
+                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
             <div><label className={labelCls}>Class</label>
               <select className={inputCls} value={editForm.currentClass} onChange={(e) => setEditForm({ ...editForm, currentClass: e.target.value })}>
                 <option value="">— Select class —</option>
-                {CLASS_NAMES.map(c => <option key={c} value={c}>{c}</option>)}
+                {getClassNamesForSection(editForm.section).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-3">

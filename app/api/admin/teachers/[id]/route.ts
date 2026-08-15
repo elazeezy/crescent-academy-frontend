@@ -10,18 +10,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { id } = await params;
   const body = await req.json();
-  const { name, assignedClass, subjects } = body;
+  const { name, assignedClass, subjects, section } = body;
 
   try {
     await dbConnect();
+    const update: Record<string, any> = {
+      assignedClass,
+      subjects: Array.isArray(subjects)
+        ? subjects
+        : String(subjects).split(',').map((s: string) => s.trim()).filter(Boolean),
+    };
+    if (section === 'college' || section === 'science') update.section = section;
+
     const teacher = await Teacher.findByIdAndUpdate(
       id,
-      {
-        assignedClass,
-        subjects: Array.isArray(subjects)
-          ? subjects
-          : String(subjects).split(',').map((s: string) => s.trim()).filter(Boolean),
-      },
+      update,
       { new: true }
     );
     if (!teacher) return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });

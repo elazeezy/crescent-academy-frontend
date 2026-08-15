@@ -9,6 +9,7 @@ import {
   Users, ClipboardList, Eye, CheckCircle2,
   Clock, TrendingUp, BookOpen, GraduationCap, ChevronRight,
 } from "lucide-react";
+import { classNameRegex } from "@/lib/subjects";
 
 export default async function TeacherDashboard() {
   const session = await auth();
@@ -17,14 +18,13 @@ export default async function TeacherDashboard() {
   await dbConnect();
 
   const assignedClass = session.user.assignedClass || "";
+  const section = session.user.section || "college";
 
-  // Build a flexible regex that matches both old formats (JSS1, JSS 1) and new (J.S.S. 1)
-  // Strip all dots/spaces from both sides so "J.S.S. 1" matches "JSS1", "JSS 1", "jss1" etc.
-  const normalised = (assignedClass || '').replace(/[\s.]/g, '');
-  const flexPattern = normalised.split('').join('[\\s.]*');
-  const classRegex = normalised.length > 0 ? flexPattern : assignedClass;
+  // Flexible regex matches both old formats (JSS1, JSS 1) and new (J.S.S. 1)
+  const classRegex = classNameRegex(assignedClass);
 
   const students = await Student.find({
+    section,
     currentClass: { $regex: classRegex, $options: "i" },
   }).sort({ lastName: 1 }).lean();
 
@@ -75,6 +75,7 @@ export default async function TeacherDashboard() {
             <p className="text-slate-400 mt-2 text-base">
               You are managing&nbsp;
               <span className="text-emerald-400 font-bold">{assignedClass}</span>
+              &nbsp;at <span className="text-emerald-400 font-bold">{section === 'science' ? 'Crescent School of Science' : 'Crescent College'}</span>
               &nbsp;— {students.length} student{students.length !== 1 ? "s" : ""} enrolled this session.
             </p>
           </div>

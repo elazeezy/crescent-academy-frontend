@@ -10,13 +10,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ studen
 
   const { studentId } = await params;
   const body = await req.json();
-  const { firstName, lastName, currentClass, gender, parentPhone } = body;
+  const { firstName, lastName, currentClass, gender, parentPhone, section } = body;
 
   try {
     await dbConnect();
+    const update: Record<string, any> = { firstName, lastName, currentClass, gender, parentPhone };
+    if (section === 'college' || section === 'science') update.section = section;
+
     const student = await Student.findByIdAndUpdate(
       studentId,
-      { firstName, lastName, currentClass, gender, parentPhone },
+      update,
       { new: true }
     );
     if (!student) return NextResponse.json({ error: 'Student not found' }, { status: 404 });

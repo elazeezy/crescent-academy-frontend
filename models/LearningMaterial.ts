@@ -4,6 +4,7 @@ export interface ILearningMaterial extends Document {
   title: string;
   description?: string;
   subject: string;
+  section: 'college' | 'science';
   targetClass: string;   // e.g. "J.S.S. 1" or "All Classes"
   fileUrl: string;       // Cloudinary URL
   fileType: string;      // pdf, doc, image, etc.
@@ -18,6 +19,7 @@ const LearningMaterialSchema = new Schema<ILearningMaterial>(
     title:       { type: String, required: true },
     description: { type: String, default: '' },
     subject:     { type: String, required: true },
+    section:     { type: String, enum: ['college', 'science'], required: true, default: 'college' },
     targetClass: { type: String, required: true },
     fileUrl:     { type: String, required: true },
     fileType:    { type: String, required: true },

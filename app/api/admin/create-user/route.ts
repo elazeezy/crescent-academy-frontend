@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (session?.user?.role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
-  const { role, name, email, password, firstName, lastName, currentClass, gender, parentPhone, assignedClass, subjects } = body;
+  const { role, name, email, password, firstName, lastName, currentClass, gender, parentPhone, assignedClass, subjects, section } = body;
 
   if (!role || !email || !name) {
     return NextResponse.json({ error: 'role, name, and email are required' }, { status: 400 });
@@ -20,6 +20,12 @@ export async function POST(req: Request) {
   if (!validRoles.includes(role)) {
     return NextResponse.json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` }, { status: 400 });
   }
+
+  const validSections = ['college', 'science'];
+  if ((role === 'student' || role === 'teacher') && section && !validSections.includes(section)) {
+    return NextResponse.json({ error: `Invalid section. Must be one of: ${validSections.join(', ')}` }, { status: 400 });
+  }
+  const finalSection = validSections.includes(section) ? section : 'college';
 
   try {
     await dbConnect();
@@ -48,6 +54,7 @@ export async function POST(req: Request) {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         gender: gender.toLowerCase(),
+        section: finalSection,
         currentClass: currentClass.trim(),
         parentPhone: parentPhone?.trim() || '0000000000',
       });
@@ -60,6 +67,7 @@ export async function POST(req: Request) {
       }
       await Teacher.create({
         user: newUser._id,
+        section: finalSection,
         assignedClass: assignedClass.trim(),
         subjects: subjects
           ? String(subjects).split(',').map((s: string) => s.trim()).filter(Boolean)

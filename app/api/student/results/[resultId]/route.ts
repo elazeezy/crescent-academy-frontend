@@ -36,6 +36,7 @@ export async function GET(
 
     // ── Class stats ────────────────────────────────────────────
     const classmates = await Student.find({
+      section: student.section || 'college',
       currentClass: { $regex: student.currentClass, $options: 'i' },
     }).lean() as any[];
 

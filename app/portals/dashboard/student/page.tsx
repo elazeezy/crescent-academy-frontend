@@ -65,6 +65,7 @@ export default async function StudentDashboard() {
             <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
               <Badge color="sky">{studentProfile?.studentId ?? 'N/A'}</Badge>
               <Badge color="slate">{studentProfile?.currentClass ?? 'Class N/A'}</Badge>
+              <Badge color="slate">{studentProfile?.section === 'science' ? 'Crescent School of Science' : 'Crescent College'}</Badge>
               <Badge color="slate">{studentProfile?.gender === 'male' ? 'Male' : studentProfile?.gender === 'female' ? 'Female' : '—'}</Badge>
               {latestResult && <Badge color="emerald">{latestResult.term} · {latestResult.session}</Badge>}
             </div>

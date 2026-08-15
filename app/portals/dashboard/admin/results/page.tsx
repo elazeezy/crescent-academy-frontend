@@ -24,7 +24,7 @@ interface Result {
   subjects: SubjectResult[];
   student: {
     _id: string; firstName: string; lastName: string;
-    currentClass: string; studentId: string;
+    currentClass: string; section?: string; studentId: string;
   };
 }
 
@@ -33,6 +33,7 @@ export default function AdminResults() {
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState('');
   const [classFilter,  setClassFilter]  = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
   const [expanded,     setExpanded]     = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
   const [saving,       setSaving]       = useState<string | null>(null);
@@ -94,13 +95,15 @@ export default function AdminResults() {
     }
   };
 
-  const classes = [...new Set(results.map(r => r.student?.currentClass).filter(Boolean))].sort();
+  const bySection = !sectionFilter ? results : results.filter(r => (r.student?.section || 'college') === sectionFilter);
+  const classes = [...new Set(bySection.map(r => r.student?.currentClass).filter(Boolean))].sort();
 
   const filtered = results.filter(r => {
     const name = `${r.student?.firstName} ${r.student?.lastName}`.toLowerCase();
-    const matchSearch = !search || name.includes(search.toLowerCase()) || r.student?.studentId?.toLowerCase().includes(search.toLowerCase());
-    const matchClass  = !classFilter || r.student?.currentClass === classFilter;
-    return matchSearch && matchClass;
+    const matchSearch  = !search || name.includes(search.toLowerCase()) || r.student?.studentId?.toLowerCase().includes(search.toLowerCase());
+    const matchClass   = !classFilter || r.student?.currentClass === classFilter;
+    const matchSection = !sectionFilter || (r.student?.section || 'college') === sectionFilter;
+    return matchSearch && matchClass && matchSection;
   });
 
   const publishedCount = results.filter(r => r.published).length;
@@ -124,6 +127,21 @@ export default function AdminResults() {
           <Globe size={15} className="text-emerald-500" />
           <span className="text-sm font-bold text-emerald-700">{publishedCount} / {results.length} published</span>
         </div>
+      </div>
+
+      {/* Section toggle */}
+      <div className="flex gap-2">
+        {[{ value: '', label: 'All Sections' }, { value: 'college', label: 'Crescent College' }, { value: 'science', label: 'Crescent School of Science' }].map(s => (
+          <button
+            key={s.value}
+            onClick={() => { setSectionFilter(s.value); setClassFilter(''); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+              sectionFilter === s.value ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
 
       {/* Class coverage chips */}
@@ -160,9 +178,9 @@ export default function AdminResults() {
             className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-400"
           />
         </div>
-        {(search || classFilter) && (
+        {(search || classFilter || sectionFilter) && (
           <button
-            onClick={() => { setSearch(''); setClassFilter(''); }}
+            onClick={() => { setSearch(''); setClassFilter(''); setSectionFilter(''); }}
             className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 px-3 py-2 border border-slate-200 rounded-xl"
           >
             <X size={14} /> Clear
@@ -211,7 +229,13 @@ export default function AdminResults() {
                       </p>
                       <p className="text-xs text-slate-400 font-mono">{r.student?.studentId}</p>
                     </div>
-                    <span className="text-sm text-slate-600">{r.student?.currentClass}</span>
+                    <span className="text-sm text-slate-600">
+                      {r.student?.currentClass}
+                      <br />
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
+                        {r.student?.section === 'science' ? 'Science' : 'College'}
+                      </span>
+                    </span>
                     <span className="text-sm text-slate-600">{r.term}<br/><span className="text-xs text-slate-400">{r.session}</span></span>
                     <span className={`text-sm font-black ${r.gpa >= 70 ? 'text-emerald-600' : r.gpa >= 50 ? 'text-amber-600' : 'text-red-500'}`}>
                       {r.gpa.toFixed(1)}

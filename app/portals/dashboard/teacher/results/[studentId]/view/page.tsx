@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import dbConnect from "@/lib/dbConnect";
 import Result from "@/models/Result";
 import Student from "@/models/Student";
+import Teacher from "@/models/Teacher";
 import ReportCardDisplay from "@/components/ReportCardDisplay";
 import { getSiteImages } from "@/lib/getSiteImages";
 import { redirect } from "next/navigation";
@@ -23,6 +24,14 @@ export default async function ViewReportCard({
     return <div className="p-10 text-center text-slate-400">Student not found.</div>;
   }
 
+  const teacher = await Teacher.findOne({ user: session.user.id }).lean() as any;
+  const normalise = (s: string) => s?.replace(/[\s.]/g, '').toLowerCase();
+  const sameClass   = teacher?.assignedClass && normalise(student.currentClass) === normalise(teacher.assignedClass);
+  const sameSection = (teacher?.section || 'college') === (student.section || 'college');
+  if (!sameClass || !sameSection) {
+    return <div className="p-10 text-center text-slate-400">This student is not in your assigned class.</div>;
+  }
+
   // This student's result
   const resultDoc = await Result.findOne({ student: studentId })
     .sort({ createdAt: -1 })
@@ -39,8 +48,9 @@ export default async function ViewReportCard({
     );
   }
 
-  // All students in same class (for class stats)
+  // All students in same class + section (for class stats)
   const classmates = await Student.find({
+    section: student.section || 'college',
     currentClass: { $regex: student.currentClass, $options: "i" },
   }).lean() as any[];
 

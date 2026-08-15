@@ -17,8 +17,8 @@ export async function GET() {
 
   const materials = await LearningMaterial.find({
     $or: [
-      { targetClass: student.currentClass },
-      { targetClass: 'All Classes' },
+      { targetClass: student.currentClass, section: student.section || 'college' },
+      { targetClass: 'All Classes', section: student.section || 'college' },
     ],
   })
     .sort({ createdAt: -1 })

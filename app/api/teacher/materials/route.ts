@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import LearningMaterial from '@/models/LearningMaterial';
+import Teacher from '@/models/Teacher';
 import cloudinary from '@/lib/cloudinary';
 
 export const maxDuration = 60;
@@ -60,10 +61,13 @@ export async function POST(req: NextRequest) {
     const ext = file.name.split('.').pop()?.toLowerCase() ?? 'file';
 
     await dbConnect();
+    const teacher = await Teacher.findOne({ user: session.user.id }, { section: 1 }).lean() as any;
+
     const material = await LearningMaterial.create({
       title,
       description,
       subject,
+      section: teacher?.section || 'college',
       targetClass,
       fileUrl:    uploaded.secure_url,
       fileType:   ext,

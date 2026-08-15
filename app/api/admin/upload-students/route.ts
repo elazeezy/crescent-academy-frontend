@@ -56,12 +56,15 @@ export async function POST(req: Request) {
           name: `${String(data.firstName).trim()} ${String(data.lastName).trim()}`,
         });
 
+        const section = String(data.section || '').trim().toLowerCase();
+
         return await Student.create({
           user: newUser._id,
           studentId,
           firstName: String(data.firstName).trim(),
           lastName: String(data.lastName).trim(),
           gender: String(data.gender || 'male').toLowerCase(),
+          section: section === 'science' ? 'science' : 'college',
           currentClass: String(data.class).trim(),
           parentPhone: String(data.parentPhone || '0000000000').trim(),
         });

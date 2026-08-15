@@ -61,8 +61,11 @@ export async function POST(req: Request) {
           role: 'teacher',
         });
 
+        const section = String(data.section || '').trim().toLowerCase();
+
         await Teacher.create({
           user: newUser._id,
+          section: section === 'science' ? 'science' : 'college',
           assignedClass: String(data.assignedClass).trim(),
           subjects: data.subjects
             ? String(data.subjects)
