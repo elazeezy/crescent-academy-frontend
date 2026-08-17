@@ -30,7 +30,7 @@ export default function StudentManagement() {
 
   // Add single student modal
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' as Section });
+  const [addForm, setAddForm] = useState({ name: '', email: '', password: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' as Section });
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
 
@@ -76,7 +76,7 @@ export default function StudentManagement() {
       const data = await res.json();
       if (!res.ok) { setAddError(data.error ?? 'Failed to create student'); return; }
       setShowAddModal(false);
-      setAddForm({ name: '', email: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' });
+      setAddForm({ name: '', email: '', password: '', firstName: '', lastName: '', currentClass: '', gender: 'male', parentPhone: '', section: 'college' });
       fetchStudents();
     } finally {
       setAddLoading(false);
@@ -381,7 +381,8 @@ export default function StudentManagement() {
               <div><label className={labelCls}>First Name *</label><input className={inputCls} value={addForm.firstName} onChange={(e) => setAddForm({ ...addForm, firstName: e.target.value, name: `${e.target.value} ${addForm.lastName}` })} placeholder="Fatima" /></div>
               <div><label className={labelCls}>Last Name *</label><input className={inputCls} value={addForm.lastName} onChange={(e) => setAddForm({ ...addForm, lastName: e.target.value, name: `${addForm.firstName} ${e.target.value}` })} placeholder="Adeyemi" /></div>
             </div>
-            <div><label className={labelCls}>Email (optional — auto-generated if blank)</label><input className={inputCls} type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="student@example.com" /></div>
+            <div><label className={labelCls}>Email (optional — auto-generated if blank)</label><input className={inputCls} type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="student@css.com" /></div>
+            <div><label className={labelCls}>Password (optional — defaults to Crescent123 if blank)</label><input className={inputCls} type="text" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder="Leave blank for default" /></div>
             <div><label className={labelCls}>Section *</label>
               <select className={inputCls} value={addForm.section} onChange={(e) => setAddForm({ ...addForm, section: e.target.value as Section, currentClass: '' })}>
                 {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}

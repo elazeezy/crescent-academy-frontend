@@ -28,7 +28,7 @@ export default function TeacherManagement() {
   const [uploadError, setUploadError] = useState('');
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', email: '', assignedClass: '', subjects: '', section: 'college' as Section });
+  const [addForm, setAddForm] = useState({ name: '', email: '', password: '', assignedClass: '', subjects: '', section: 'college' as Section });
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
 
@@ -65,7 +65,7 @@ export default function TeacherManagement() {
       const data = await res.json();
       if (!res.ok) { setAddError(data.error ?? 'Failed'); return; }
       setShowAddModal(false);
-      setAddForm({ name: '', email: '', assignedClass: '', subjects: '', section: 'college' });
+      setAddForm({ name: '', email: '', password: '', assignedClass: '', subjects: '', section: 'college' });
       fetchTeachers();
     } finally { setAddLoading(false); }
   };
@@ -305,6 +305,7 @@ export default function TeacherManagement() {
           <div className="space-y-3">
             <div><label className={labelCls}>Full Name *</label><input className={inputCls} value={addForm.name} onChange={(e) => setAddForm({ ...addForm, name: e.target.value })} placeholder="Mr. Ibrahim Salami" /></div>
             <div><label className={labelCls}>Email *</label><input className={inputCls} type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="salami@crescent.edu.ng" /></div>
+            <div><label className={labelCls}>Password (optional — defaults to Crescent123 if blank)</label><input className={inputCls} type="text" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder="Leave blank for default" /></div>
             <div><label className={labelCls}>Section *</label>
               <select className={inputCls} value={addForm.section} onChange={(e) => setAddForm({ ...addForm, section: e.target.value as Section, assignedClass: '' })}>
                 {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
