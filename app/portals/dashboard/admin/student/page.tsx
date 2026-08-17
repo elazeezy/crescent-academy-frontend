@@ -45,6 +45,8 @@ export default function StudentManagement() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Password reset
+  const [resetTarget, setResetTarget] = useState<Student | null>(null);
+  const [resetPasswordInput, setResetPasswordInput] = useState('');
   const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
   const [resetLoading, setResetLoading] = useState<string | null>(null);
 
@@ -121,16 +123,21 @@ export default function StudentManagement() {
   };
 
   // ── RESET PASSWORD ──
-  const handleReset = async (s: Student) => {
-    setResetLoading(s._id);
+  const openReset = (s: Student) => {
+    setResetTarget(s);
+    setResetPasswordInput('');
+  };
+  const handleReset = async () => {
+    if (!resetTarget) return;
+    setResetLoading(resetTarget._id);
     try {
       const res = await fetch('/api/admin/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: s.user._id }),
+        body: JSON.stringify({ userId: resetTarget.user._id, password: resetPasswordInput }),
       });
       const data = await res.json();
-      if (res.ok) setResetResult({ name: s.firstName, password: data.tempPassword });
+      if (res.ok) { setResetResult({ name: resetTarget.firstName, password: data.tempPassword }); setResetTarget(null); }
     } finally {
       setResetLoading(null);
     }
@@ -277,7 +284,7 @@ export default function StudentManagement() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button onClick={() => openEdit(s)} title="Edit" className="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"><Pencil size={14} /></button>
-                          <button onClick={() => handleReset(s)} title="Reset Password" disabled={resetLoading === s._id} className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-40">
+                          <button onClick={() => openReset(s)} title="Reset Password" disabled={resetLoading === s._id} className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-40">
                             {resetLoading === s._id ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
                           </button>
                           <label title="Upload Photo" className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer">
@@ -460,6 +467,21 @@ export default function StudentManagement() {
               {deleteLoading ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />} Yes, Delete
             </button>
             <button onClick={() => setDeleteId(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ═══ PASSWORD RESET MODAL ═══ */}
+      {resetTarget && (
+        <Modal title={`Reset Password — ${resetTarget.firstName} ${resetTarget.lastName}`} onClose={() => setResetTarget(null)}>
+          <div className="space-y-3">
+            <div><label className={labelCls}>New Password (optional — auto-generated if blank)</label><input className={inputCls} type="text" value={resetPasswordInput} onChange={(e) => setResetPasswordInput(e.target.value)} placeholder="Leave blank to auto-generate" /></div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={handleReset} disabled={resetLoading === resetTarget._id} className="flex-1 flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white py-2.5 rounded-xl text-sm font-bold disabled:opacity-40">
+                {resetLoading === resetTarget._id ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />} Reset Password
+              </button>
+              <button onClick={() => setResetTarget(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100">Cancel</button>
+            </div>
           </div>
         </Modal>
       )}
