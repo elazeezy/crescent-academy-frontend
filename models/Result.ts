@@ -8,6 +8,12 @@ export interface ISubjectResult {
   examScore: number;
   total: number;
   grade: string;
+  // CBT-based subjects only: objective score (scaled /30) + manual theory score (/40)
+  // replace examScore (/70) as the "exam half" of the subject total.
+  isCbt?: boolean;
+  cbtExamId?: mongoose.Types.ObjectId;
+  objectiveScore?: number;
+  theoryScore?: number;
 }
 
 export interface IAttendance {
@@ -45,6 +51,11 @@ const SubjectResultSchema = new Schema({
   examScore:  { type: Number, default: 0, min: 0, max: 70 },
   total:      { type: Number, required: true, min: 0, max: 100 },
   grade:      { type: String, required: true },
+  // CBT-based subjects only
+  isCbt:          { type: Boolean, default: false },
+  cbtExamId:      { type: Schema.Types.ObjectId, ref: 'Exam' },
+  objectiveScore: { type: Number, min: 0, max: 30 },
+  theoryScore:    { type: Number, min: 0, max: 40 },
 }, { _id: false });
 
 const AttendanceSchema = new Schema({

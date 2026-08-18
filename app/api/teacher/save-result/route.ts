@@ -48,11 +48,31 @@ export async function POST(req: Request) {
     if (!sub.subjectName || typeof sub.subjectName !== 'string') {
       return NextResponse.json({ error: 'Each subject must have a name' }, { status: 400 });
     }
-    const test1    = clamp(sub.test1,    0, 10);
-    const test2    = clamp(sub.test2,    0, 10);
-    const test3    = clamp(sub.test3,    0, 10);
+    const test1 = clamp(sub.test1, 0, 10);
+    const test2 = clamp(sub.test2, 0, 10);
+    const test3 = clamp(sub.test3, 0, 10);
+
+    if (sub.isCbt) {
+      // CBT subjects: objective score comes from an ExamAttempt (already scaled /30, teacher can't inflate it),
+      // theory score is entered manually by the teacher, capped at the exam's theoryMaxScore.
+      const objectiveScore = clamp(sub.objectiveScore, 0, 30);
+      const theoryMax = clamp(sub.theoryMaxScore, 0, 100) || 40;
+      const theoryScore = clamp(sub.theoryScore, 0, theoryMax);
+      const total = test1 + test2 + test3 + objectiveScore + theoryScore;
+
+      if (total > MAX_TOTAL) {
+        return NextResponse.json({ error: `Total for ${sub.subjectName} exceeds ${MAX_TOTAL}` }, { status: 400 });
+      }
+      processedSubjects.push({
+        subjectName: sub.subjectName, test1, test2, test3,
+        examScore: 0, total, grade: calculateGrade(total),
+        isCbt: true, cbtExamId: sub.cbtExamId || undefined, objectiveScore, theoryScore,
+      });
+      continue;
+    }
+
     const examScore = clamp(sub.examScore, 0, 70);
-    const total    = test1 + test2 + test3 + examScore;
+    const total = test1 + test2 + test3 + examScore;
 
     if (total > MAX_TOTAL) {
       return NextResponse.json(
