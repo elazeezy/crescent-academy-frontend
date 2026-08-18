@@ -2,31 +2,38 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
-import Teacher from '@/models/Teacher';
-import { REAL_OBJECTIVE_COUNTS, validateQuestions } from '@/lib/examQuestions';
+import { ALL_OBJECTIVE_COUNTS, validateQuestions } from '@/lib/examQuestions';
 
-const VALID_OBJECTIVE_COUNTS = REAL_OBJECTIVE_COUNTS;
-
-// GET /api/teacher/exams — list this teacher's own exams
-export async function GET() {
+// GET /api/admin/exams — all exams across all teachers, optionally filtered by status
+export async function GET(req: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'teacher') {
+  if (!session?.user || session.user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get('status');
+
   await dbConnect();
-  const exams = await Exam.find({ createdBy: session.user.id })
+  const query: any = {};
+  if (status) query.status = status;
+
+  const exams = await Exam.find(query)
     .select('-questions.correctIndex')
+    .populate('createdBy', 'name email')
     .sort({ createdAt: -1 })
     .lean();
 
   return NextResponse.json({ exams });
 }
 
-// POST /api/teacher/exams — create a new exam (draft)
+// POST /api/admin/exams — admin creates an exam directly (used by the CBT Testing sandbox,
+// or to author a real exam on a teacher's behalf). Admin-created exams still go through
+// the same pending_review -> live approval step as teacher-created ones, so the sandbox
+// exercises the exact same path a real exam takes.
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'teacher') {
+  if (!session?.user || session.user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -37,34 +44,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions } = body;
+  const { title, subject, section, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions } = body;
 
-  if (!title || !subject || !targetClass) {
-    return NextResponse.json({ error: 'title, subject, and targetClass are required' }, { status: 400 });
+  if (!title || !subject || !targetClass || !section) {
+    return NextResponse.json({ error: 'title, subject, section, and targetClass are required' }, { status: 400 });
   }
-  if (!VALID_OBJECTIVE_COUNTS.includes(Number(objectiveCount))) {
-    return NextResponse.json({ error: 'objectiveCount must be 30, 60, or 100' }, { status: 400 });
+  if (!['college', 'science'].includes(section)) {
+    return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
+  }
+  if (!ALL_OBJECTIVE_COUNTS.includes(Number(objectiveCount))) {
+    return NextResponse.json({ error: `objectiveCount must be one of: ${ALL_OBJECTIVE_COUNTS.join(', ')}` }, { status: 400 });
   }
   const duration = Number(durationMinutes);
   if (!duration || duration <= 0) {
     return NextResponse.json({ error: 'durationMinutes must be a positive number' }, { status: 400 });
   }
 
-  await dbConnect();
-
-  const teacher = await Teacher.findOne({ user: session.user.id }).lean() as any;
-  if (!teacher) return NextResponse.json({ error: 'Teacher profile not found' }, { status: 404 });
-
-  // Questions are optional at creation (teacher can build in stages) but must be valid if present
   const cleanedQuestions = validateQuestions(questions);
   if (cleanedQuestions.error) {
     return NextResponse.json({ error: cleanedQuestions.error }, { status: 400 });
   }
 
+  await dbConnect();
+
   const exam = await Exam.create({
     title: String(title).trim(),
     subject: String(subject).trim(),
-    section: teacher.section,
+    section,
     targetClass: String(targetClass).trim(),
     objectiveCount: Number(objectiveCount),
     durationMinutes: duration,

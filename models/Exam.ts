@@ -15,10 +15,13 @@ export interface IExam extends Document {
   durationMinutes: number;
   theoryMaxScore: number;
   questions: IExamQuestion[];
-  status: 'draft' | 'scheduled' | 'live' | 'closed';
+  status: 'draft' | 'pending_review' | 'rejected' | 'live' | 'closed';
   windowStart?: Date;
   windowEnd?: Date;
   createdBy: mongoose.Types.ObjectId;
+  approvedBy?: mongoose.Types.ObjectId;
+  approvedAt?: Date;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,14 +41,18 @@ const ExamSchema = new Schema<IExam>(
     subject:         { type: String, required: true },
     section:         { type: String, enum: ['college', 'science'], required: true },
     targetClass:     { type: String, required: true },
-    objectiveCount:  { type: Number, required: true, enum: [30, 60, 100] },
+    // 3/5/10 are demo-only counts used by the admin CBT Testing sandbox
+    objectiveCount:  { type: Number, required: true, enum: [3, 5, 10, 30, 60, 100] },
     durationMinutes: { type: Number, required: true, min: 1 },
     theoryMaxScore:  { type: Number, required: true, default: 40, min: 0, max: 100 },
     questions:       { type: [ExamQuestionSchema], default: [] },
-    status:          { type: String, enum: ['draft', 'scheduled', 'live', 'closed'], default: 'draft' },
+    status:          { type: String, enum: ['draft', 'pending_review', 'rejected', 'live', 'closed'], default: 'draft' },
     windowStart:     { type: Date },
     windowEnd:       { type: Date },
     createdBy:       { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    approvedBy:      { type: Schema.Types.ObjectId, ref: 'User' },
+    approvedAt:      { type: Date },
+    rejectionReason: { type: String, default: '' },
   },
   { timestamps: true }
 );

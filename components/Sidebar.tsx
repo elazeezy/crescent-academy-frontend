@@ -16,6 +16,7 @@ import {
   Globe,
   Home,
   Bell,
+  MonitorCheck,
 } from 'lucide-react';
 
 interface NavItem {
@@ -29,6 +30,7 @@ const adminNav: NavItem[] = [
   { href: '/portals/dashboard/admin/student', icon: <Users size={18} />, label: 'Students' },
   { href: '/portals/dashboard/admin/teacher', icon: <Briefcase size={18} />, label: 'Staff' },
   { href: '/portals/dashboard/admin/results', icon: <FileText size={18} />, label: 'Results' },
+  { href: '/portals/dashboard/admin/exams', icon: <MonitorCheck size={18} />, label: 'CBT Exams' },
   { href: '/portals/dashboard/admin/notifications', icon: <Bell size={18} />, label: 'Notifications' },
   { href: '/portals/dashboard/admin/website', icon: <Globe size={18} />, label: 'Website Images' },
   { href: '/portals/dashboard/admin/create-admin', icon: <ShieldPlus size={18} />, label: 'Create Admin' },

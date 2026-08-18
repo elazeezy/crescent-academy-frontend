@@ -11,15 +11,17 @@ interface Exam {
   targetClass: string;
   objectiveCount: number;
   durationMinutes: number;
-  status: 'draft' | 'scheduled' | 'live' | 'closed';
+  status: 'draft' | 'pending_review' | 'rejected' | 'live' | 'closed';
   questions: any[];
+  rejectionReason?: string;
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  draft:     'bg-slate-500/15 text-slate-400 border-slate-500/25',
-  scheduled: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
-  live:      'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
-  closed:    'bg-red-500/15 text-red-400 border-red-500/25',
+  draft:          'bg-slate-500/15 text-slate-400 border-slate-500/25',
+  pending_review: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+  rejected:       'bg-red-500/15 text-red-400 border-red-500/25',
+  live:           'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
+  closed:         'bg-slate-600/15 text-slate-500 border-slate-600/25',
 };
 
 export default function TeacherExamsPage() {
@@ -88,9 +90,13 @@ export default function TeacherExamsPage() {
                   <p className="text-emerald-400/70 text-xs font-mono mt-0.5">{exam.subject} — {exam.targetClass}</p>
                 </div>
                 <span className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${STATUS_STYLE[exam.status]}`}>
-                  {exam.status}
+                  {exam.status.replace('_', ' ')}
                 </span>
               </div>
+
+              {exam.status === 'rejected' && exam.rejectionReason && (
+                <p className="mt-2 text-xs text-red-400 bg-red-500/10 rounded-lg px-2.5 py-1.5">{exam.rejectionReason}</p>
+              )}
 
               <div className="mt-4 flex items-center gap-4 text-xs text-slate-500 font-semibold">
                 <span className="flex items-center gap-1.5"><Circle size={12} className={exam.questions.length === exam.objectiveCount ? 'text-emerald-400' : 'text-amber-400'} />{exam.questions.length}/{exam.objectiveCount} questions</span>
