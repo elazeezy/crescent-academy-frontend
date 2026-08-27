@@ -5,15 +5,15 @@ import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, FileText, LogOut,
-  Bell, Search, Menu, X, GraduationCap, Home, BookOpen, MonitorCheck,
+  Search, Menu, X, GraduationCap, Home, BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import NotificationBell from '@/components/student/NotificationBell';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Overview',     href: '/portals/dashboard/student' },
   { icon: FileText,        label: 'Report Cards', href: '/portals/dashboard/student/results' },
-  { icon: MonitorCheck,    label: 'CBT Exams',    href: '/portals/dashboard/student/exams' },
   { icon: BookOpen,        label: 'Learning Hub', href: '/portals/dashboard/student/materials' },
 ];
 
@@ -162,9 +162,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse" />
               <span className="text-xs font-bold text-sky-300">Active</span>
             </div>
-            <button className="p-2.5 rounded-xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors relative">
-              <Bell size={18} className="text-slate-400" />
-            </button>
+            <NotificationBell />
           </div>
         </header>
 

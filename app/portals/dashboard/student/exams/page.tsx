@@ -34,7 +34,7 @@ export default function StudentExamsPage() {
     <div className="space-y-8 pb-16">
       <div>
         <h1 className="text-2xl font-black text-white">CBT Exams</h1>
-        <p className="text-slate-400 text-sm mt-1">Exams currently open for your class.</p>
+        <p className="text-slate-400 text-sm mt-1">Exams you&apos;ve started or submitted. New exams arrive as a notification with a direct link — they won&apos;t appear here until you open that link.</p>
       </div>
 
       {loading ? (
@@ -42,8 +42,8 @@ export default function StudentExamsPage() {
       ) : exams.length === 0 ? (
         <div className="py-24 text-center rounded-[2rem] border border-dashed border-white/10 bg-white/[0.02]">
           <MonitorCheck size={40} className="text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400 font-semibold text-lg">No exams open right now</p>
-          <p className="text-slate-600 text-sm mt-1">Check back when your teacher opens one.</p>
+          <p className="text-slate-400 font-semibold text-lg">No exams yet</p>
+          <p className="text-slate-600 text-sm mt-1">You&apos;ll get a notification with a link the moment one opens.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

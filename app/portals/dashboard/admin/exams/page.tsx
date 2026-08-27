@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Plus, MonitorCheck, Clock, Loader2, Circle, Trash2, Pencil,
-  Activity, CheckCircle2, XCircle, FlaskConical, AlertCircle,
+  Activity, CheckCircle2, XCircle, FlaskConical, AlertCircle, Trophy, BellRing,
 } from 'lucide-react';
 
 interface Exam {
@@ -39,6 +39,7 @@ export default function AdminExamsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [notifyMsg, setNotifyMsg] = useState<Record<string, string>>({});
 
   const fetchExams = useCallback(async () => {
     setLoading(true);
@@ -95,6 +96,21 @@ export default function AdminExamsPage() {
     } finally { setBusy(null); }
   };
 
+  const notifyClass = async (id: string) => {
+    setBusy(id);
+    setNotifyMsg((m) => ({ ...m, [id]: '' }));
+    try {
+      const res = await fetch(`/api/admin/exams/${id}/notify`, { method: 'POST' });
+      const data = await res.json();
+      setNotifyMsg((m) => ({ ...m, [id]: res.ok ? 'Class notified!' : (data.error ?? 'Failed to notify') }));
+    } catch {
+      setNotifyMsg((m) => ({ ...m, [id]: 'Network error.' }));
+    } finally {
+      setBusy(null);
+      setTimeout(() => setNotifyMsg((m) => ({ ...m, [id]: '' })), 4000);
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
     setBusy(deleteId);
@@ -149,7 +165,7 @@ export default function AdminExamsPage() {
                 No testing exams yet — create one to try the full flow end-to-end.
               </div>
             ) : (
-              <ExamGrid exams={sandbox} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} />
+              <ExamGrid exams={sandbox} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} onNotify={notifyClass} notifyMsg={notifyMsg} />
             )}
           </section>
 
@@ -164,7 +180,7 @@ export default function AdminExamsPage() {
                 Nothing waiting on review right now.
               </div>
             ) : (
-              <ExamGrid exams={pending} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} />
+              <ExamGrid exams={pending} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} onNotify={notifyClass} notifyMsg={notifyMsg} />
             )}
           </section>
 
@@ -179,7 +195,7 @@ export default function AdminExamsPage() {
                 No exam is currently open to students.
               </div>
             ) : (
-              <ExamGrid exams={live} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} showMonitor />
+              <ExamGrid exams={live} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} onNotify={notifyClass} notifyMsg={notifyMsg} showMonitor />
             )}
           </section>
 
@@ -190,7 +206,7 @@ export default function AdminExamsPage() {
                 <MonitorCheck size={16} className="text-slate-500" />
                 <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">All Other Exams</h2>
               </div>
-              <ExamGrid exams={others} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} />
+              <ExamGrid exams={others} busy={busy} onApprove={approve} onReject={setRejectId} onClose={closeExam} onDelete={setDeleteId} onNotify={notifyClass} notifyMsg={notifyMsg} />
             </section>
           )}
         </>
@@ -239,11 +255,12 @@ export default function AdminExamsPage() {
 }
 
 function ExamGrid({
-  exams, busy, onApprove, onReject, onClose, onDelete, showMonitor,
+  exams, busy, onApprove, onReject, onClose, onDelete, onNotify, notifyMsg, showMonitor,
 }: {
   exams: Exam[]; busy: string | null;
   onApprove: (id: string) => void; onReject: (id: string) => void;
   onClose: (id: string) => void; onDelete: (id: string) => void;
+  onNotify: (id: string) => void; notifyMsg: Record<string, string>;
   showMonitor?: boolean;
 }) {
   return (
@@ -293,10 +310,24 @@ function ExamGrid({
                     <Activity size={12} /> Watch Live
                   </Link>
                 )}
+                <button onClick={() => onNotify(exam._id)} disabled={busy === exam._id} className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg font-bold text-xs disabled:opacity-40">
+                  {busy === exam._id ? <Loader2 size={12} className="animate-spin" /> : <BellRing size={12} />} Notify Class
+                </button>
                 <button onClick={() => onClose(exam._id)} disabled={busy === exam._id} className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold text-xs disabled:opacity-40">
                   Close Exam
                 </button>
+                {notifyMsg[exam._id] && (
+                  <span className={`text-[11px] font-bold self-center ${notifyMsg[exam._id].includes('Failed') || notifyMsg[exam._id].includes('error') ? 'text-red-500' : 'text-emerald-600'}`}>
+                    {notifyMsg[exam._id]}
+                  </span>
+                )}
               </>
+            )}
+
+            {(exam.status === 'live' || exam.status === 'closed') && (
+              <Link href={`/portals/dashboard/admin/exams/${exam._id}/results`} className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg font-bold text-xs">
+                <Trophy size={12} /> View Scores
+              </Link>
             )}
 
             <button onClick={() => onDelete(exam._id)} className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold text-xs ml-auto">
