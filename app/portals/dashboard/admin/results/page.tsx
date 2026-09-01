@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   ArrowLeft, FileText, Search, X, CheckCircle, Loader2,
-  MessageSquare, ChevronDown, ChevronUp, Globe, GlobeLock, Eye,
+  MessageSquare, ChevronDown, ChevronUp, Globe, GlobeLock, Eye, Sheet,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -127,6 +127,12 @@ export default function AdminResults() {
           <Globe size={15} className="text-emerald-500" />
           <span className="text-sm font-bold text-emerald-700">{publishedCount} / {results.length} published</span>
         </div>
+        <Link
+          href="/portals/dashboard/admin/results/cumulative"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+        >
+          <Sheet size={15} /> Cumulative Result
+        </Link>
       </div>
 
       {/* Section toggle */}
