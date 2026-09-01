@@ -5,7 +5,7 @@ import Result from '@/models/Result';
 import Teacher from '@/models/Teacher';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ClipboardList, Eye, CheckCircle2, Clock, ChevronLeft, Users } from 'lucide-react';
+import { ClipboardList, Eye, CheckCircle2, Clock, ChevronLeft, Users, Sheet } from 'lucide-react';
 import { classNameRegex } from '@/lib/subjects';
 
 export default async function TeacherResultsPage() {
@@ -32,18 +32,26 @@ export default async function TeacherResultsPage() {
     <div className="space-y-8 pb-16">
 
       {/* Header */}
-      <div>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <Link
+            href="/portals/dashboard/teacher"
+            className="flex items-center gap-2 text-slate-500 hover:text-white text-sm font-medium mb-4 transition-colors w-fit"
+          >
+            <ChevronLeft size={16} /> Back to Dashboard
+          </Link>
+          <h1 className="text-2xl font-black text-white">Results Management</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            <span className="text-emerald-400 font-bold">{assignedClass}</span>
+            &nbsp;— {students.length} student{students.length !== 1 ? 's' : ''}
+          </p>
+        </div>
         <Link
-          href="/portals/dashboard/teacher"
-          className="flex items-center gap-2 text-slate-500 hover:text-white text-sm font-medium mb-4 transition-colors w-fit"
+          href="/portals/dashboard/teacher/results/broadsheet"
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
         >
-          <ChevronLeft size={16} /> Back to Dashboard
+          <Sheet size={15} /> Broadsheet
         </Link>
-        <h1 className="text-2xl font-black text-white">Results Management</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          <span className="text-emerald-400 font-bold">{assignedClass}</span>
-          &nbsp;— {students.length} student{students.length !== 1 ? 's' : ''}
-        </p>
       </div>
 
       {/* Summary strip */}

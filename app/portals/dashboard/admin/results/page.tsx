@@ -128,10 +128,10 @@ export default function AdminResults() {
           <span className="text-sm font-bold text-emerald-700">{publishedCount} / {results.length} published</span>
         </div>
         <Link
-          href="/portals/dashboard/admin/results/cumulative"
+          href="/portals/dashboard/admin/results/broadsheet"
           className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
         >
-          <Sheet size={15} /> Cumulative Result
+          <Sheet size={15} /> Broadsheet
         </Link>
       </div>
 
