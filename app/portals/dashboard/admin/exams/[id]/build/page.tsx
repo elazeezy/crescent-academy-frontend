@@ -6,6 +6,7 @@ import {
   ChevronLeft, Loader2, Plus, Trash2, CheckCircle, Save,
   ListChecks, ClipboardPaste, AlertCircle, PlayCircle,
 } from 'lucide-react';
+import QuestionUpload from '@/components/exams/QuestionUpload';
 
 interface Question {
   text: string;
@@ -207,6 +208,7 @@ B. Kano
 *C. Abuja
 D. Ibadan`}</pre>
           </div>
+          <QuestionUpload theme="light" onExtracted={(text) => setBulkText((prev) => (prev.trim() ? `${prev}\n\n${text}` : text))} />
           <textarea
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
