@@ -10,6 +10,7 @@ interface LightboxImage {
   alt: string;
   caption?: string;
   category?: string;
+  type?: "image" | "video";
 }
 
 interface Props {
@@ -100,12 +101,22 @@ export default function Lightbox({ images, initialIndex, onClose }: Props) {
         }}
       >
         <div className="relative w-full max-h-[75vh] aspect-auto">
-          <img
-            src={img.src}
-            alt={img.alt}
-            className="max-w-[90vw] max-h-[75vh] object-contain rounded-xl"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
+          {img.type === "video" ? (
+            <video
+              key={img.src}
+              src={img.src}
+              controls
+              autoPlay
+              className="max-w-[90vw] max-h-[75vh] rounded-xl"
+            />
+          ) : (
+            <img
+              src={img.src}
+              alt={img.alt}
+              className="max-w-[90vw] max-h-[75vh] object-contain rounded-xl"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
         </div>
         {(img.caption || img.category) && (
           <div className="mt-4 text-center">

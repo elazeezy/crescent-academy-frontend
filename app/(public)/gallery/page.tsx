@@ -3,72 +3,51 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import Link from "next/link";
-import { ChevronLeft, Maximize2 } from "lucide-react";
+import { ChevronLeft, Maximize2, PlayCircle } from "lucide-react";
 import Lightbox from "@/components/ui/Lightbox";
+import { GALLERY_CATEGORIES } from "@/lib/gallery";
 
-type Category = "All" | "Classroom" | "Assembly" | "Sports" | "Qur'anic Studies" | "Science Lab" | "Awards" | "Events";
+type Category = "All" | (typeof GALLERY_CATEGORIES)[number];
 
-const CATEGORIES: Category[] = ["All", "Classroom", "Assembly", "Sports", "Qur'anic Studies", "Science Lab", "Awards", "Events"];
+const CATEGORIES: Category[] = ["All", ...GALLERY_CATEGORIES];
 
 interface GalleryItem {
   src: string;
-  alt: string;
+  poster: string;
+  type: "image" | "video";
   caption: string;
   category: Exclude<Category, "All">;
-  tall?: boolean;
 }
 
-const GALLERY_ZONES: { id: string; category: Exclude<Category, "All">; caption: string; alt: string; tall?: boolean }[] = [
-  { id: "gallery_1",  category: "Classroom",        caption: "Classroom Excellence",      alt: "Students learning in class", tall: true },
-  { id: "gallery_2",  category: "Classroom",        caption: "Student Life",              alt: "Happy students in class" },
-  { id: "gallery_3",  category: "Classroom",        caption: "Learning Together",         alt: "Classroom session" },
-  { id: "gallery_4",  category: "Assembly",         caption: "Morning Assembly",          alt: "School morning assembly", tall: true },
-  { id: "gallery_5",  category: "Assembly",         caption: "School Gathering",          alt: "Students at assembly" },
-  { id: "gallery_6",  category: "Sports",           caption: "Sports Day",                alt: "Sports day activities", tall: true },
-  { id: "gallery_7",  category: "Sports",           caption: "Athletic Excellence",       alt: "Students playing sports" },
-  { id: "gallery_8",  category: "Sports",           caption: "Team Spirit",               alt: "Team sports activity" },
-  { id: "gallery_9",  category: "Qur'anic Studies", caption: "Qur'anic Studies",          alt: "Qur'anic studies session", tall: true },
-  { id: "gallery_10", category: "Qur'anic Studies", caption: "Memorisation Circle",       alt: "Students in Quran class" },
-  { id: "gallery_11", category: "Qur'anic Studies", caption: "Islamic Learning",          alt: "Islamic education session" },
-  { id: "gallery_12", category: "Science Lab",      caption: "Science Lab",               alt: "Students in science lab", tall: true },
-  { id: "gallery_13", category: "Science Lab",      caption: "Practical Science",         alt: "Science experiment" },
-  { id: "gallery_14", category: "Awards",           caption: "Prize Giving Day",          alt: "Prize giving ceremony", tall: true },
-  { id: "gallery_15", category: "Awards",           caption: "Academic Excellence",       alt: "Award presentation" },
-  { id: "gallery_16", category: "Awards",           caption: "Celebrating Achievement",   alt: "Students receiving awards" },
-  { id: "gallery_17", category: "Events",           caption: "School Event",              alt: "School event", tall: true },
-  { id: "gallery_18", category: "Events",           caption: "Special Occasion",          alt: "Students at school event" },
-  { id: "gallery_19", category: "Events",           caption: "Cultural Celebration",      alt: "School cultural event" },
-  { id: "gallery_20", category: "Events",           caption: "Community Gathering",       alt: "School community event" },
-];
-
-const FALLBACK_ITEMS: GalleryItem[] = GALLERY_ZONES.map(z => ({
-  src: "",
-  alt: z.alt,
-  caption: z.caption,
-  category: z.category,
-  tall: z.tall,
-}));
+// Cloudinary auto-generates a JPG poster frame for any video when the delivery
+// extension is swapped to .jpg — no separate upload or transformation needed.
+const videoPoster = (url: string) => url.replace(/\.\w+$/, ".jpg");
 
 export default function GalleryPage() {
-  const [items, setItems] = useState<GalleryItem[]>(FALLBACK_ITEMS);
+  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<Category>("All");
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/site-images")
+    fetch("/api/gallery")
       .then((r) => r.json())
       .then((data) => {
-        const map: Record<string, string> = data.images ?? {};
-        const loaded = GALLERY_ZONES
-          .map(z => ({ src: map[z.id] || "", alt: z.alt, caption: z.caption, category: z.category, tall: z.tall }))
-          .filter(item => item.src);
-        if (loaded.length > 0) setItems(loaded);
+        const loaded: GalleryItem[] = (data.items ?? []).map((it: any) => ({
+          src: it.url,
+          poster: it.type === "video" ? videoPoster(it.url) : it.url,
+          type: it.type,
+          caption: it.caption || "",
+          category: it.category,
+        }));
+        setItems(loaded);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = active === "All" ? items : items.filter((i) => i.category === active);
-  const lightboxImages = filtered.map((i) => ({ src: i.src, alt: i.alt, caption: i.caption, category: i.category }));
+  const lightboxImages = filtered.map((i) => ({ src: i.src, alt: i.caption || "Gallery item", caption: i.caption, category: i.category, type: i.type }));
 
   return (
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
@@ -133,19 +112,24 @@ export default function GalleryPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.35, delay: i * 0.04 }}
-                    className={`group relative break-inside-avoid rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300 ${item.tall ? "aspect-[3/4]" : "aspect-[4/3]"}`}
+                    className="group relative break-inside-avoid rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-shadow duration-300 aspect-[4/3]"
                     style={{ background: "#112847" }}
                     onClick={() => setLightboxIdx(i)}
                   >
-                    <img src={item.src} alt={item.alt} loading="lazy"
+                    <img src={item.poster} alt={item.caption || "Gallery item"} loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    {item.type === "video" && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <PlayCircle size={44} className="text-white/85 drop-shadow-lg" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
                       style={{ background: "linear-gradient(to top, rgba(6,14,28,0.85), transparent)" }} />
                     <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       <span className="inline-block px-2.5 py-1 text-[10px] font-medium rounded-full mb-2"
                         style={{ background: "rgba(33,150,196,0.25)", color: "#3BADD9" }}>{item.category}</span>
-                      <p className="text-white text-sm font-medium" style={{ fontFamily: "var(--font-body, sans-serif)" }}>{item.caption}</p>
+                      {item.caption && <p className="text-white text-sm font-medium" style={{ fontFamily: "var(--font-body, sans-serif)" }}>{item.caption}</p>}
                     </div>
                     <div className="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(4px)" }}>
@@ -156,9 +140,9 @@ export default function GalleryPage() {
               </AnimatePresence>
             </motion.div>
           </LayoutGroup>
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div className="py-20 text-center" style={{ color: "#9CA3AF", fontFamily: "var(--font-body, sans-serif)" }}>
-              No images in this category yet.
+              No photos or videos in this category yet.
             </div>
           )}
         </div>
