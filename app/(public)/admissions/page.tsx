@@ -59,7 +59,7 @@ export default function AdmissionsPage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* Hero */}
-      <section className="relative h-[55vh] min-h-72 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+      <section className="public-page-hero relative h-[55vh] min-h-72 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
         <IslamicPattern />
         <img src="/images/hero-students-classroom.jpg" alt="" aria-hidden
           className="absolute inset-0 w-full h-full object-cover opacity-20"

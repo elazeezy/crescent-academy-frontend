@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   ChevronLeft, ChevronRight, BookOpen, Trophy, Users,
-  GraduationCap, Shield, Star, ArrowRight, Quote,
+  GraduationCap, Shield, Star, ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -240,7 +240,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (paused) return;
-    setProgress(0);
     const t0 = performance.now();
     let raf: number;
     const tick = (now: number) => {
@@ -268,8 +267,7 @@ export default function HomePage() {
           § 1  HERO
       ══════════════════════════════════════════════════════ */}
       <section
-        className="relative flex items-center overflow-hidden pt-16 sm:pt-0"
-        style={{ height: "100dvh", minHeight: 560 }}
+        className="relative flex items-center overflow-hidden h-[calc(100svh-7.5rem)] min-h-[27rem] sm:h-[calc(100svh-4.5rem)] sm:min-h-[38rem]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -324,7 +322,7 @@ export default function HomePage() {
         </svg>
 
         {/* Content — centered on mobile, left-aligned from sm up */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 sm:pt-10">
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
           <AnimatePresence mode="wait">
             <motion.div
               key={`hero-${current}`}
@@ -332,7 +330,7 @@ export default function HomePage() {
               animate="visible"
               exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }}
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
-              className="flex flex-col items-center text-center sm:items-start sm:text-left mx-auto sm:mx-0"
+              className="flex flex-col items-center text-center sm:items-start sm:text-left mx-auto sm:mx-0 py-8 sm:py-10"
               style={{ maxWidth: 680 }}
             >
               {/* Eyebrow pill */}
@@ -361,7 +359,7 @@ export default function HomePage() {
                     variants={{ hidden: { y: "105%" }, visible: { y: 0, transition: { duration: 0.95, ease: [0.16, 1, 0.3, 1] as const, delay: 0.5 } } }}
                     style={{
                       fontFamily: displayFont,
-                      fontSize: "clamp(2.5rem, 10vw, 6rem)",
+                      fontSize: "clamp(2.25rem, 8.5vw, 6rem)",
                       fontWeight: 600,
                       lineHeight: 1.05,
                       color: "#fff",
@@ -376,7 +374,7 @@ export default function HomePage() {
                     variants={{ hidden: { y: "105%" }, visible: { y: 0, transition: { duration: 0.95, ease: [0.16, 1, 0.3, 1] as const, delay: 0.57 } } }}
                     style={{
                       fontFamily: displayFont,
-                      fontSize: "clamp(2.5rem, 10vw, 6rem)",
+                      fontSize: "clamp(2.25rem, 8.5vw, 6rem)",
                       fontWeight: 700,
                       fontStyle: "italic",
                       lineHeight: 1.05,
@@ -389,11 +387,11 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Subtitle — desktop only, mobile keeps it clean */}
+              {/* A parent should understand the school promise before needing to scroll. */}
               <motion.p
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.75, delay: 0.7 } } }}
-                style={{ fontFamily: bodyFont, fontSize: 18, color: "rgba(255,255,255,0.72)", maxWidth: 480, lineHeight: 1.65, marginBottom: "2rem" }}
-                className="hidden sm:block"
+                style={{ fontFamily: bodyFont, fontSize: "clamp(0.94rem, 3.7vw, 1.125rem)", color: "rgba(255,255,255,0.72)", maxWidth: 480, lineHeight: 1.6, marginBottom: "1.5rem" }}
+                className="max-w-md"
               >
                 {slide.subtitle}
               </motion.p>
@@ -468,6 +466,7 @@ export default function HomePage() {
             <button
               key={i}
               onClick={() => setCurrent(i)}
+              aria-label={`Show slide ${i + 1}`}
               style={{ opacity: i === current ? 1 : 0.35, transition: "opacity 0.3s" }}
               className="flex flex-col items-start gap-2"
             >

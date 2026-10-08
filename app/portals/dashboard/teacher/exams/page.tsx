@@ -9,6 +9,9 @@ interface Exam {
   title: string;
   subject: string;
   targetClass: string;
+  term?: string;
+  session?: string;
+  assessmentSlot?: string;
   objectiveCount: number;
   durationMinutes: number;
   status: 'draft' | 'pending_review' | 'rejected' | 'live' | 'closed';
@@ -59,14 +62,14 @@ export default function TeacherExamsPage() {
     <div className="space-y-8 pb-16">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black text-white">CBT Exams</h1>
-          <p className="text-slate-400 text-sm mt-1">Build objective exams for your subjects — theory marks are added separately when grading.</p>
+          <h1 className="text-2xl font-black text-white">CBT Assessments</h1>
+          <p className="text-slate-400 text-sm mt-1">Create C.A tests or exams, assign each to the right term and result slot, and add as many questions as needed.</p>
         </div>
         <Link
           href="/portals/dashboard/teacher/exams/new"
           className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
         >
-          <Plus size={16} /> New Exam
+          <Plus size={16} /> New CBT Assessment
         </Link>
       </div>
 
@@ -78,7 +81,7 @@ export default function TeacherExamsPage() {
         <div className="py-24 text-center rounded-[2rem] border border-dashed border-white/10 bg-white/[0.02]">
           <MonitorCheck size={40} className="text-slate-600 mx-auto mb-4" />
           <p className="text-slate-400 font-semibold text-lg">No exams yet</p>
-          <p className="text-slate-600 text-sm mt-1">Create your first CBT exam to get started.</p>
+          <p className="text-slate-600 text-sm mt-1">Create a C.A test, exam, or separate network test to get started.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -87,7 +90,7 @@ export default function TeacherExamsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="font-bold text-white truncate">{exam.title}</h3>
-                  <p className="text-emerald-400/70 text-xs font-mono mt-0.5">{exam.subject} — {exam.targetClass}</p>
+                  <p className="text-emerald-400/70 text-xs font-mono mt-0.5">{exam.subject} — {exam.targetClass} · {exam.term} · {exam.assessmentSlot === 'ca1' ? 'C.A Test 1' : exam.assessmentSlot === 'ca2' ? 'C.A Test 2' : exam.assessmentSlot === 'testing' ? 'CBT Testing' : 'Exam'}</p>
                 </div>
                 <span className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full border capitalize ${STATUS_STYLE[exam.status]}`}>
                   {exam.status.replace('_', ' ')}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Loader2, Plus } from 'lucide-react';
+import { localInputToIso } from '@/lib/examWindow';
 
 export default function NewExamPage() {
   const router = useRouter();
@@ -13,9 +14,14 @@ export default function NewExamPage() {
     title: '',
     subject: '',
     targetClass: '',
-    objectiveCount: 30,
+    objectiveCount: 1,
     durationMinutes: 45,
     theoryMaxScore: 40,
+    term: '1st Term',
+    session: '2026/2027',
+    assessmentSlot: 'exam',
+    windowStart: '',
+    windowEnd: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,10 +44,14 @@ export default function NewExamPage() {
     setLoading(true);
     setError('');
     try {
+      const windowStartIso = localInputToIso(form.windowStart);
+      if (!windowStartIso) { setError('Pick a start date & time for the exam.'); return; }
+      const windowEndIso = form.windowEnd ? localInputToIso(form.windowEnd) : null;
+      if (form.windowEnd && !windowEndIso) { setError('The end date & time is invalid.'); return; }
       const res = await fetch('/api/teacher/exams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, windowStart: windowStartIso, windowEnd: windowEndIso ?? undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Failed to create exam'); return; }
@@ -60,8 +70,8 @@ export default function NewExamPage() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-black text-white">New CBT Exam</h1>
-        <p className="text-slate-400 text-sm mt-1">Set up the exam details — you&apos;ll add questions next.</p>
+          <h1 className="text-2xl font-black text-white">New CBT Assessment</h1>
+          <p className="text-slate-400 text-sm mt-1">Choose the term and result slot first. Add questions next; the saved question count is used for grading.</p>
       </div>
 
       <div className="bg-white/[0.03] border border-white/[0.07] rounded-[1.75rem] p-6 space-y-4">
@@ -87,14 +97,12 @@ export default function NewExamPage() {
           </div>
         </div>
 
-        <div>
-          <label className={labelCls}>Number of Objective Questions *</label>
-          <select className={inputCls} value={form.objectiveCount} onChange={(e) => setForm({ ...form, objectiveCount: Number(e.target.value) })}>
-            <option value={30}>30 Questions</option>
-            <option value={60}>60 Questions</option>
-            <option value={100}>100 Questions</option>
-          </select>
-          <p className="text-xs text-slate-500 mt-1.5">Objective score is automatically scaled to 30 marks, however many questions you choose.</p>
+        <p className="text-xs text-slate-500">Add as many questions as you need in the next step. The system detects the final count for grading.</p>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div><label className={labelCls}>Term *</label><select className={inputCls} value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })}><option>1st Term</option><option>2nd Term</option><option>3rd Term</option></select></div>
+          <div><label className={labelCls}>Result slot *</label><select className={inputCls} value={form.assessmentSlot} onChange={(e) => setForm({ ...form, assessmentSlot: e.target.value })}><option value="ca1">C.A Test 1</option><option value="ca2">C.A Test 2</option><option value="exam">Exam</option><option value="testing">CBT Testing (no result)</option></select></div>
+          <div><label className={labelCls}>Session *</label><input className={inputCls} value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} placeholder="2026/2027" /></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -109,11 +117,23 @@ export default function NewExamPage() {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Start Date &amp; Time *</label>
+            <input type="datetime-local" className={inputCls} value={form.windowStart} onChange={(e) => setForm({ ...form, windowStart: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelCls}>End Date &amp; Time (optional)</label>
+            <input type="datetime-local" className={inputCls} value={form.windowEnd} onChange={(e) => setForm({ ...form, windowEnd: e.target.value })} />
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 -mt-2">Students can only start the exam after the start time (enforced by the server clock). If an end time is set, the exam locks automatically after it.</p>
+
         {error && <p className="text-red-400 text-xs font-semibold">{error}</p>}
 
         <button
           onClick={handleSubmit}
-          disabled={loading || !form.title || !form.subject || !form.targetClass || !form.durationMinutes}
+          disabled={loading || !form.title || !form.subject || !form.targetClass || !form.durationMinutes || !form.windowStart}
           className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-sm font-bold disabled:opacity-40 transition-all active:scale-95"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}

@@ -89,7 +89,7 @@ export default function LeadershipPage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* ── Hero ── */}
-      <section className="relative h-[52vh] min-h-72 flex items-center overflow-hidden" style={{ background: "#060E1C" }}>
+      <section className="public-page-hero relative h-[52vh] min-h-72 flex items-center overflow-hidden" style={{ background: "#060E1C" }}>
         <IslamicPattern id="ldp-hero" />
         <img
           src="/images/leadership/1-proprietor.jpg"

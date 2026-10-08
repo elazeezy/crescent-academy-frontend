@@ -2,6 +2,8 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Student from '@/models/Student';
 import Result from '@/models/Result';
+import Exam from '@/models/Exam';
+import ExamAttempt from '@/models/ExamAttempt';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,6 +18,19 @@ export default async function StudentDashboard() {
   if (!session?.user || session.user.role !== 'student') redirect('/login');
 
   const studentProfile = await Student.findOne({ user: session.user.id }).lean() as any;
+
+  const liveAssessments = studentProfile ? await Exam.find({
+    section: studentProfile.section,
+    targetClass: studentProfile.currentClass,
+    status: 'live',
+  }).select('_id title assessmentSlot windowStart windowEnd').lean() as { _id: { toString(): string }; windowStart?: Date; windowEnd?: Date }[] : [];
+  const priorAttempts = studentProfile && liveAssessments.length
+    ? await ExamAttempt.find({ student: studentProfile._id, exam: { $in: liveAssessments.map((e) => e._id) } }).select('exam status').lean() as { exam: { toString(): string } }[]
+    : [];
+  const attemptedExamIds = new Set(priorAttempts.map((a) => a.exam.toString()));
+  const cbtToAttend = liveAssessments.filter((e) =>
+    !attemptedExamIds.has(e._id.toString()) && (!e.windowStart || new Date(e.windowStart) <= new Date()) && (!e.windowEnd || new Date(e.windowEnd) >= new Date())
+  );
 
   const latestResult = studentProfile
     ? await Result.findOne({ student: studentProfile._id, published: true })
@@ -43,6 +58,13 @@ export default async function StudentDashboard() {
 
   return (
     <div className="space-y-8 pb-16">
+
+      {cbtToAttend.length > 0 && (
+        <Link href="/portals/dashboard/student/exams" className="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-amber-300 px-5 py-4 text-slate-950 shadow-lg hover:bg-amber-200 transition-colors">
+          <span><strong className="block text-sm md:text-base">You have {cbtToAttend.length === 1 ? 'a CBT to attend' : `${cbtToAttend.length} CBTs to attend`}.</strong><span className="text-xs md:text-sm">Click the notification bell or open this alert to attempt your assigned CBT.</span></span>
+          <span className="shrink-0 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white">Attempt CBT</span>
+        </Link>
+      )}
 
       {/* ── PROFILE HERO ── */}
       <section className="glass-card p-6 md:p-10 relative overflow-hidden">

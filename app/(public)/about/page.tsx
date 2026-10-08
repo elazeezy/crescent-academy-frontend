@@ -40,7 +40,7 @@ export default function AboutPage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative h-[60vh] min-h-80 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+      <section className="public-page-hero relative h-[60vh] min-h-80 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
         <IslamicPattern opacity={0.06} />
         <img src="/images/about-hero-classroom.jpg" alt="" aria-hidden
           className="absolute inset-0 w-full h-full object-cover opacity-20"

@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       }
       processedSubjects.push({
         subjectName: sub.subjectName, test1, test2, test3,
-        examScore: 0, total, grade: calculateGrade(total),
+        examScore: clamp(objectiveScore + theoryScore, 0, 70), total, grade: calculateGrade(total),
         isCbt: true, cbtExamId: sub.cbtExamId || undefined, objectiveScore, theoryScore,
       });
       continue;

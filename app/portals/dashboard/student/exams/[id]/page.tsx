@@ -30,12 +30,20 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
     submittingRef.current = true;
     setSubmitting(true);
     try {
-      await fetch(`/api/student/exams/${id}/submit`, { method: 'POST' });
-    } finally {
+      const res = await fetch(`/api/student/exams/${id}/submit`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Could not record your submission. Please try again.');
+      setError('');
       setSubmitted(true);
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not record your submission. Please try again.');
+      submittingRef.current = false;
+    } finally {
       setSubmitting(false);
-      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-      if (tickRef.current) clearInterval(tickRef.current);
+      if (submittingRef.current) {
+        if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+        if (tickRef.current) clearInterval(tickRef.current);
+      }
     }
   }, [id]);
 
@@ -46,7 +54,14 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
       try {
         const res = await fetch(`/api/student/exams/${id}/start`, { method: 'POST' });
         const data = await res.json();
-        if (!res.ok) { setError(data.error ?? 'Could not start exam'); return; }
+        if (!res.ok) {
+          if ((data.error ?? '').includes('auto-submitted')) {
+            const submitRes = await fetch(`/api/student/exams/${id}/submit`, { method: 'POST' });
+            if (submitRes.ok) setSubmitted(true);
+            else setError('Your time expired. We could not save the result yet; retry when your connection is back.');
+          } else setError(data.error ?? 'Could not start exam');
+          return;
+        }
         setTitle(data.title);
         setQuestions(data.questions ?? []);
         setAnswers(data.answers ?? []);
@@ -67,9 +82,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
         const res = await fetch(`/api/student/exams/${id}/heartbeat`, { method: 'POST' });
         const data = await res.json();
         if (data.status === 'auto_submitted') {
-          setSubmitted(true);
-          if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-          if (tickRef.current) clearInterval(tickRef.current);
+          doSubmit();
           return;
         }
         if (data.deadline) setDeadline(new Date(data.deadline));
@@ -78,7 +91,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
       }
     }, 15000);
     return () => { if (heartbeatRef.current) clearInterval(heartbeatRef.current); };
-  }, [id, deadline, submitted]);
+  }, [id, deadline, submitted, doSubmit]);
 
   // Countdown display + auto-submit at deadline (server also enforces this independently)
   useEffect(() => {
@@ -117,6 +130,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
       <div className="max-w-md mx-auto py-24 text-center">
         <AlertCircle size={40} className="text-red-400 mx-auto mb-4" />
         <p className="text-white font-bold">{error}</p>
+        {questions.length > 0 && <button onClick={doSubmit} disabled={submitting} className="mt-5 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50">{submitting ? 'Saving submission…' : 'Retry saving submission'}</button>}
         <button onClick={() => router.push('/portals/dashboard/student/exams')} className="mt-6 text-sky-400 font-semibold text-sm hover:underline">
           Back to Exams
         </button>
@@ -129,7 +143,7 @@ export default function TakeExamPage({ params }: { params: Promise<{ id: string 
       <div className="max-w-md mx-auto py-24 text-center">
         <CheckCircle2 size={48} className="text-emerald-400 mx-auto mb-5" />
         <h2 className="text-xl font-black text-white">Submitted successfully.</h2>
-        <p className="text-slate-400 mt-2">Good luck in your result.</p>
+        <p className="text-slate-400 mt-2">Your submission has been recorded.</p>
         <button onClick={() => router.push('/portals/dashboard/student/exams')} className="mt-8 bg-sky-600 hover:bg-sky-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95">
           Back to Exams
         </button>

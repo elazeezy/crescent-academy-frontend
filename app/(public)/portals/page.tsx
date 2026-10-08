@@ -92,7 +92,7 @@ export default function PortalsPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="relative h-[45vh] md:h-[55vh] flex items-center justify-center overflow-hidden">
+      <section className="public-page-hero relative h-[45vh] md:h-[55vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0A1628] via-[#0A1628] to-[#C9A84C]" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent" />

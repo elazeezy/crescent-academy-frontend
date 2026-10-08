@@ -62,7 +62,7 @@ export default function FeesPage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* Hero */}
-      <section className="relative h-[50vh] min-h-64 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+      <section className="public-page-hero relative h-[50vh] min-h-64 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
         <IslamicPattern id="feep" />
         <div className="absolute inset-0" style={{ background: "rgba(6,14,28,0.75)" }} />
         <div className="absolute top-6 left-6 z-20">

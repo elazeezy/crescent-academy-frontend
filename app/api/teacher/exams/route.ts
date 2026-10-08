@@ -3,9 +3,9 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
 import Teacher from '@/models/Teacher';
-import { REAL_OBJECTIVE_COUNTS, validateQuestions } from '@/lib/examQuestions';
+import { validateQuestions } from '@/lib/examQuestions';
+import { validateExamWindow } from '@/lib/examWindow';
 
-const VALID_OBJECTIVE_COUNTS = REAL_OBJECTIVE_COUNTS;
 
 // GET /api/teacher/exams — list this teacher's own exams
 export async function GET() {
@@ -37,17 +37,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions } = body;
+  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
 
   if (!title || !subject || !targetClass) {
     return NextResponse.json({ error: 'title, subject, and targetClass are required' }, { status: 400 });
   }
-  if (!VALID_OBJECTIVE_COUNTS.includes(Number(objectiveCount))) {
-    return NextResponse.json({ error: 'objectiveCount must be 30, 60, or 100' }, { status: 400 });
-  }
+  if (objectiveCount !== undefined && (!Number.isInteger(Number(objectiveCount)) || Number(objectiveCount) < 1)) return NextResponse.json({ error: 'Question count must be a positive whole number' }, { status: 400 });
+  if (!['ca1', 'ca2', 'exam', 'testing'].includes(assessmentSlot ?? 'exam')) return NextResponse.json({ error: 'Choose a valid result slot' }, { status: 400 });
   const duration = Number(durationMinutes);
   if (!duration || duration <= 0) {
     return NextResponse.json({ error: 'durationMinutes must be a positive number' }, { status: 400 });
+  }
+  const window = validateExamWindow(windowStart, windowEnd);
+  if (window.error) {
+    return NextResponse.json({ error: window.error }, { status: 400 });
   }
 
   await dbConnect();
@@ -66,11 +69,16 @@ export async function POST(req: Request) {
     subject: String(subject).trim(),
     section: teacher.section,
     targetClass: String(targetClass).trim(),
-    objectiveCount: Number(objectiveCount),
+    objectiveCount: Math.max(1, cleanedQuestions.questions.length || Number(objectiveCount) || 1),
+    term: term || '1st Term',
+    session: termSession || '2026/2027',
+    assessmentSlot: assessmentSlot || 'exam',
     durationMinutes: duration,
     theoryMaxScore: theoryMaxScore != null ? Math.min(100, Math.max(0, Number(theoryMaxScore))) : 40,
     questions: cleanedQuestions.questions,
     status: 'draft',
+    windowStart: window.start,
+    windowEnd: window.end,
     createdBy: session.user.id,
   });
 

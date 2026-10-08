@@ -33,8 +33,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
 
-  useEffect(() => { setIsOpen(false); setPortalOpen(false); }, [pathname]);
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -160,6 +158,7 @@ export default function Navbar() {
                         <Link
                           key={href}
                           href={href}
+                          onClick={() => setPortalOpen(false)}
                           className="flex items-start gap-3 px-4 py-3.5 rounded-xl transition-colors"
                           style={{ transition: "background 0.15s" }}
                           onMouseEnter={e => (e.currentTarget.style.background = "#E8F6FC")}
@@ -275,6 +274,7 @@ export default function Navbar() {
                     >
                       <Link
                         href={link.href}
+                        onClick={() => setIsOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all"
                         style={{
                           fontFamily: "var(--font-body, sans-serif)",
@@ -306,6 +306,7 @@ export default function Navbar() {
                     <Link
                       key={href}
                       href={href}
+                      onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all"
                       style={{
                         fontFamily: "var(--font-body, sans-serif)",
@@ -323,6 +324,7 @@ export default function Navbar() {
             <div className="mt-auto pt-8 space-y-3">
               <Link
                 href="/admissions"
+                onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center py-3.5 font-semibold text-sm rounded-full transition-colors"
                 style={{
                   background: "#2196C4",

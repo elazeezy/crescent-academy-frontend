@@ -76,7 +76,7 @@ export default function StructurePage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative h-[58vh] min-h-80 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+      <section className="public-page-hero relative h-[58vh] min-h-80 flex items-center overflow-hidden" style={{ background: "#0B1F3A" }}>
         <IslamicPattern id="stp" opacity={0.06} />
         <img
           src="/images/structure/hero-campus.jpg"

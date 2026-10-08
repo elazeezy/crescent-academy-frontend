@@ -63,7 +63,7 @@ export default function PoliciesPage() {
     <div className="bg-white min-h-screen flex flex-col">
 
       {/* Hero with real background image + breadcrumb overlay */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
+      <section className="public-page-hero relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/images/policies-hero.jpg"   // ← Download & place here

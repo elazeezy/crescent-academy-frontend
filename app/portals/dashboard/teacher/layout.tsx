@@ -12,7 +12,7 @@ import {
 const navItems = [
   { href: '/portals/dashboard/teacher',               icon: LayoutDashboard, label: 'Dashboard'     },
   { href: '/portals/dashboard/teacher/results',       icon: ClipboardList,   label: 'Results'       },
-  { href: '/portals/dashboard/teacher/exams',         icon: MonitorCheck,    label: 'CBT Exams'     },
+  { href: '/portals/dashboard/teacher/exams',         icon: MonitorCheck,    label: 'CBT Assessments' },
   { href: '/portals/dashboard/teacher/materials',     icon: Upload,          label: 'Materials'     },
   { href: '/portals/dashboard/teacher/notifications', icon: Bell,            label: 'Notifications' },
 ];

@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import {
-  ChevronLeft, Loader2, Plus, Trash2, CheckCircle, Save,
+  ChevronLeft, Loader2, Plus, Trash2, CheckCircle, Save, Clock,
   ListChecks, ClipboardPaste, AlertCircle, PlayCircle,
 } from 'lucide-react';
 import QuestionUpload from '@/components/exams/QuestionUpload';
+import { isoToLocalInput, localInputToIso } from '@/lib/examWindow';
 
 interface Question {
   text: string;
@@ -25,6 +26,8 @@ interface ExamDetail {
   questions: Question[];
   status: string;
   rejectionReason?: string;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 const emptyQuestion = (): Question => ({ text: '', options: ['', '', '', ''], correctIndex: 0 });
@@ -42,6 +45,9 @@ export default function ExamBuilderPage({ params }: { params: Promise<{ id: stri
   const [saveMsg, setSaveMsg] = useState('');
   const [saveError, setSaveError] = useState('');
   const [publishError, setPublishError] = useState('');
+  const [schedStart, setSchedStart] = useState('');
+  const [schedEnd, setSchedEnd] = useState('');
+  const [schedMsg, setSchedMsg] = useState('');
 
   const fetchExam = useCallback(async () => {
     setLoading(true);
@@ -51,6 +57,8 @@ export default function ExamBuilderPage({ params }: { params: Promise<{ id: stri
       if (res.ok) {
         setExam(data.exam);
         setQuestions(data.exam.questions?.length ? data.exam.questions : []);
+        setSchedStart(isoToLocalInput(data.exam.windowStart));
+        setSchedEnd(isoToLocalInput(data.exam.windowEnd));
       }
     } finally {
       setLoading(false);
@@ -58,6 +66,30 @@ export default function ExamBuilderPage({ params }: { params: Promise<{ id: stri
   }, [id]);
 
   useEffect(() => { fetchExam(); }, [fetchExam]);
+
+  const handleSaveSchedule = async () => {
+    setSaving(true);
+    setSchedMsg('');
+    setSaveError('');
+    try {
+      const startIso = localInputToIso(schedStart);
+      if (!startIso) { setSaveError('Pick a start date & time.'); return; }
+      const res = await fetch(`/api/teacher/exams/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ windowStart: startIso, windowEnd: schedEnd ? localInputToIso(schedEnd) : null }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSaveError(data.error ?? 'Failed to save schedule'); return; }
+      setSchedMsg('Schedule saved.');
+      setTimeout(() => setSchedMsg(''), 3000);
+      fetchExam();
+    } catch {
+      setSaveError('Network error.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const inputCls = "w-full text-sm text-white bg-white/5 placeholder-slate-600 border border-white/10 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400";
 
@@ -175,7 +207,7 @@ export default function ExamBuilderPage({ params }: { params: Promise<{ id: stri
     return <div className="p-10 text-center text-slate-400">Exam not found.</div>;
   }
 
-  const questionsNeeded = exam.objectiveCount - questions.length;
+  const questionsNeeded = questions.length === 0 ? 1 : 0;
 
   return (
     <div className="max-w-3xl space-y-6 pb-24">
@@ -209,10 +241,47 @@ export default function ExamBuilderPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
+      {/* Schedule */}
+      {['draft', 'pending_review', 'rejected'].includes(exam.status) ? (
+        <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4 space-y-3">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Clock size={13} /> Exam Schedule
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1.5">Start Date &amp; Time *</label>
+              <input type="datetime-local" className={inputCls} value={schedStart} onChange={(e) => setSchedStart(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1.5">End Date &amp; Time (optional)</label>
+              <input type="datetime-local" className={inputCls} value={schedEnd} onChange={(e) => setSchedEnd(e.target.value)} />
+            </div>
+          </div>
+          <p className="text-xs text-slate-500">Students can only start after the start time (server clock). With an end time, the exam locks automatically after it.</p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveSchedule}
+              disabled={saving || !schedStart}
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40 transition-all active:scale-95"
+            >
+              {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save Schedule
+            </button>
+            {schedMsg && <span className="text-emerald-400 text-xs font-bold">{schedMsg}</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-sm text-slate-300 font-semibold flex items-center gap-2">
+          <Clock size={15} className="text-slate-500" />
+          {exam.windowStart
+            ? `Opens ${new Date(exam.windowStart).toLocaleString()}${exam.windowEnd ? ` — locks ${new Date(exam.windowEnd).toLocaleString()}` : ''}`
+            : 'No start time set.'}
+        </div>
+      )}
+
       <div className={`rounded-2xl border p-4 flex items-center gap-3 ${questionsNeeded === 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
         {questionsNeeded === 0 ? <CheckCircle size={18} className="text-emerald-400 shrink-0" /> : <AlertCircle size={18} className="text-amber-400 shrink-0" />}
         <p className={`text-sm font-semibold ${questionsNeeded === 0 ? 'text-emerald-300' : 'text-amber-300'}`}>
-          {questionsNeeded === 0 ? `All ${exam.objectiveCount} questions ready.` : `${questions.length} of ${exam.objectiveCount} questions added — ${questionsNeeded} more needed before this exam can open.`}
+          {questionsNeeded === 0 ? `${questions.length} questions ready. This is the total that will be graded.` : 'Add at least one question before submitting this assessment.'}
         </p>
       </div>
 

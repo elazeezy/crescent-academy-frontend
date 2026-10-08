@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
-import { REAL_OBJECTIVE_COUNTS, validateQuestions } from '@/lib/examQuestions';
+import { validateQuestions } from '@/lib/examQuestions';
+import { validateExamWindow } from '@/lib/examWindow';
 
-const VALID_OBJECTIVE_COUNTS = REAL_OBJECTIVE_COUNTS;
 
 // GET /api/teacher/exams/[id] — full exam detail (includes correct answers, teacher-only)
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -42,18 +42,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const exam = await Exam.findOne({ _id: id, createdBy: session.user.id });
   if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
 
-  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, status, windowStart, windowEnd } = body;
+  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, status, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
 
   if (title !== undefined) exam.title = String(title).trim();
   if (subject !== undefined) exam.subject = String(subject).trim();
   if (targetClass !== undefined) exam.targetClass = String(targetClass).trim();
 
   if (objectiveCount !== undefined) {
-    if (!VALID_OBJECTIVE_COUNTS.includes(Number(objectiveCount))) {
-      return NextResponse.json({ error: 'objectiveCount must be 30, 60, or 100' }, { status: 400 });
-    }
+    if (!Number.isInteger(Number(objectiveCount)) || Number(objectiveCount) < 1) return NextResponse.json({ error: 'Enter at least one question' }, { status: 400 });
     exam.objectiveCount = Number(objectiveCount);
   }
+  if (term !== undefined) exam.term = String(term);
+  if (termSession !== undefined) exam.session = String(termSession);
+  if (assessmentSlot !== undefined && ['ca1', 'ca2', 'exam', 'testing'].includes(assessmentSlot)) exam.assessmentSlot = assessmentSlot;
   if (durationMinutes !== undefined) {
     const duration = Number(durationMinutes);
     if (!duration || duration <= 0) {
@@ -68,6 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const result = validateQuestions(questions);
     if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
     exam.questions = result.questions as any;
+    if (result.questions.length > 0) exam.objectiveCount = result.questions.length;
   }
   if (status !== undefined) {
     // Teachers can only move an exam to draft or submit it for admin review —
@@ -75,9 +77,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!['draft', 'pending_review'].includes(status)) {
       return NextResponse.json({ error: 'Only admin can open, close, or reject an exam. Submit it for review instead.' }, { status: 403 });
     }
-    if (status === 'pending_review' && exam.questions.length !== exam.objectiveCount) {
+    if (status === 'pending_review' && exam.questions.length < 1) {
       return NextResponse.json(
-        { error: `Exam needs exactly ${exam.objectiveCount} questions before it can be submitted for review (currently ${exam.questions.length}).` },
+        { error: 'Add at least one question before submitting this assessment for review.' },
         { status: 400 }
       );
     }
@@ -88,8 +90,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       exam.rejectionReason = '';
     }
   }
-  if (windowStart !== undefined) exam.windowStart = windowStart ? new Date(windowStart) : undefined;
-  if (windowEnd !== undefined) exam.windowEnd = windowEnd ? new Date(windowEnd) : undefined;
+  if (windowStart !== undefined || windowEnd !== undefined) {
+    const newStart = windowStart !== undefined ? windowStart : exam.windowStart;
+    const newEnd = windowEnd !== undefined ? windowEnd : exam.windowEnd;
+    const window = validateExamWindow(newStart, newEnd || undefined);
+    if (window.error) {
+      return NextResponse.json({ error: window.error }, { status: 400 });
+    }
+    exam.windowStart = window.start;
+    exam.windowEnd = window.end;
+  }
 
   await exam.save();
 

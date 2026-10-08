@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
   }
 
   await dbConnect();
+  const existing = await Notification.findOne({ title: title.trim(), message: message.trim(), targetRole });
+  if (existing) return NextResponse.json({ notification: JSON.parse(JSON.stringify(existing)), duplicate: true });
   const notification = await Notification.create({
     title:      title.trim(),
     message:    message.trim(),

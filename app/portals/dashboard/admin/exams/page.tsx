@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Plus, MonitorCheck, Clock, Loader2, Circle, Trash2, Pencil,
+  Plus, MonitorCheck, Clock, Loader2, Circle, Trash2, Pencil, CalendarClock,
   Activity, CheckCircle2, XCircle, FlaskConical, AlertCircle, Trophy, BellRing,
 } from 'lucide-react';
 
@@ -14,11 +14,14 @@ interface Exam {
   targetClass: string;
   section: string;
   objectiveCount: number;
+  assessmentSlot?: string;
   durationMinutes: number;
   status: 'draft' | 'pending_review' | 'rejected' | 'live' | 'closed';
   questions: any[];
   createdBy?: { name: string; email: string };
   rejectionReason?: string;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -29,7 +32,6 @@ const STATUS_STYLE: Record<string, string> = {
   closed:          'bg-slate-600/15 text-slate-500 border-slate-600/25',
 };
 
-const DEMO_COUNTS = [3, 5, 10];
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
@@ -123,8 +125,8 @@ export default function AdminExamsPage() {
 
   const pending = exams.filter((e) => e.status === 'pending_review');
   const live = exams.filter((e) => e.status === 'live');
-  const sandbox = exams.filter((e) => DEMO_COUNTS.includes(e.objectiveCount));
-  const others = exams.filter((e) => !DEMO_COUNTS.includes(e.objectiveCount) && e.status !== 'pending_review' && e.status !== 'live');
+  const sandbox = exams.filter((e) => e.assessmentSlot === 'testing');
+  const others = exams.filter((e) => e.assessmentSlot !== 'testing' && e.status !== 'pending_review' && e.status !== 'live');
 
   return (
     <div className="space-y-10 max-w-6xl">
@@ -158,7 +160,7 @@ export default function AdminExamsPage() {
               <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">CBT Testing Sandbox</h2>
             </div>
             <p className="text-xs text-slate-500 -mt-2">
-              Small demo exams (3, 5, or 10 questions) to show staff how it works or test the network — they go through the exact same builder, approval, and student-taking flow as a real exam.
+              Network and flow checks. Submissions are recorded as attempts but never written into student results.
             </p>
             {sandbox.length === 0 ? (
               <div className="bg-white/[0.02] border border-dashed border-white/10 rounded-2xl p-6 text-center text-slate-500 text-sm">
@@ -285,6 +287,17 @@ function ExamGrid({
           <div className="mt-3 flex items-center gap-4 text-xs text-slate-500 font-semibold">
             <span className="flex items-center gap-1.5"><Circle size={11} className={exam.questions.length === exam.objectiveCount ? 'text-emerald-500' : 'text-amber-500'} />{exam.questions.length}/{exam.objectiveCount} questions</span>
             <span className="flex items-center gap-1.5"><Clock size={11} />{exam.durationMinutes} min</span>
+          </div>
+
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold">
+            <CalendarClock size={11} className={exam.windowStart ? 'text-indigo-500' : 'text-red-400'} />
+            {exam.windowStart ? (
+              <span className="text-slate-500">
+                Opens {new Date(exam.windowStart).toLocaleString()}{exam.windowEnd ? ` — locks ${new Date(exam.windowEnd).toLocaleString()}` : ''}
+              </span>
+            ) : (
+              <span className="text-red-500">No start time set — cannot go live</span>
+            )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">

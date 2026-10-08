@@ -23,9 +23,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   if (approve) {
-    if (exam.questions.length !== exam.objectiveCount) {
+    if (exam.questions.length < 1) {
       return NextResponse.json(
-        { error: `Exam has ${exam.questions.length}/${exam.objectiveCount} questions — cannot approve an incomplete exam.` },
+        { error: 'Add at least one question before approving this assessment.' },
+        { status: 400 }
+      );
+    }
+    if (!exam.windowStart) {
+      return NextResponse.json(
+        { error: 'This exam has no start date & time. Edit it to set one before approving.' },
         { status: 400 }
       );
     }

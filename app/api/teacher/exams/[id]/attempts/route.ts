@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const notStarted = classStudents.filter((s: any) => !attemptedIds.has(s._id.toString()));
 
   return NextResponse.json({
-    exam: { title: exam.title, subject: exam.subject, questions: exam.questions, objectiveCount: exam.objectiveCount, theoryMaxScore: exam.theoryMaxScore },
+    exam: { title: exam.title, subject: exam.subject, questions: exam.questions, objectiveCount: exam.questions.length, theoryMaxScore: exam.theoryMaxScore, term: exam.term, session: exam.session, assessmentSlot: exam.assessmentSlot },
     attempts,
     notStarted,
   });

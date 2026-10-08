@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
-import { ALL_OBJECTIVE_COUNTS, validateQuestions } from '@/lib/examQuestions';
+import { validateQuestions } from '@/lib/examQuestions';
+import { validateExamWindow } from '@/lib/examWindow';
 
 // GET /api/admin/exams — all exams across all teachers, optionally filtered by status
 export async function GET(req: Request) {
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { title, subject, section, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions } = body;
+  const { title, subject, section, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
 
   if (!title || !subject || !targetClass || !section) {
     return NextResponse.json({ error: 'title, subject, section, and targetClass are required' }, { status: 400 });
@@ -52,12 +53,14 @@ export async function POST(req: Request) {
   if (!['college', 'science'].includes(section)) {
     return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
   }
-  if (!ALL_OBJECTIVE_COUNTS.includes(Number(objectiveCount))) {
-    return NextResponse.json({ error: `objectiveCount must be one of: ${ALL_OBJECTIVE_COUNTS.join(', ')}` }, { status: 400 });
-  }
+  if (objectiveCount !== undefined && (!Number.isInteger(Number(objectiveCount)) || Number(objectiveCount) < 1)) return NextResponse.json({ error: 'Question count must be a positive whole number' }, { status: 400 });
   const duration = Number(durationMinutes);
   if (!duration || duration <= 0) {
     return NextResponse.json({ error: 'durationMinutes must be a positive number' }, { status: 400 });
+  }
+  const window = validateExamWindow(windowStart, windowEnd);
+  if (window.error) {
+    return NextResponse.json({ error: window.error }, { status: 400 });
   }
 
   const cleanedQuestions = validateQuestions(questions);
@@ -72,11 +75,16 @@ export async function POST(req: Request) {
     subject: String(subject).trim(),
     section,
     targetClass: String(targetClass).trim(),
-    objectiveCount: Number(objectiveCount),
+    objectiveCount: Math.max(1, cleanedQuestions.questions.length || Number(objectiveCount) || 1),
+    term: term || '1st Term',
+    session: termSession || '2026/2027',
+    assessmentSlot: assessmentSlot || 'exam',
     durationMinutes: duration,
     theoryMaxScore: theoryMaxScore != null ? Math.min(100, Math.max(0, Number(theoryMaxScore))) : 40,
     questions: cleanedQuestions.questions,
     status: 'draft',
+    windowStart: window.start,
+    windowEnd: window.end,
     createdBy: session.user.id,
   });
 

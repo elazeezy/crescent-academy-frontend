@@ -5,9 +5,7 @@ import Exam from '@/models/Exam';
 import ExamAttempt from '@/models/ExamAttempt';
 import Student from '@/models/Student';
 
-// GET /api/student/exams — exams this student has already started or submitted.
-// Deliberately does NOT list every live exam for the class — a student only ever
-// reaches a new exam via the direct link sent in a notification, never by browsing.
+// GET /api/student/exams — this student's live class assessments plus prior attempts.
 export async function GET() {
   const session = await auth();
   if (!session?.user || session.user.role !== 'student') {
@@ -24,18 +22,21 @@ export async function GET() {
     .sort({ createdAt: -1 })
     .lean();
 
-  const exams = await Exam.find({ _id: { $in: attempts.map((a: any) => a.exam) } })
-    .select('title subject durationMinutes objectiveCount')
+  const exams = await Exam.find({
+    $or: [
+      { _id: { $in: attempts.map((a: any) => a.exam) } },
+      { section: student.section, targetClass: student.currentClass, status: 'live' },
+    ],
+  })
+    .select('title subject assessmentSlot term session durationMinutes questions objectiveCount windowStart windowEnd status')
     .lean();
-  const examById = new Map(exams.map((e: any) => [e._id.toString(), e]));
+  const attemptByExam = new Map(attempts.map((a: any) => [a.exam.toString(), a]));
 
-  const result = attempts
-    .map((a: any) => {
-      const exam = examById.get(a.exam.toString());
-      if (!exam) return null;
-      return { ...exam, attemptStatus: a.status };
-    })
-    .filter(Boolean);
+  const result = exams.map((exam: any) => {
+    const attempt: any = attemptByExam.get(exam._id.toString());
+    const { questions, ...safeExam } = exam;
+    return { ...safeExam, objectiveCount: questions?.length ?? exam.objectiveCount, attemptStatus: attempt?.status ?? 'not_started' };
+  }).sort((a: any, b: any) => new Date(b.windowStart ?? b.createdAt).getTime() - new Date(a.windowStart ?? a.createdAt).getTime());
 
   return NextResponse.json({ exams: result });
 }

@@ -14,6 +14,9 @@ export interface IExam extends Document {
   objectiveCount: number;
   durationMinutes: number;
   theoryMaxScore: number;
+  term: string;
+  session: string;
+  assessmentSlot: 'ca1' | 'ca2' | 'exam' | 'testing';
   questions: IExamQuestion[];
   status: 'draft' | 'pending_review' | 'rejected' | 'live' | 'closed';
   windowStart?: Date;
@@ -42,9 +45,12 @@ const ExamSchema = new Schema<IExam>(
     section:         { type: String, enum: ['college', 'science'], required: true },
     targetClass:     { type: String, required: true },
     // 3/5/10 are demo-only counts used by the admin CBT Testing sandbox
-    objectiveCount:  { type: Number, required: true, enum: [3, 5, 10, 30, 60, 100] },
+    objectiveCount:  { type: Number, required: true, min: 1 },
     durationMinutes: { type: Number, required: true, min: 1 },
     theoryMaxScore:  { type: Number, required: true, default: 40, min: 0, max: 100 },
+    term:            { type: String, default: '1st Term' },
+    session:         { type: String, default: '2026/2027' },
+    assessmentSlot:  { type: String, enum: ['ca1', 'ca2', 'exam', 'testing'], default: 'exam' },
     questions:       { type: [ExamQuestionSchema], default: [] },
     status:          { type: String, enum: ['draft', 'pending_review', 'rejected', 'live', 'closed'], default: 'draft' },
     windowStart:     { type: Date },

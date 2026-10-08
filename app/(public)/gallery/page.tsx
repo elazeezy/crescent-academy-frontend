@@ -53,7 +53,7 @@ export default function GalleryPage() {
     <div style={{ background: "#F7F5F1" }} className="min-h-screen">
 
       {/* Hero */}
-      <section className="relative h-[55vh] min-h-72 flex items-center justify-center overflow-hidden" style={{ background: "#0B1F3A" }}>
+      <section className="public-page-hero relative h-[55vh] min-h-72 flex items-center justify-center overflow-hidden" style={{ background: "#0B1F3A" }}>
         <svg aria-hidden className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
           <defs><pattern id="gp" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse"><polygon points="40,4 47,20 62,13 55,28 72,35 55,42 62,57 47,50 40,66 33,50 18,57 25,42 8,35 25,28 18,13 33,20" fill="none" stroke="white" strokeWidth="0.7" /></pattern></defs>
           <rect width="100%" height="100%" fill="url(#gp)" />

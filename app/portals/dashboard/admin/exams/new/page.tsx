@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Loader2, Plus, FlaskConical } from 'lucide-react';
 import { SECTIONS, getClassNamesForSection, type Section } from '@/lib/subjects';
+import { localInputToIso, nowLocalInput } from '@/lib/examWindow';
 
 function NewAdminExamForm() {
   const router = useRouter();
@@ -16,9 +17,14 @@ function NewAdminExamForm() {
     subject: isDemo ? 'General Test' : '',
     section: 'college' as Section,
     targetClass: '',
-    objectiveCount: isDemo ? 5 : 30,
+    objectiveCount: 1,
     durationMinutes: isDemo ? 10 : 45,
     theoryMaxScore: 40,
+    term: '1st Term',
+    session: '2026/2027',
+    assessmentSlot: isDemo ? 'testing' : 'exam',
+    windowStart: isDemo ? nowLocalInput() : '',
+    windowEnd: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,16 +32,19 @@ function NewAdminExamForm() {
   const inputCls = "w-full text-sm text-slate-900 bg-white placeholder-slate-400 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-400";
   const labelCls = "block text-xs font-bold text-slate-500 mb-1.5";
 
-  const objectiveOptions = isDemo ? [3, 5, 10] : [30, 60, 100];
 
   const handleSubmit = async () => {
     setLoading(true);
     setError('');
     try {
+      const windowStartIso = localInputToIso(form.windowStart);
+      if (!windowStartIso) { setError('Pick a start date & time for the exam.'); return; }
+      const windowEndIso = form.windowEnd ? localInputToIso(form.windowEnd) : null;
+      if (form.windowEnd && !windowEndIso) { setError('The end date & time is invalid.'); return; }
       const res = await fetch('/api/admin/exams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, windowStart: windowStartIso, windowEnd: windowEndIso ?? undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? 'Failed to create exam'); return; }
@@ -60,7 +69,7 @@ function NewAdminExamForm() {
         </h1>
         <p className="text-slate-500 text-sm mt-1">
           {isDemo
-            ? 'A small demo exam — pick 3, 5, or 10 questions to try the full flow: build, approve, take as a student, and watch it live.'
+            ? 'A network and workflow check. Choose any question count; submissions are kept out of academic results.'
             : 'Create an exam directly as admin, using the same builder and approval flow teachers use.'}
         </p>
       </div>
@@ -92,11 +101,12 @@ function NewAdminExamForm() {
           </select>
         </div>
 
-        <div>
-          <label className={labelCls}>Number of Objective Questions *</label>
-          <select className={inputCls} value={form.objectiveCount} onChange={(e) => setForm({ ...form, objectiveCount: Number(e.target.value) })}>
-            {objectiveOptions.map((n) => <option key={n} value={n}>{n} Questions</option>)}
-          </select>
+        <p className="text-xs text-slate-500">Add as many questions as needed in the builder. The saved question count becomes the total used for marking.</p>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div><label className={labelCls}>Term *</label><select className={inputCls} value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })}><option>1st Term</option><option>2nd Term</option><option>3rd Term</option></select></div>
+          <div><label className={labelCls}>Result slot *</label><select className={inputCls} value={form.assessmentSlot} onChange={(e) => setForm({ ...form, assessmentSlot: e.target.value })}><option value="ca1">C.A Test 1</option><option value="ca2">C.A Test 2</option><option value="exam">Exam</option><option value="testing">CBT Testing (no result)</option></select></div>
+          <div><label className={labelCls}>Session *</label><input className={inputCls} value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} placeholder="2026/2027" /></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -110,11 +120,23 @@ function NewAdminExamForm() {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Start Date &amp; Time *</label>
+            <input type="datetime-local" className={inputCls} value={form.windowStart} onChange={(e) => setForm({ ...form, windowStart: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelCls}>End Date &amp; Time (optional)</label>
+            <input type="datetime-local" className={inputCls} value={form.windowEnd} onChange={(e) => setForm({ ...form, windowEnd: e.target.value })} />
+          </div>
+        </div>
+        <p className="text-xs text-slate-400 -mt-2">Students can only start the exam after the start time (enforced by the server clock). If an end time is set, the exam locks automatically after it.</p>
+
         {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
 
         <button
           onClick={handleSubmit}
-          disabled={loading || !form.title || !form.subject || !form.targetClass}
+          disabled={loading || !form.title || !form.subject || !form.targetClass || !form.windowStart}
           className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl text-sm font-bold disabled:opacity-40 transition-all active:scale-95"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}

@@ -1,112 +1,33 @@
-// app/alumni/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowRight, ChevronLeft, GraduationCap, Mail, Users } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-import { ChevronLeft } from "lucide-react";
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
-};
+import { SCHOOL } from "@/lib/constants";
 
 export default function AlumniPage() {
   return (
-    <div className="bg-white min-h-screen flex flex-col">
-
-      {/* Hero with real background image + breadcrumb overlay */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/alumni-hero.jpg"   // ← Download & place here
-            alt="The Crescent Academy Alumni"
-            fill
-            className="object-cover brightness-[0.75] contrast-[1.1]"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-        </div>
-
-        {/* Breadcrumb – top-left overlay (same style as previous pages) */}
-        <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-30">
-          <nav aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-3 text-base md:text-lg">
-              <li>
-                <Link
-                  href="/"
-                  className="text-white/90 hover:text-[#C9A84C] transition-colors duration-300 flex items-center gap-2 font-medium drop-shadow-md"
-                >
-                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                  Home
-                </Link>
-              </li>
-              <li className="text-white/70">›</li>
-              <li className="text-white font-semibold drop-shadow-md">
-                Our Alumni 
-              </li>
-            </ol>
-          </nav>
-        </div>
-
-        {/* Original hero content (unchanged) */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto"
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6">
-            Our Alumni Network
-          </h1>
-          <p className="text-lg md:text-2xl max-w-4xl mx-auto opacity-90">
-            Proud graduates continuing to shine — carrying the Crescent legacy forward
-          </p>
-        </motion.div>
-      </section>
-
-      {/* Content Placeholder – polished slightly for beauty (content 100% unchanged) */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-slate-50">
-        <div className="container mx-auto px-6 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-[#0A1628] mb-8"
-          >
-            Coming Soon
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="text-xl text-slate-700 max-w-3xl mx-auto leading-relaxed"
-          >
-            Detailed alumni stories, success testimonials, network events, and how to stay connected.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-12"
-          >
-            <Link
-              href="/contact"
-              className="inline-block px-10 py-4 bg-[#C9A84C] hover:bg-[#2D6A4F] text-white font-bold rounded-xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.05]"
-            >
-              Get in Touch with Alumni Team
-            </Link>
+    <div className="min-h-screen" style={{ background: "#F7F5F1" }}>
+      <section className="public-page-hero relative overflow-hidden py-24 md:py-32" style={{ background: "#0B1F3A" }}>
+        <div aria-hidden className="absolute inset-0 bg-dot-grid opacity-[.07]" />
+        <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+          <Link href="/" className="inline-flex items-center gap-1.5 mb-8 text-sm text-white/70 hover:text-white focus-ring"><ChevronLeft size={16} /> Home</Link>
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .5 }} className="max-w-2xl">
+            <p className="text-xs tracking-[.16em] uppercase font-medium" style={{ color: "#6CC4E8" }}>The Crescent community</p>
+            <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-[1.06]" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Our <em style={{ color: "#3BADD9" }}>Alumni</em></h1>
+            <p className="mt-5 max-w-xl text-base sm:text-lg leading-relaxed text-white/70">Our former students carry Crescent values into their homes, workplaces, and communities.</p>
           </motion.div>
         </div>
       </section>
+
+      <section className="public-page-section py-16 md:py-24"><div className="max-w-5xl mx-auto px-6 sm:px-10">
+        <div className="grid md:grid-cols-[1.1fr_.9fr] gap-8 md:gap-12 items-start">
+          <div><p className="text-xs uppercase tracking-[.14em] font-medium" style={{ color: "#2196C4" }}>Stay part of the story</p><h2 className="mt-3 text-3xl sm:text-4xl font-semibold leading-tight" style={{ color: "#1A1714", fontFamily: "var(--font-display, Georgia, serif)" }}>A lifelong connection to Crescent Academy.</h2><p className="mt-5 leading-relaxed" style={{ color: "#5C554E" }}>We are building a dedicated alumni network for school news, reunions, mentoring, and celebrating the paths our graduates take after Crescent.</p></div>
+          <div className="grid gap-4"><div className="border bg-white p-6" style={{ borderRadius: 8, borderColor: "#E2DDD6" }}><GraduationCap size={22} style={{ color: "#2196C4" }} /><h3 className="mt-4 text-lg font-semibold" style={{ color: "#1A1714" }}>Share your journey</h3><p className="mt-2 text-sm leading-relaxed" style={{ color: "#5C554E" }}>Tell us what you have been doing since graduation and help inspire today&apos;s students.</p></div><div className="border bg-white p-6" style={{ borderRadius: 8, borderColor: "#E2DDD6" }}><Users size={22} style={{ color: "#2196C4" }} /><h3 className="mt-4 text-lg font-semibold" style={{ color: "#1A1714" }}>Reconnect with your class</h3><p className="mt-2 text-sm leading-relaxed" style={{ color: "#5C554E" }}>Register your interest for future school updates and alumni gatherings.</p></div></div>
+        </div>
+      </div></section>
+
+      <section className="public-page-section py-14 md:py-16" style={{ background: "#112847" }}><div className="max-w-5xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"><div><h2 className="text-2xl sm:text-3xl text-white font-semibold" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Join the alumni network</h2><p className="mt-2 text-sm text-white/65">Our team will help add you to the growing community.</p></div><a href={`mailto:${SCHOOL.email}?subject=Alumni%20Network%20Enquiry`} className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white focus-ring" style={{ background: "#2196C4", borderRadius: 999 }}><Mail size={16} /> Contact the school <ArrowRight size={15} /></a></div></section>
     </div>
   );
 }

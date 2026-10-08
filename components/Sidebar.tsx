@@ -39,6 +39,7 @@ const adminNav: NavItem[] = [
 const teacherNav: NavItem[] = [
   { href: '/portals/dashboard/teacher', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
   { href: '/portals/dashboard/teacher/results', icon: <FileText size={18} />, label: 'Results' },
+  { href: '/portals/dashboard/teacher/exams', icon: <MonitorCheck size={18} />, label: 'CBT Assessments' },
   { href: '/portals/dashboard/teacher/materials', icon: <BookOpen size={18} />, label: 'Materials' },
   { href: '/portals/dashboard/teacher/notifications', icon: <Bell size={18} />, label: 'Notifications' },
 ];
@@ -46,6 +47,7 @@ const teacherNav: NavItem[] = [
 const studentNav: NavItem[] = [
   { href: '/portals/dashboard/student', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
   { href: '/portals/dashboard/student/results', icon: <FileText size={18} />, label: 'Report Cards' },
+  { href: '/portals/dashboard/student/exams', icon: <MonitorCheck size={18} />, label: 'CBT Exams' },
   { href: '/portals/dashboard/student/materials', icon: <BookOpen size={18} />, label: 'Learning Hub' },
 ];
 

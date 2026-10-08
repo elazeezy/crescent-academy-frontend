@@ -17,7 +17,7 @@ interface NotStarted { _id: string; firstName: string; lastName: string; student
 
 export default function GradeExamPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [examMeta, setExamMeta] = useState<{ title: string; subject: string; questions: Question[]; objectiveCount: number; theoryMaxScore: number } | null>(null);
+  const [examMeta, setExamMeta] = useState<{ title: string; subject: string; questions: Question[]; objectiveCount: number; theoryMaxScore: number; term: string; session: string; assessmentSlot: string } | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [notStarted, setNotStarted] = useState<NotStarted[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,8 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
       const data = await res.json();
       if (res.ok) {
         setExamMeta(data.exam);
+        setTerm(data.exam.term || '1st Term');
+        setTermSession(data.exam.session || '2026/2027');
         setAttempts(data.attempts ?? []);
         setNotStarted(data.notStarted ?? []);
       }
@@ -57,10 +59,13 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
       const existingRes = await fetch(`/api/teacher/results/${studentId}?term=${encodeURIComponent(term)}&session=${encodeURIComponent(termSession)}`).catch(() => null);
       const existing = existingRes && existingRes.ok ? await existingRes.json() : null;
       const existingSubjects = (existing?.result?.subjects ?? []).filter((s: any) => s.subjectName !== examMeta.subject);
+      const previousSubject = (existing?.result?.subjects ?? []).find((s: any) => s.subjectName === examMeta.subject);
 
       const subjectEntry = {
         subjectName: examMeta.subject,
-        test1: 0, test2: 0, test3: 0,
+        test1: previousSubject?.test1 ?? 0,
+        test2: previousSubject?.test2 ?? 0,
+        test3: previousSubject?.test3 ?? 0,
         isCbt: true,
         cbtExamId: id,
         objectiveScore: attempt.objectiveScore ?? 0,
@@ -103,7 +108,7 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
 
       <div>
         <h1 className="text-2xl font-black text-white">Grading — {examMeta.title}</h1>
-        <p className="text-slate-400 text-sm mt-1">{examMeta.subject} — objective auto-graded /30, theory entered manually /{examMeta.theoryMaxScore}</p>
+        <p className="text-slate-400 text-sm mt-1">{examMeta.subject} — {examMeta.assessmentSlot === 'ca1' ? 'C.A Test 1' : examMeta.assessmentSlot === 'ca2' ? 'C.A Test 2' : 'Exam'} · {examMeta.term} · objective score auto-recorded; theory can be entered manually where applicable.</p>
       </div>
 
       <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4 flex flex-wrap gap-4 items-center">
@@ -178,7 +183,7 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
                       })}
                     </div>
 
-                    {submitted && (
+                    {submitted && examMeta.assessmentSlot === 'exam' && (
                       <div className="flex items-end gap-3 pt-2 border-t border-white/5">
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Theory Score (/{examMeta.theoryMaxScore})</label>
@@ -204,6 +209,12 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
                         )}
                       </div>
                     )}
+                    {submitted && examMeta.assessmentSlot === 'ca1' || submitted && examMeta.assessmentSlot === 'ca2' ? (
+                      <p className="text-xs text-emerald-400 border-t border-white/5 pt-3">Score recorded automatically in {examMeta.term} {examMeta.assessmentSlot === 'ca1' ? 'C.A Test 1' : 'C.A Test 2'} for this subject.</p>
+                    ) : null}
+                    {submitted && examMeta.assessmentSlot === 'testing' ? (
+                      <p className="text-xs text-indigo-300 border-t border-white/5 pt-3">CBT Testing submission only. No result record was created.</p>
+                    ) : null}
                   </div>
                 )}
               </div>

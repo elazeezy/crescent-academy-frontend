@@ -10,7 +10,11 @@ interface ExamListItem {
   subject: string;
   durationMinutes: number;
   objectiveCount: number;
-  attemptStatus: 'in_progress' | 'submitted' | 'auto_submitted' | null;
+  assessmentSlot?: string;
+  term?: string;
+  attemptStatus: 'not_started' | 'in_progress' | 'submitted' | 'auto_submitted' | null;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 export default function StudentExamsPage() {
@@ -34,7 +38,7 @@ export default function StudentExamsPage() {
     <div className="space-y-8 pb-16">
       <div>
         <h1 className="text-2xl font-black text-white">CBT Exams</h1>
-        <p className="text-slate-400 text-sm mt-1">Exams you&apos;ve started or submitted. New exams arrive as a notification with a direct link — they won&apos;t appear here until you open that link.</p>
+        <p className="text-slate-400 text-sm mt-1">Assessments assigned to your class, including upcoming, in progress, and submitted work.</p>
       </div>
 
       {loading ? (
@@ -43,31 +47,42 @@ export default function StudentExamsPage() {
         <div className="py-24 text-center rounded-[2rem] border border-dashed border-white/10 bg-white/[0.02]">
           <MonitorCheck size={40} className="text-slate-600 mx-auto mb-4" />
           <p className="text-slate-400 font-semibold text-lg">No exams yet</p>
-          <p className="text-slate-600 text-sm mt-1">You&apos;ll get a notification with a link the moment one opens.</p>
+          <p className="text-slate-600 text-sm mt-1">There are no CBT assessments assigned to your class right now.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {exams.map((exam) => {
             const submitted = exam.attemptStatus === 'submitted' || exam.attemptStatus === 'auto_submitted';
+            const upcoming = !!exam.windowStart && new Date(exam.windowStart) > new Date();
+            const expired = !!exam.windowEnd && new Date(exam.windowEnd) < new Date();
             return (
               <div key={exam._id} className="bg-white/[0.03] border border-white/[0.07] rounded-[1.75rem] p-6">
                 <h3 className="font-bold text-white">{exam.title}</h3>
-                <p className="text-sky-400/70 text-xs font-mono mt-0.5">{exam.subject}</p>
+                <p className="text-sky-400/70 text-xs font-mono mt-0.5">{exam.subject} · {exam.term} · {exam.assessmentSlot === 'ca1' ? 'C.A Test 1' : exam.assessmentSlot === 'ca2' ? 'C.A Test 2' : exam.assessmentSlot === 'testing' ? 'CBT Testing' : 'Exam'}</p>
                 <div className="mt-4 flex items-center gap-4 text-xs text-slate-500 font-semibold">
                   <span className="flex items-center gap-1.5"><Clock size={12} />{exam.durationMinutes} min</span>
                   <span>{exam.objectiveCount} questions</span>
                 </div>
+                {upcoming && (
+                  <p className="mt-2 text-xs font-semibold text-amber-400/80">
+                    Opens {exam.windowStart ? new Date(exam.windowStart).toLocaleString() : 'soon'}
+                  </p>
+                )}
                 <div className="mt-5">
                   {submitted ? (
                     <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
                       <CheckCircle2 size={16} /> Submitted
                     </span>
+                  ) : expired ? (
+                    <span className="text-slate-500 text-sm font-bold">Assessment window closed</span>
+                  ) : upcoming ? (
+                    <span className="text-amber-300 text-sm font-bold">Upcoming assessment</span>
                   ) : (
                     <Link
                       href={`/portals/dashboard/student/exams/${exam._id}`}
                       className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 w-full"
                     >
-                      <PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue Exam' : 'Start Exam'}
+                      <PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue CBT' : 'Attempt CBT'}
                     </Link>
                   )}
                 </div>

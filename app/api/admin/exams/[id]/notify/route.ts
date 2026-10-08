@@ -22,13 +22,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Only a live exam can be announced to its class' }, { status: 400 });
   }
 
+  const title = `New CBT Exam: ${exam.title}`;
+  const link = `/portals/dashboard/student/exams/${exam._id}`;
+  const existingUnread = await Notification.findOne({
+    title,
+    targetRole: 'student',
+    targetSection: exam.section,
+    targetClass: exam.targetClass,
+    link,
+  });
+  if (existingUnread) {
+    return NextResponse.json({ success: true, duplicate: true, notification: JSON.parse(JSON.stringify(existingUnread)) });
+  }
+
   const notification = await Notification.create({
-    title: `New CBT Exam: ${exam.title}`,
+    title,
     message: `${exam.subject} is now open for ${exam.targetClass}. You have ${exam.durationMinutes} minutes once you begin — tap to start.`,
     targetRole: 'student',
     targetSection: exam.section,
     targetClass: exam.targetClass,
-    link: `/portals/dashboard/student/exams/${exam._id}`,
+    link,
     sentBy: session.user.id,
     readBy: [],
   });

@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
 import {
-  ChevronLeft, Loader2, Plus, Trash2, CheckCircle, Save,
+  ChevronLeft, Loader2, Plus, Trash2, CheckCircle, Save, Clock,
   ListChecks, ClipboardPaste, AlertCircle, PlayCircle,
 } from 'lucide-react';
 import QuestionUpload from '@/components/exams/QuestionUpload';
+import { isoToLocalInput, localInputToIso } from '@/lib/examWindow';
 
 interface Question {
   text: string;
@@ -24,6 +25,8 @@ interface ExamDetail {
   theoryMaxScore: number;
   questions: Question[];
   status: string;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 const emptyQuestion = (): Question => ({ text: '', options: ['', '', '', ''], correctIndex: 0 });
@@ -41,6 +44,9 @@ export default function AdminExamBuilderPage({ params }: { params: Promise<{ id:
   const [saveMsg, setSaveMsg] = useState('');
   const [saveError, setSaveError] = useState('');
   const [actionError, setActionError] = useState('');
+  const [schedStart, setSchedStart] = useState('');
+  const [schedEnd, setSchedEnd] = useState('');
+  const [schedMsg, setSchedMsg] = useState('');
 
   const fetchExam = useCallback(async () => {
     setLoading(true);
@@ -50,6 +56,8 @@ export default function AdminExamBuilderPage({ params }: { params: Promise<{ id:
       if (res.ok) {
         setExam(data.exam);
         setQuestions(data.exam.questions?.length ? data.exam.questions : []);
+        setSchedStart(isoToLocalInput(data.exam.windowStart));
+        setSchedEnd(isoToLocalInput(data.exam.windowEnd));
       }
     } finally {
       setLoading(false);
@@ -57,6 +65,30 @@ export default function AdminExamBuilderPage({ params }: { params: Promise<{ id:
   }, [id]);
 
   useEffect(() => { fetchExam(); }, [fetchExam]);
+
+  const handleSaveSchedule = async () => {
+    setSaving(true);
+    setSchedMsg('');
+    setActionError('');
+    try {
+      const startIso = localInputToIso(schedStart);
+      if (!startIso) { setActionError('Pick a start date & time.'); return; }
+      const res = await fetch(`/api/admin/exams/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ windowStart: startIso, windowEnd: schedEnd ? localInputToIso(schedEnd) : null }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setActionError(data.error ?? 'Failed to save schedule'); return; }
+      setSchedMsg('Schedule saved.');
+      setTimeout(() => setSchedMsg(''), 3000);
+      fetchExam();
+    } catch {
+      setActionError('Network error.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const inputCls = "w-full text-sm text-slate-900 bg-white placeholder-slate-400 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-400";
 
@@ -164,7 +196,7 @@ export default function AdminExamBuilderPage({ params }: { params: Promise<{ id:
     return <div className="p-10 text-center text-slate-400">Exam not found.</div>;
   }
 
-  const questionsNeeded = exam.objectiveCount - questions.length;
+  const questionsNeeded = questions.length === 0 ? 1 : 0;
 
   return (
     <div className="max-w-3xl space-y-6 pb-24">
@@ -180,10 +212,38 @@ export default function AdminExamBuilderPage({ params }: { params: Promise<{ id:
         <span className="text-xs font-bold px-3 py-1.5 rounded-full border capitalize bg-slate-100 text-slate-600 border-slate-200">{exam.status.replace('_', ' ')}</span>
       </div>
 
+      {/* Schedule — admin can adjust this at any time, including while live */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+          <Clock size={13} /> Exam Schedule
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1.5">Start Date &amp; Time *</label>
+            <input type="datetime-local" className={inputCls} value={schedStart} onChange={(e) => setSchedStart(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1.5">End Date &amp; Time (optional)</label>
+            <input type="datetime-local" className={inputCls} value={schedEnd} onChange={(e) => setSchedEnd(e.target.value)} />
+          </div>
+        </div>
+        <p className="text-xs text-slate-400">Students can only start after the start time (server clock). With an end time, the exam locks automatically after it. An exam cannot go live without a start time.</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSaveSchedule}
+            disabled={saving || !schedStart}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-40 transition-all active:scale-95"
+          >
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save Schedule
+          </button>
+          {schedMsg && <span className="text-emerald-600 text-xs font-bold">{schedMsg}</span>}
+        </div>
+      </div>
+
       <div className={`rounded-2xl border p-4 flex items-center gap-3 ${questionsNeeded === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
         {questionsNeeded === 0 ? <CheckCircle size={18} className="text-emerald-500 shrink-0" /> : <AlertCircle size={18} className="text-amber-500 shrink-0" />}
         <p className={`text-sm font-semibold ${questionsNeeded === 0 ? 'text-emerald-700' : 'text-amber-700'}`}>
-          {questionsNeeded === 0 ? `All ${exam.objectiveCount} questions ready.` : `${questions.length} of ${exam.objectiveCount} questions added — ${questionsNeeded} more needed.`}
+          {questionsNeeded === 0 ? `${questions.length} questions ready. This is the total that will be graded.` : 'Add at least one question before opening this assessment.'}
         </p>
       </div>
 

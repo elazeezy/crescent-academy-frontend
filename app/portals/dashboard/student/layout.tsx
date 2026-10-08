@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, FileText, LogOut,
-  Search, Menu, X, GraduationCap, Home, BookOpen,
+  Search, Menu, X, GraduationCap, Home, BookOpen, MonitorCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -14,6 +14,7 @@ import NotificationBell from '@/components/student/NotificationBell';
 const navItems = [
   { icon: LayoutDashboard, label: 'Overview',     href: '/portals/dashboard/student' },
   { icon: FileText,        label: 'Report Cards', href: '/portals/dashboard/student/results' },
+  { icon: MonitorCheck,   label: 'CBT Exams',    href: '/portals/dashboard/student/exams' },
   { icon: BookOpen,        label: 'Learning Hub', href: '/portals/dashboard/student/materials' },
 ];
 
@@ -140,7 +141,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       <div className="flex-1 flex flex-col relative z-10 h-screen overflow-hidden w-full">
 
         {/* Header */}
-        <header className="h-17.5 bg-[#0a1628]/90 backdrop-blur-xl border-b border-white/5 px-5 md:px-8 flex items-center justify-between shrink-0">
+        <header className="relative z-50 h-17.5 bg-[#0a1628] border-b border-white/5 px-5 md:px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileOpen(true)}

@@ -1,162 +1,53 @@
-// app/news/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowRight, CalendarDays, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 },
-  },
-};
+const stories = [
+  { title: "Iwo Day Football Tournament - Runners-Up", date: "15 Nov 2025", category: "Sports", image: "/images/news-football.jpg", excerpt: "Our boys' team showed remarkable teamwork and discipline, defeating every public school on their way to the final." },
+  { title: "Qur'anic Recitation Competition Winners", date: "28 Oct 2025", category: "Spiritual Life", image: "/images/news-quran.jpg", excerpt: "Crescent students secured first and second place at the regional Qur'anic recitation competition." },
+  { title: "Annual Prize-Giving Day", date: "13 Sep 2025", category: "School Life", image: "/images/news-prize-giving.jpg", excerpt: "A joyful day recognising the effort, growth, and accomplishments of our pupils, students, and staff." },
+];
 
 export default function NewsPage() {
-  const newsItems = [
-    {
-      title: "Iwo Day Football Tournament – Runners-Up Glory!",
-      date: "November 15, 2025",
-      excerpt: "Our boys' team showed incredible teamwork and discipline to reach the final, defeating every public school. A proud moment for The Crescent Academy!",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1470",
-      category: "Sports",
-    },
-    {
-      title: "Qur’anic Recitation Competition Winners",
-      date: "October 28, 2025",
-      excerpt: "Our students secured 1st and 2nd place in the regional Qur’anic competition — a testament to our focus on spiritual excellence.",
-      image: "https://images.unsplash.com/photo-1580130718646-9f694209b207?auto=format&fit=crop&q=80&w=1470",
-      category: "Spiritual",
-    },
-    {
-      title: "Annual Prize-Giving Day 2025",
-      date: "September 13, 2025",
-      excerpt: "Celebrating 15 years of nurturing the Complete Child with awards, speeches, and joyful moments from our growing family.",
-      image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=1470",
-      category: "Events",
-    },
-    {
-      title: "AMIS Competitions – Another Strong Showing",
-      date: "August 2025",
-      excerpt: "Students brought home multiple prizes in academics, Qur’an recitation, and debate — continuing our legacy of excellence.",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=1470",
-      category: "Academics",
-    },
-  ];
-
   return (
-    <div className="bg-white min-h-screen flex flex-col">
-    
-
-    <Link
-  href="/"
-  className="fixed top-24 left-6 z-50 bg-white/95 hover:bg-white text-[#0A1628] px-6 py-3 rounded-full shadow-xl flex items-center gap-2 transition-all hover:shadow-2xl hover:scale-105 md:top-28 md:left-8"
->
-  ← Back to Home
-</Link>
-
-      {/* Hero */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?auto=format&fit=crop&q=80&w=2070"
-            alt="News & Events"
-            fill
-            className="object-cover brightness-[0.75]"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto"
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6">
-            News & Events
-          </h1>
-          <p className="text-lg md:text-2xl max-w-4xl mx-auto opacity-90">
-            Stay updated with the latest happenings, achievements, and celebrations at The Crescent Academy
-          </p>
-        </motion.div>
-      </section>
-
-      {/* Latest News Grid */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-6">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"
-          >
-            {newsItems.map((item, i) => (
-              <motion.article
-                key={i}
-                variants={fadeInUp}
-                className="bg-slate-50 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border border-slate-200 group"
-              >
-                <div className="relative h-56 overflow-hidden">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <span className="absolute top-4 left-4 bg-[#C9A84C] text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {item.category}
-                  </span>
-                </div>
-
-                <div className="p-6 md:p-8">
-                  <p className="text-sm text-slate-500 mb-3">{item.date}</p>
-                  <h3 className="text-xl md:text-2xl font-bold text-[#0A1628] mb-4 group-hover:text-[#C9A84C] transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate-700 leading-relaxed mb-6 line-clamp-3">
-                    {item.excerpt}
-                  </p>
-                  <Link
-                    href="#"
-                    className="inline-flex items-center text-[#C9A84C] font-medium hover:text-[#2D6A4F] transition-colors"
-                  >
-                    Read More →
-                  </Link>
-                </div>
-              </motion.article>
-            ))}
+    <div className="min-h-screen" style={{ background: "#F7F5F1" }}>
+      <section className="public-page-hero relative flex items-center overflow-hidden py-24 md:py-32" style={{ background: "#0B1F3A" }}>
+        <div aria-hidden className="absolute inset-0 opacity-[0.07] bg-dot-grid" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(110deg, rgba(6,14,28,.35), transparent)" }} />
+        <div className="relative z-10 max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16">
+          <Link href="/" className="inline-flex items-center gap-1.5 mb-8 text-sm text-white/70 hover:text-white transition-colors focus-ring"><ChevronLeft size={16} /> Home</Link>
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .5 }} className="max-w-2xl">
+            <p className="text-xs font-medium tracking-[0.16em] uppercase mb-3" style={{ color: "#6CC4E8" }}>From Crescent Academy</p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.06] text-white" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>News & <em style={{ color: "#3BADD9" }}>Events</em></h1>
+            <p className="mt-5 text-base sm:text-lg leading-relaxed text-white/70 max-w-xl">The moments, milestones, and people shaping life at The Crescent Academy.</p>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-[#0A1628] to-[#0A1628] text-white">
-        <div className="container mx-auto px-6 text-center">
-          <motion.h3
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-3xl md:text-4xl font-bold mb-8"
-          >
-            Stay Connected
-          </motion.h3>
-          <Link
-            href="/contact"
-            className="inline-block px-10 py-4 bg-white/15 hover:bg-white/25 rounded-xl font-medium transition-all backdrop-blur-md border border-white/20"
-          >
-            Contact Us for Updates
-          </Link>
+      <section className="public-page-section py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 md:mb-12">
+            <ScrollReveal><div><p className="text-xs font-medium tracking-[.14em] uppercase" style={{ color: "#2196C4" }}>Latest stories</p><h2 className="mt-2 text-3xl sm:text-4xl font-semibold" style={{ color: "#1A1714", fontFamily: "var(--font-display, Georgia, serif)" }}>What&apos;s happening at Crescent</h2></div></ScrollReveal>
+            <p className="text-sm max-w-sm" style={{ color: "#5C554E" }}>Updates from our classrooms, competitions, and community.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {stories.map((story, index) => (
+              <ScrollReveal key={story.title} delay={index * .08}>
+                <article className="h-full overflow-hidden border bg-white transition-shadow hover:shadow-lg" style={{ borderColor: "#E2DDD6", borderRadius: 8 }}>
+                  <div className="relative aspect-[16/10] bg-sky-100"><Image src={story.image} alt={story.title} fill sizes="(max-width: 767px) 100vw, 33vw" className="object-cover" /><span className="absolute left-4 top-4 px-3 py-1 text-[11px] font-medium text-white" style={{ background: "#0B1F3A", borderRadius: 999 }}>{story.category}</span></div>
+                  <div className="p-6"><p className="flex items-center gap-2 text-xs mb-4" style={{ color: "#5C554E" }}><CalendarDays size={14} style={{ color: "#2196C4" }} />{story.date}</p><h3 className="text-xl font-semibold leading-snug" style={{ color: "#1A1714", fontFamily: "var(--font-display, Georgia, serif)" }}>{story.title}</h3><p className="mt-3 text-sm leading-relaxed" style={{ color: "#5C554E" }}>{story.excerpt}</p></div>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
+
+      <section className="public-page-section py-16 md:py-20" style={{ background: "#112847" }}><div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col md:flex-row md:items-center justify-between gap-7"><div><p className="text-xs tracking-[.14em] uppercase" style={{ color: "#6CC4E8" }}>Stay connected</p><h2 className="mt-2 text-3xl text-white font-semibold" style={{ fontFamily: "var(--font-display, Georgia, serif)" }}>Have a school story to share?</h2></div><Link href="/contact" className="inline-flex w-fit items-center gap-2 px-5 py-3 text-sm font-semibold text-white transition-colors focus-ring" style={{ border: "1px solid rgba(255,255,255,.25)", borderRadius: 999 }}>Contact the school <ArrowRight size={16} /></Link></div></section>
     </div>
   );
 }
