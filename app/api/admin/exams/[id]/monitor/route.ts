@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
@@ -20,11 +21,30 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const exam = await Exam.findById(id).lean() as any;
   if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
 
+  // Compute answeredCount in the database (via $size/$filter) instead of shipping every
+  // student's full answer array to the server on each 10s poll — the single biggest
+  // payload saving when a class of hundreds is sitting the exam.
   const [attempts, classStudents] = await Promise.all([
-    ExamAttempt.find({ exam: id })
-      .populate({ path: 'student', select: 'firstName lastName studentId' })
-      .select('student answers status startedAt deadline lastSeenAt')
-      .lean(),
+    ExamAttempt.aggregate([
+      { $match: { exam: new mongoose.Types.ObjectId(id) } },
+      {
+        $project: {
+          student: 1, status: 1, startedAt: 1, deadline: 1, lastSeenAt: 1,
+          reattemptAllowed: 1, attemptNumber: 1,
+          answeredCount: {
+            $size: { $filter: { input: { $ifNull: ['$answers', []] }, cond: { $ne: ['$$this', null] } } },
+          },
+        },
+      },
+      { $lookup: { from: 'students', localField: 'student', foreignField: '_id', as: 'student' } },
+      { $unwind: '$student' },
+      {
+        $project: {
+          status: 1, startedAt: 1, deadline: 1, lastSeenAt: 1, reattemptAllowed: 1, attemptNumber: 1, answeredCount: 1,
+          'student._id': 1, 'student.firstName': 1, 'student.lastName': 1, 'student.studentId': 1,
+        },
+      },
+    ]),
     Student.find({ section: exam.section, currentClass: exam.targetClass })
       .select('firstName lastName studentId')
       .lean(),
@@ -36,11 +56,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const progress = attempts.map((a: any) => ({
     student: a.student,
     status: a.status,
-    answeredCount: a.answers.filter((x: number | null) => x != null).length,
+    answeredCount: a.answeredCount,
     totalQuestions: exam.questions.length,
     startedAt: a.startedAt,
     deadline: a.deadline,
     lastSeenAt: a.lastSeenAt,
+    reattemptAllowed: !!a.reattemptAllowed,
+    attemptNumber: a.attemptNumber ?? 1,
   }));
 
   return NextResponse.json({

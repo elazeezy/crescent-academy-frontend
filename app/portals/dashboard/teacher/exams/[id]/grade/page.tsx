@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Loader2, ChevronDown, ChevronUp, Save, CheckCircle, AlertCircle, Circle } from 'lucide-react';
+import { ChevronLeft, Loader2, ChevronDown, ChevronUp, Save, CheckCircle, AlertCircle, Circle, RotateCcw } from 'lucide-react';
 
 interface Question { text: string; options: string[]; correctIndex: number; }
 interface Attempt {
@@ -12,6 +12,8 @@ interface Attempt {
   status: string;
   correctCount?: number;
   objectiveScore?: number;
+  reattemptAllowed?: boolean;
+  attemptNumber?: number;
 }
 interface NotStarted { _id: string; firstName: string; lastName: string; studentId: string; }
 
@@ -28,6 +30,7 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
   const [theoryScores, setTheoryScores] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<Record<string, string>>({});
+  const [reattemptBusy, setReattemptBusy] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -47,6 +50,24 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
   }, [id]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  const toggleReattempt = async (studentId: string, allow: boolean) => {
+    setReattemptBusy(studentId);
+    try {
+      const res = await fetch(`/api/teacher/exams/${id}/reattempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, allow }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Could not update re-attempt.'); return; }
+      await fetchData();
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setReattemptBusy(null);
+    }
+  };
 
   const saveTheoryAndTotal = async (attempt: Attempt) => {
     if (!examMeta) return;
@@ -215,6 +236,35 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
                     {submitted && examMeta.assessmentSlot === 'testing' ? (
                       <p className="text-xs text-indigo-300 border-t border-white/5 pt-3">CBT Testing submission only. No result record was created.</p>
                     ) : null}
+
+                    {submitted && (
+                      <div className="flex flex-wrap items-center gap-3 border-t border-white/5 pt-3">
+                        {a.reattemptAllowed ? (
+                          <>
+                            <span className="text-xs font-semibold text-amber-300 flex items-center gap-1.5"><RotateCcw size={13} /> Re-attempt is open for this student.</span>
+                            <button
+                              onClick={() => toggleReattempt(a.student._id, false)}
+                              disabled={reattemptBusy === a.student._id}
+                              className="flex items-center gap-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-3 py-1.5 rounded-lg hover:bg-amber-500/25 disabled:opacity-50"
+                            >
+                              {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : null} Cancel re-attempt
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => toggleReattempt(a.student._id, true)}
+                            disabled={reattemptBusy === a.student._id}
+                            className="flex items-center gap-1.5 text-xs font-bold text-slate-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-50"
+                            title="Let this student take the exam again. A fresh attempt starts when they next open it, replacing this submission."
+                          >
+                            {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Allow re-attempt
+                          </button>
+                        )}
+                        {a.attemptNumber && a.attemptNumber > 1 ? (
+                          <span className="text-[11px] text-slate-500 font-mono">attempt #{a.attemptNumber}</span>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

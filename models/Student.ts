@@ -17,4 +17,11 @@ const StudentSchema = new mongoose.Schema({
   photo:         { type: String },  // URL to student photo
 }, { timestamps: true });
 
+// Hot path: every authenticated student request resolves the profile via
+// Student.findOne({ user }). Without this index that is a collection scan on each
+// start/answer/submit/heartbeat call.
+StudentSchema.index({ user: 1 });
+// Serves class rosters (monitor, grading, dashboard): find({ section, currentClass }).
+StudentSchema.index({ section: 1, currentClass: 1 });
+
 export default mongoose.models.Student || mongoose.model("Student", StudentSchema);

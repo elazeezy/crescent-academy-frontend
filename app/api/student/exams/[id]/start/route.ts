@@ -14,66 +14,91 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const { id } = await params;
-  await dbConnect();
 
-  const student = await Student.findOne({ user: session.user.id }).lean() as any;
-  if (!student) return NextResponse.json({ error: 'Student profile not found' }, { status: 404 });
+  try {
+    await dbConnect();
 
-  const exam = await Exam.findById(id).lean() as any;
-  if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
+    const student = await Student.findOne({ user: session.user.id }).lean() as any;
+    if (!student) return NextResponse.json({ error: 'Student profile not found' }, { status: 404 });
 
-  if (exam.section !== student.section || exam.targetClass !== student.currentClass) {
-    return NextResponse.json({ error: 'This exam is not available for your class' }, { status: 403 });
-  }
-  if (exam.status !== 'live') {
-    return NextResponse.json({ error: 'This exam is not currently open' }, { status: 403 });
-  }
-  const now = new Date();
-  if (exam.windowStart && now < new Date(exam.windowStart)) {
-    return NextResponse.json({ error: 'This exam has not opened yet' }, { status: 403 });
-  }
-  if (exam.windowEnd && now > new Date(exam.windowEnd)) {
-    return NextResponse.json({ error: 'This exam window has closed' }, { status: 403 });
-  }
+    const exam = await Exam.findById(id).lean() as any;
+    if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
 
-  let attempt = await ExamAttempt.findOne({ exam: id, student: student._id });
-
-  if (attempt && (attempt.status === 'submitted' || attempt.status === 'auto_submitted')) {
-    return NextResponse.json({ error: 'You have already submitted this exam' }, { status: 403 });
-  }
-
-  if (!attempt) {
-    const startedAt = now;
-    const deadline = new Date(startedAt.getTime() + exam.durationMinutes * 60 * 1000);
-    attempt = await ExamAttempt.create({
-      exam: id,
-      student: student._id,
-      answers: new Array(exam.questions.length).fill(null),
-      startedAt,
-      deadline,
-      lastSeenAt: now,
-      status: 'in_progress',
-    });
-  } else {
-    // Resuming — auto-submit if the deadline has already passed while they were away
-    if (now > attempt.deadline) {
-      attempt.status = 'auto_submitted';
-      await attempt.save();
-      return NextResponse.json({ error: 'Time expired while you were disconnected. Your exam was auto-submitted.' }, { status: 403 });
+    if (exam.section !== student.section || exam.targetClass !== student.currentClass) {
+      return NextResponse.json({ error: 'This exam is not available for your class' }, { status: 403 });
     }
-    attempt.lastSeenAt = now;
-    await attempt.save();
+    if (exam.status !== 'live') {
+      return NextResponse.json({ error: 'This exam is not currently open' }, { status: 403 });
+    }
+    const now = new Date();
+    if (exam.windowStart && now < new Date(exam.windowStart)) {
+      return NextResponse.json({ error: 'This exam has not opened yet' }, { status: 403 });
+    }
+    if (exam.windowEnd && now > new Date(exam.windowEnd)) {
+      return NextResponse.json({ error: 'This exam window has closed' }, { status: 403 });
+    }
+
+    let attempt = await ExamAttempt.findOne({ exam: id, student: student._id });
+
+    const alreadySubmitted = attempt && (attempt.status === 'submitted' || attempt.status === 'auto_submitted');
+
+    if (alreadySubmitted && attempt.reattemptAllowed) {
+      // Teacher/admin granted a re-attempt — reset to a fresh in-progress run.
+      const startedAt = now;
+      const deadline = new Date(startedAt.getTime() + exam.durationMinutes * 60 * 1000);
+      attempt.answers = new Array(exam.questions.length).fill(null);
+      attempt.startedAt = startedAt;
+      attempt.deadline = deadline;
+      attempt.lastSeenAt = now;
+      attempt.disconnectLog = [];
+      attempt.status = 'in_progress';
+      attempt.objectiveScore = undefined;
+      attempt.correctCount = undefined;
+      attempt.submittedAt = undefined;
+      attempt.reattemptAllowed = false;
+      attempt.attemptNumber = (attempt.attemptNumber ?? 1) + 1;
+      await attempt.save();
+    } else if (alreadySubmitted) {
+      return NextResponse.json({ error: 'You have already submitted this exam' }, { status: 403 });
+    }
+
+    if (!attempt) {
+      const startedAt = now;
+      const deadline = new Date(startedAt.getTime() + exam.durationMinutes * 60 * 1000);
+      attempt = await ExamAttempt.create({
+        exam: id,
+        student: student._id,
+        answers: new Array(exam.questions.length).fill(null),
+        startedAt,
+        deadline,
+        lastSeenAt: now,
+        status: 'in_progress',
+      });
+    } else {
+      // Resuming — auto-submit if the deadline has already passed while they were away
+      if (now > attempt.deadline) {
+        attempt.status = 'auto_submitted';
+        await attempt.save();
+        return NextResponse.json({ error: 'Time expired while you were disconnected. Your exam was auto-submitted.' }, { status: 403 });
+      }
+      attempt.lastSeenAt = now;
+      await attempt.save();
+    }
+
+    const questionsForStudent = exam.questions.map((q: any) => ({ text: q.text, options: q.options }));
+
+    return NextResponse.json({
+      attemptId: attempt._id.toString(),
+      title: exam.title,
+      subject: exam.subject,
+      questions: questionsForStudent,
+      answers: attempt.answers,
+      deadline: attempt.deadline,
+      serverNow: now,
+    });
+  } catch {
+    // Shared-cluster overload / transient DB error during a start burst. The client
+    // retries with backoff, which also staggers a simultaneous-start stampede.
+    return NextResponse.json({ error: 'Server busy, please wait a moment and it will retry automatically.' }, { status: 503 });
   }
-
-  const questionsForStudent = exam.questions.map((q: any) => ({ text: q.text, options: q.options }));
-
-  return NextResponse.json({
-    attemptId: attempt._id.toString(),
-    title: exam.title,
-    subject: exam.subject,
-    questions: questionsForStudent,
-    answers: attempt.answers,
-    deadline: attempt.deadline,
-    serverNow: now,
-  });
 }

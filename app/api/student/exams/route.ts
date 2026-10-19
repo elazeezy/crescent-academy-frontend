@@ -18,7 +18,7 @@ export async function GET() {
   if (!student) return NextResponse.json({ error: 'Student profile not found' }, { status: 404 });
 
   const attempts = await ExamAttempt.find({ student: student._id })
-    .select('exam status')
+    .select('exam status reattemptAllowed')
     .sort({ createdAt: -1 })
     .lean();
 
@@ -35,7 +35,7 @@ export async function GET() {
   const result = exams.map((exam: any) => {
     const attempt: any = attemptByExam.get(exam._id.toString());
     const { questions, ...safeExam } = exam;
-    return { ...safeExam, objectiveCount: questions?.length ?? exam.objectiveCount, attemptStatus: attempt?.status ?? 'not_started' };
+    return { ...safeExam, objectiveCount: questions?.length ?? exam.objectiveCount, attemptStatus: attempt?.status ?? 'not_started', reattemptAllowed: !!attempt?.reattemptAllowed };
   }).sort((a: any, b: any) => new Date(b.windowStart ?? b.createdAt).getTime() - new Date(a.windowStart ?? a.createdAt).getTime());
 
   return NextResponse.json({ exams: result });

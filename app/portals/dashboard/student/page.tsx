@@ -23,14 +23,20 @@ export default async function StudentDashboard() {
     section: studentProfile.section,
     targetClass: studentProfile.currentClass,
     status: 'live',
-  }).select('_id title assessmentSlot windowStart windowEnd').lean() as { _id: { toString(): string }; windowStart?: Date; windowEnd?: Date }[] : [];
+  }).select('_id title assessmentSlot windowStart windowEnd').lean() as { _id: { toString(): string }; title?: string; windowStart?: Date; windowEnd?: Date }[] : [];
   const priorAttempts = studentProfile && liveAssessments.length
-    ? await ExamAttempt.find({ student: studentProfile._id, exam: { $in: liveAssessments.map((e) => e._id) } }).select('exam status').lean() as { exam: { toString(): string } }[]
+    ? await ExamAttempt.find({ student: studentProfile._id, exam: { $in: liveAssessments.map((e) => e._id) } }).select('exam status reattemptAllowed').lean() as { exam: { toString(): string }; status: string; reattemptAllowed?: boolean }[]
     : [];
+  const attemptByExam = new Map(priorAttempts.map((a) => [a.exam.toString(), a]));
   const attemptedExamIds = new Set(priorAttempts.map((a) => a.exam.toString()));
-  const cbtToAttend = liveAssessments.filter((e) =>
-    !attemptedExamIds.has(e._id.toString()) && (!e.windowStart || new Date(e.windowStart) <= new Date()) && (!e.windowEnd || new Date(e.windowEnd) >= new Date())
-  );
+  const windowOpen = (e: { windowStart?: Date; windowEnd?: Date }) =>
+    (!e.windowStart || new Date(e.windowStart) <= new Date()) && (!e.windowEnd || new Date(e.windowEnd) >= new Date());
+  const cbtToAttend = liveAssessments.filter((e) => !attemptedExamIds.has(e._id.toString()) && windowOpen(e));
+  const cbtInProgress = liveAssessments.filter((e) => attemptByExam.get(e._id.toString())?.status === 'in_progress');
+  const cbtReattempt = liveAssessments.filter((e) => {
+    const a = attemptByExam.get(e._id.toString());
+    return a?.reattemptAllowed && (a.status === 'submitted' || a.status === 'auto_submitted') && windowOpen(e);
+  });
 
   const latestResult = studentProfile
     ? await Result.findOne({ student: studentProfile._id, published: true })
@@ -58,6 +64,22 @@ export default async function StudentDashboard() {
 
   return (
     <div className="space-y-8 pb-16">
+
+      {/* Resume: an exam started but not yet submitted (e.g. the network dropped mid-exam). */}
+      {cbtInProgress.map((e) => (
+        <Link key={`resume-${e._id.toString()}`} href={`/portals/dashboard/student/exams/${e._id.toString()}`} className="flex items-center justify-between gap-4 rounded-2xl border border-sky-400/50 bg-sky-500 px-5 py-4 text-white shadow-lg hover:bg-sky-400 transition-colors">
+          <span className="min-w-0"><strong className="block text-sm md:text-base">Continue your exam{e.title ? `: ${e.title}` : ''}.</strong><span className="text-xs md:text-sm text-sky-50/90">You have an exam in progress. Your answers were saved — pick up where you left off.</span></span>
+          <span className="shrink-0 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white">Continue</span>
+        </Link>
+      ))}
+
+      {/* Re-attempt: a teacher/admin reopened a submitted exam for this student. */}
+      {cbtReattempt.map((e) => (
+        <Link key={`reattempt-${e._id.toString()}`} href={`/portals/dashboard/student/exams/${e._id.toString()}`} className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-400/50 bg-emerald-500 px-5 py-4 text-white shadow-lg hover:bg-emerald-400 transition-colors">
+          <span className="min-w-0"><strong className="block text-sm md:text-base">Re-attempt available{e.title ? `: ${e.title}` : ''}.</strong><span className="text-xs md:text-sm text-emerald-50/90">Your teacher has reopened this exam. Starting it begins a fresh attempt.</span></span>
+          <span className="shrink-0 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white">Re-attempt</span>
+        </Link>
+      ))}
 
       {cbtToAttend.length > 0 && (
         <Link href="/portals/dashboard/student/exams" className="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-amber-300 px-5 py-4 text-slate-950 shadow-lg hover:bg-amber-200 transition-colors">

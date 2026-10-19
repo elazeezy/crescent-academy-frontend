@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { MonitorCheck, Clock, Loader2, PlayCircle, CheckCircle2 } from 'lucide-react';
+import { MonitorCheck, Clock, Loader2, PlayCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 
 interface ExamListItem {
   _id: string;
@@ -13,6 +13,7 @@ interface ExamListItem {
   assessmentSlot?: string;
   term?: string;
   attemptStatus: 'not_started' | 'in_progress' | 'submitted' | 'auto_submitted' | null;
+  reattemptAllowed?: boolean;
   windowStart?: string;
   windowEnd?: string;
 }
@@ -34,12 +35,51 @@ export default function StudentExamsPage() {
 
   useEffect(() => { fetchExams(); }, [fetchExams]);
 
+  const inProgress = exams.filter((e) => e.attemptStatus === 'in_progress');
+  const reattempts = exams.filter(
+    (e) => e.reattemptAllowed && (e.attemptStatus === 'submitted' || e.attemptStatus === 'auto_submitted'),
+  );
+
   return (
     <div className="space-y-8 pb-16">
       <div>
         <h1 className="text-2xl font-black text-white">CBT Exams</h1>
         <p className="text-slate-400 text-sm mt-1">Assessments assigned to your class, including upcoming, in progress, and submitted work.</p>
       </div>
+
+      {/* Resume banner — an exam you started but never submitted (e.g. network dropped). */}
+      {inProgress.map((exam) => (
+        <Link
+          key={`resume-${exam._id}`}
+          href={`/portals/dashboard/student/exams/${exam._id}`}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-sky-400/40 bg-sky-500/15 px-5 py-4 text-white hover:bg-sky-500/25 transition-colors"
+        >
+          <span className="min-w-0">
+            <strong className="block text-sm md:text-base">Continue your exam: {exam.title}</strong>
+            <span className="text-xs md:text-sm text-sky-200/90">You have an exam in progress. Your saved answers are waiting — pick up where you left off.</span>
+          </span>
+          <span className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-sky-400 px-4 py-2 text-xs font-bold text-slate-950">
+            <PlayCircle size={14} /> Continue
+          </span>
+        </Link>
+      ))}
+
+      {/* Re-attempt banner — a teacher/admin has reopened this exam for you. */}
+      {reattempts.map((exam) => (
+        <Link
+          key={`reattempt-${exam._id}`}
+          href={`/portals/dashboard/student/exams/${exam._id}`}
+          className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/15 px-5 py-4 text-white hover:bg-emerald-500/25 transition-colors"
+        >
+          <span className="min-w-0">
+            <strong className="block text-sm md:text-base">Re-attempt available: {exam.title}</strong>
+            <span className="text-xs md:text-sm text-emerald-200/90">Your teacher has reopened this exam. Starting a re-attempt begins a fresh attempt.</span>
+          </span>
+          <span className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-emerald-400 px-4 py-2 text-xs font-bold text-slate-950">
+            <RotateCcw size={14} /> Re-attempt
+          </span>
+        </Link>
+      ))}
 
       {loading ? (
         <div className="flex items-center justify-center py-24 text-slate-500 gap-2"><Loader2 size={20} className="animate-spin" /> Loading…</div>
@@ -52,7 +92,8 @@ export default function StudentExamsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {exams.map((exam) => {
-            const submitted = exam.attemptStatus === 'submitted' || exam.attemptStatus === 'auto_submitted';
+            const submitted = (exam.attemptStatus === 'submitted' || exam.attemptStatus === 'auto_submitted') && !exam.reattemptAllowed;
+            const canReattempt = exam.reattemptAllowed && (exam.attemptStatus === 'submitted' || exam.attemptStatus === 'auto_submitted');
             const upcoming = !!exam.windowStart && new Date(exam.windowStart) > new Date();
             const expired = !!exam.windowEnd && new Date(exam.windowEnd) < new Date();
             return (
@@ -80,9 +121,11 @@ export default function StudentExamsPage() {
                   ) : (
                     <Link
                       href={`/portals/dashboard/student/exams/${exam._id}`}
-                      className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 w-full"
+                      className={`flex items-center justify-center gap-2 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 w-full ${canReattempt ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'}`}
                     >
-                      <PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue CBT' : 'Attempt CBT'}
+                      {canReattempt
+                        ? <><RotateCcw size={16} /> Re-attempt CBT</>
+                        : <><PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue CBT' : 'Attempt CBT'}</>}
                     </Link>
                   )}
                 </div>

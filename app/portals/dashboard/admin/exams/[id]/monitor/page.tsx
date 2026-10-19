@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Loader2, Activity, Clock, CheckCircle2, Users } from 'lucide-react';
+import { ChevronLeft, Loader2, Activity, Clock, CheckCircle2, Users, RotateCcw } from 'lucide-react';
 
 interface StudentRef { _id: string; firstName: string; lastName: string; studentId: string; }
 interface ProgressRow {
@@ -13,6 +13,8 @@ interface ProgressRow {
   startedAt: string;
   deadline: string;
   lastSeenAt: string;
+  reattemptAllowed?: boolean;
+  attemptNumber?: number;
 }
 
 export default function MonitorExamPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,6 +25,7 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
   const [notStarted, setNotStarted] = useState<StudentRef[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const [reattemptBusy, setReattemptBusy] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -39,9 +42,27 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
     }
   }, [id]);
 
+  const toggleReattempt = useCallback(async (studentId: string, allow: boolean) => {
+    setReattemptBusy(studentId);
+    try {
+      const res = await fetch(`/api/admin/exams/${id}/reattempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, allow }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Could not update re-attempt.'); return; }
+      await fetchData();
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setReattemptBusy(null);
+    }
+  }, [id, fetchData]);
+
   useEffect(() => {
     fetchData();
-    const poll = setInterval(fetchData, 5000);
+    const poll = setInterval(fetchData, 10000);
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => { clearInterval(poll); clearInterval(tick); };
   }, [fetchData]);
@@ -71,7 +92,7 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
           <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
             <Activity size={20} className="text-emerald-500" /> {examMeta.title}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">{examMeta.subject} — live progress, refreshes every 5 seconds. Scores stay hidden until grading.</p>
+          <p className="text-slate-500 text-sm mt-1">{examMeta.subject} — live progress, refreshes every 10 seconds. Scores stay hidden until grading.</p>
         </div>
       </div>
 
@@ -134,9 +155,28 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-slate-800 text-sm truncate">{p.student.firstName} {p.student.lastName}</p>
-                  <p className="text-slate-400 text-xs font-mono">{p.student.studentId}</p>
+                  <p className="text-slate-400 text-xs font-mono">{p.student.studentId}{p.attemptNumber && p.attemptNumber > 1 ? ` · attempt ${p.attemptNumber}` : ''}</p>
                 </div>
                 <span className="text-xs font-bold text-emerald-600 capitalize">{p.status.replace('_', ' ')}</span>
+                {p.reattemptAllowed ? (
+                  <button
+                    onClick={() => toggleReattempt(p.student._id, false)}
+                    disabled={reattemptBusy === p.student._id}
+                    className="flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg hover:bg-amber-100 disabled:opacity-50"
+                    title="Re-attempt is allowed for this student. Click to cancel it."
+                  >
+                    {reattemptBusy === p.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Re-attempt allowed
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => toggleReattempt(p.student._id, true)}
+                    disabled={reattemptBusy === p.student._id}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-50"
+                    title="Let this student take the exam again. A fresh attempt starts when they next open it."
+                  >
+                    {reattemptBusy === p.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Allow re-attempt
+                  </button>
+                )}
               </div>
             ))}
           </div>
