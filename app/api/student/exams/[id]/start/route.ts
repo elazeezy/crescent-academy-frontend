@@ -4,6 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import Exam from '@/models/Exam';
 import ExamAttempt from '@/models/ExamAttempt';
 import Student from '@/models/Student';
+import { creditDisconnectGap } from '@/lib/examTiming';
 
 // POST /api/student/exams/[id]/start — begins (or resumes) an attempt.
 // Timer is server-stamped; questions are returned WITHOUT correctIndex.
@@ -75,7 +76,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         status: 'in_progress',
       });
     } else {
-      // Resuming — auto-submit if the deadline has already passed while they were away
+      // Resuming — first credit any disconnect gap (capped per attempt) so a student who
+      // was simply offline isn't wrongly auto-submitted the instant they return. This is
+      // the same crediting the heartbeat applies during a live session.
+      const gapSeconds = (now.getTime() - attempt.lastSeenAt.getTime()) / 1000;
+      const alreadyCredited = attempt.disconnectLog.reduce((s: number, d: any) => s + d.creditedSeconds, 0);
+      const { creditedSeconds, newDeadline } = creditDisconnectGap(gapSeconds, attempt.deadline, alreadyCredited);
+      if (creditedSeconds > 0) {
+        attempt.disconnectLog.push({ gapSeconds: Math.round(gapSeconds), creditedSeconds, at: now });
+        attempt.deadline = newDeadline;
+      }
+
+      // Auto-submit only if time is genuinely up even after crediting the disconnect.
       if (now > attempt.deadline) {
         attempt.status = 'auto_submitted';
         await attempt.save();

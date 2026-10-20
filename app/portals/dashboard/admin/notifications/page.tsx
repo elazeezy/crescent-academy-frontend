@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Bell, Send, Loader2, CheckCircle, Clock, ArrowLeft, Plus, X,
+  Bell, Send, Loader2, CheckCircle, Clock, ArrowLeft, Plus, X, RotateCcw, Check,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -14,6 +14,15 @@ interface Notification {
   readBy: string[];
   createdAt: string;
   sentBy?: { name: string };
+}
+
+interface ReattemptReq {
+  _id: string;
+  examTitle: string;
+  studentName: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
 }
 
 function timeAgo(date: string) {
@@ -36,6 +45,8 @@ export default function AdminNotificationsPage() {
   const [message,   setMessage]   = useState('');
   const [target,    setTarget]    = useState<'teacher' | 'all'>('teacher');
   const [feedback,  setFeedback]  = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [reattempts, setReattempts] = useState<ReattemptReq[]>([]);
+  const [deciding,   setDeciding]   = useState<string | null>(null);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -48,7 +59,33 @@ export default function AdminNotificationsPage() {
     }
   };
 
-  useEffect(() => { fetchNotifications(); }, []);
+  const fetchReattempts = async () => {
+    try {
+      const res = await fetch('/api/admin/reattempt-requests');
+      const data = await res.json();
+      setReattempts(data.pending ?? []);
+    } catch { /* non-fatal */ }
+  };
+
+  useEffect(() => { fetchNotifications(); fetchReattempts(); }, []);
+
+  const decide = async (id: string, decision: 'approve' | 'reject') => {
+    setDeciding(id);
+    try {
+      const res = await fetch(`/api/admin/reattempt-requests/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setFeedback({ type: 'error', text: data.error ?? 'Could not update the request.' }); return; }
+      setReattempts((prev) => prev.filter((r) => r._id !== id));
+    } catch {
+      setFeedback({ type: 'error', text: 'Network error. Try again.' });
+    } finally {
+      setDeciding(null);
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +143,47 @@ export default function AdminNotificationsPage() {
         }`}>
           <CheckCircle size={15} />
           {feedback.text}
+        </div>
+      )}
+
+      {/* Re-attempt requests (action required) */}
+      {reattempts.length > 0 && (
+        <div className="bg-white border border-amber-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-amber-100 bg-amber-50/60 flex items-center gap-2">
+            <RotateCcw size={15} className="text-amber-600" />
+            <h2 className="font-bold text-amber-700 text-sm">Re-attempt requests ({reattempts.length})</h2>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {reattempts.map((r) => (
+              <div key={r._id} className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-800 text-sm">
+                    {r.studentName} wants to re-attempt <span className="text-amber-700">{r.examTitle}</span>.
+                  </p>
+                  {r.reason && <p className="text-slate-500 text-sm mt-0.5 italic">“{r.reason}”</p>}
+                  <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
+                    <Clock size={10} /> {timeAgo(r.createdAt)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => decide(r._id, 'approve')}
+                    disabled={deciding === r._id}
+                    className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all disabled:opacity-50"
+                  >
+                    {deciding === r._id ? <Loader2 size={13} className="animate-spin" /> : <Check size={14} />} Approve
+                  </button>
+                  <button
+                    onClick={() => decide(r._id, 'reject')}
+                    disabled={deciding === r._id}
+                    className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-white text-red-600 border border-red-200 hover:bg-red-50 transition-all disabled:opacity-50"
+                  >
+                    <X size={14} /> Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { MonitorCheck, Clock, Loader2, PlayCircle, CheckCircle2, RotateCcw } from 'lucide-react';
+import { MonitorCheck, Clock, Loader2, PlayCircle, CheckCircle2, RotateCcw, Hourglass, XCircle } from 'lucide-react';
 
 interface ExamListItem {
   _id: string;
@@ -14,6 +14,7 @@ interface ExamListItem {
   term?: string;
   attemptStatus: 'not_started' | 'in_progress' | 'submitted' | 'auto_submitted' | null;
   reattemptAllowed?: boolean;
+  reattemptRequestStatus?: 'none' | 'pending' | 'approved' | 'rejected';
   windowStart?: string;
   windowEnd?: string;
 }
@@ -21,6 +22,7 @@ interface ExamListItem {
 export default function StudentExamsPage() {
   const [exams, setExams] = useState<ExamListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [requesting, setRequesting] = useState<string | null>(null);
 
   const fetchExams = useCallback(async () => {
     setLoading(true);
@@ -34,6 +36,25 @@ export default function StudentExamsPage() {
   }, []);
 
   useEffect(() => { fetchExams(); }, [fetchExams]);
+
+  const requestReattempt = useCallback(async (examId: string) => {
+    const reason = window.prompt('Briefly, why do you need to retake this exam? (optional)\ne.g. "It recorded 0 — the test closed before I could start."') ?? '';
+    setRequesting(examId);
+    try {
+      const res = await fetch(`/api/student/exams/${examId}/reattempt-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Could not send your request.'); return; }
+      await fetchExams();
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setRequesting(null);
+    }
+  }, [fetchExams]);
 
   const inProgress = exams.filter((e) => e.attemptStatus === 'in_progress');
   const reattempts = exams.filter(
@@ -111,9 +132,32 @@ export default function StudentExamsPage() {
                 )}
                 <div className="mt-5">
                   {submitted ? (
-                    <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
-                      <CheckCircle2 size={16} /> Submitted
-                    </span>
+                    <div className="space-y-3">
+                      <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
+                        <CheckCircle2 size={16} /> Submitted
+                      </span>
+                      {exam.reattemptRequestStatus === 'pending' ? (
+                        <span className="flex items-center gap-2 text-amber-300 text-xs font-semibold">
+                          <Hourglass size={14} /> Re-attempt requested — awaiting teacher approval
+                        </span>
+                      ) : (
+                        <>
+                          {exam.reattemptRequestStatus === 'rejected' && (
+                            <span className="flex items-center gap-2 text-red-300 text-xs font-semibold">
+                              <XCircle size={14} /> Your last re-attempt request was declined
+                            </span>
+                          )}
+                          <button
+                            onClick={() => requestReattempt(exam._id)}
+                            disabled={requesting === exam._id}
+                            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-all active:scale-95 disabled:opacity-50"
+                          >
+                            {requesting === exam._id ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />}
+                            {exam.reattemptRequestStatus === 'rejected' ? 'Request re-attempt again' : 'Request re-attempt'}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   ) : expired ? (
                     <span className="text-slate-500 text-sm font-bold">Assessment window closed</span>
                   ) : upcoming ? (

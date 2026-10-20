@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Bell, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, CheckCircle, Clock, Loader2, RotateCcw, Check, X } from 'lucide-react';
 
 interface Notification {
   _id: string;
@@ -9,6 +9,15 @@ interface Notification {
   message: string;
   createdAt: string;
   isRead: boolean;
+}
+
+interface ReattemptReq {
+  _id: string;
+  examTitle: string;
+  studentName: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
 }
 
 function timeAgo(date: string) {
@@ -26,6 +35,8 @@ export default function TeacherNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [marking,       setMarking]       = useState<string | null>(null);
+  const [reattempts,    setReattempts]    = useState<ReattemptReq[]>([]);
+  const [deciding,      setDeciding]      = useState<string | null>(null);
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -38,7 +49,33 @@ export default function TeacherNotificationsPage() {
     }
   };
 
-  useEffect(() => { fetchNotifications(); }, []);
+  const fetchReattempts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/teacher/reattempt-requests');
+      const data = await res.json();
+      setReattempts(data.pending ?? []);
+    } catch { /* non-fatal */ }
+  }, []);
+
+  useEffect(() => { fetchNotifications(); fetchReattempts(); }, [fetchReattempts]);
+
+  const decide = async (id: string, decision: 'approve' | 'reject') => {
+    setDeciding(id);
+    try {
+      const res = await fetch(`/api/teacher/reattempt-requests/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Could not update the request.'); return; }
+      setReattempts((prev) => prev.filter((r) => r._id !== id));
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setDeciding(null);
+    }
+  };
 
   const markRead = async (id: string) => {
     setMarking(id);
@@ -76,6 +113,46 @@ export default function TeacherNotificationsPage() {
           </span>
         )}
       </div>
+
+      {/* ── Re-attempt requests (action required) ── */}
+      {reattempts.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
+            <RotateCcw size={15} /> Re-attempt requests ({reattempts.length})
+          </h2>
+          {reattempts.map((r) => (
+            <div key={r._id} className="rounded-2xl p-5 border border-amber-500/30 bg-amber-500/[0.07]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm">
+                    {r.studentName} wants to re-attempt <span className="text-amber-200">{r.examTitle}</span>.
+                  </p>
+                  {r.reason && <p className="text-slate-300 text-sm mt-1 italic">“{r.reason}”</p>}
+                  <div className="flex items-center gap-1 mt-2 text-[10px] text-slate-500 font-medium">
+                    <Clock size={11} /> {timeAgo(r.createdAt)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => decide(r._id, 'approve')}
+                    disabled={deciding === r._id}
+                    className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-400 transition-all disabled:opacity-50"
+                  >
+                    {deciding === r._id ? <Loader2 size={13} className="animate-spin" /> : <Check size={14} />} Approve
+                  </button>
+                  <button
+                    onClick={() => decide(r._id, 'reject')}
+                    disabled={deciding === r._id}
+                    className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-lg bg-white/5 text-red-300 border border-red-500/30 hover:bg-red-500/10 transition-all disabled:opacity-50"
+                  >
+                    <X size={14} /> Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="py-24 flex items-center justify-center gap-2 text-slate-400">
