@@ -168,29 +168,52 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
             const submitted = a.status === 'submitted' || a.status === 'auto_submitted';
             return (
               <div key={a._id} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl overflow-hidden">
-                <button onClick={() => setExpanded(isOpen ? null : a._id)} className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-white/[0.02] transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="w-full flex items-center justify-between gap-3 p-4">
+                  <button onClick={() => setExpanded(isOpen ? null : a._id)} className="flex items-center gap-3 min-w-0 flex-1 text-left hover:opacity-90 transition-opacity">
                     <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center text-xs font-black text-white shrink-0">
                       {a.student.firstName[0]}{a.student.lastName[0]}
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-white text-sm truncate">{a.student.firstName} {a.student.lastName}</p>
-                      <p className="text-emerald-400/70 text-xs font-mono">{a.student.studentId}</p>
+                      <p className="text-emerald-400/70 text-xs font-mono truncate">{a.student.studentId}{a.attemptNumber && a.attemptNumber > 1 ? ` · attempt ${a.attemptNumber}` : ''}</p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  </button>
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     {pendingReattempt.has(a.student._id) && (
-                      <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/30">
-                        <RotateCcw size={10} /> re-attempt requested
+                      <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/30">
+                        <RotateCcw size={10} /> requested
                       </span>
                     )}
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${submitted ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/15 text-amber-400 border-amber-500/25'}`}>
                       {a.status.replace('_', ' ')}
                     </span>
-                    {submitted && <span className="text-xs font-bold text-slate-300">{a.correctCount}/{examMeta.objectiveCount} correct — {a.objectiveScore}/30</span>}
-                    {isOpen ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                    {submitted && <span className="hidden md:inline text-xs font-bold text-slate-300">{a.correctCount}/{examMeta.objectiveCount} — {a.objectiveScore}/30</span>}
+                    {submitted && (
+                      a.reattemptAllowed ? (
+                        <button
+                          onClick={() => toggleReattempt(a.student._id, false)}
+                          disabled={reattemptBusy === a.student._id}
+                          className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 disabled:opacity-50 transition-all"
+                          title="Re-attempt has been sent to this student. Click to cancel it."
+                        >
+                          {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Re-attempt sent
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => toggleReattempt(a.student._id, true)}
+                          disabled={reattemptBusy === a.student._id}
+                          className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-sky-600 text-white hover:bg-sky-500 disabled:opacity-50 transition-all"
+                          title="Let this student retake the exam. Their new score replaces the old one."
+                        >
+                          {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Send re-attempt
+                        </button>
+                      )
+                    )}
+                    <button onClick={() => setExpanded(isOpen ? null : a._id)} className="text-slate-500 hover:text-slate-300 p-1" aria-label={isOpen ? 'Collapse' : 'Expand'}>
+                      {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
                   </div>
-                </button>
+                </div>
 
                 {isOpen && (
                   <div className="border-t border-white/5 p-4 space-y-4">
@@ -252,35 +275,6 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
                     {submitted && examMeta.assessmentSlot === 'testing' ? (
                       <p className="text-xs text-indigo-300 border-t border-white/5 pt-3">CBT Testing submission only. No result record was created.</p>
                     ) : null}
-
-                    {submitted && (
-                      <div className="flex flex-wrap items-center gap-3 border-t border-white/5 pt-3">
-                        {a.reattemptAllowed ? (
-                          <>
-                            <span className="text-xs font-semibold text-amber-300 flex items-center gap-1.5"><RotateCcw size={13} /> Re-attempt is open for this student.</span>
-                            <button
-                              onClick={() => toggleReattempt(a.student._id, false)}
-                              disabled={reattemptBusy === a.student._id}
-                              className="flex items-center gap-1.5 text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/25 px-3 py-1.5 rounded-lg hover:bg-amber-500/25 disabled:opacity-50"
-                            >
-                              {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : null} Cancel re-attempt
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => toggleReattempt(a.student._id, true)}
-                            disabled={reattemptBusy === a.student._id}
-                            className="flex items-center gap-1.5 text-xs font-bold text-slate-300 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:bg-white/10 disabled:opacity-50"
-                            title="Let this student take the exam again. A fresh attempt starts when they next open it, replacing this submission."
-                          >
-                            {reattemptBusy === a.student._id ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />} Allow re-attempt
-                          </button>
-                        )}
-                        {a.attemptNumber && a.attemptNumber > 1 ? (
-                          <span className="text-[11px] text-slate-500 font-mono">attempt #{a.attemptNumber}</span>
-                        ) : null}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
