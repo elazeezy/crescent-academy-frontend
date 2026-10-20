@@ -19,23 +19,44 @@ export default async function StudentDashboard() {
 
   const studentProfile = await Student.findOne({ user: session.user.id }).lean() as any;
 
+  type ExamLite = { _id: { toString(): string }; title?: string; windowStart?: Date; windowEnd?: Date };
+
   const liveAssessments = studentProfile ? await Exam.find({
     section: studentProfile.section,
     targetClass: studentProfile.currentClass,
     status: 'live',
-  }).select('_id title assessmentSlot windowStart windowEnd').lean() as { _id: { toString(): string }; title?: string; windowStart?: Date; windowEnd?: Date }[] : [];
-  const priorAttempts = studentProfile && liveAssessments.length
-    ? await ExamAttempt.find({ student: studentProfile._id, exam: { $in: liveAssessments.map((e) => e._id) } }).select('exam status reattemptAllowed').lean() as { exam: { toString(): string }; status: string; reattemptAllowed?: boolean }[]
+  }).select('_id title assessmentSlot windowStart windowEnd').lean() as ExamLite[] : [];
+
+  // All of the student's attempts — not just on live exams — so an in-progress or a
+  // re-attempt that was granted after the exam closed still surfaces here.
+  const allAttempts = studentProfile
+    ? await ExamAttempt.find({ student: studentProfile._id }).select('exam status reattemptAllowed').lean() as { exam: { toString(): string }; status: string; reattemptAllowed?: boolean }[]
     : [];
-  const attemptByExam = new Map(priorAttempts.map((a) => [a.exam.toString(), a]));
-  const attemptedExamIds = new Set(priorAttempts.map((a) => a.exam.toString()));
+  const attemptByExam = new Map(allAttempts.map((a) => [a.exam.toString(), a]));
+  const attemptedExamIds = new Set(allAttempts.map((a) => a.exam.toString()));
+
+  // Fetch titles for any attempted exam that isn't already in liveAssessments
+  // (e.g. a reopened exam whose window/status has since closed).
+  const liveIds = new Set(liveAssessments.map((e) => e._id.toString()));
+  const extraExamIds = allAttempts
+    .filter((a) => {
+      const reopened = a.reattemptAllowed && (a.status === 'submitted' || a.status === 'auto_submitted');
+      return (reopened || a.status === 'in_progress') && !liveIds.has(a.exam.toString());
+    })
+    .map((a) => a.exam);
+  const extraExams = studentProfile && extraExamIds.length
+    ? await Exam.find({ _id: { $in: extraExamIds } }).select('_id title windowStart windowEnd').lean() as ExamLite[]
+    : [];
+  const examById = new Map<string, ExamLite>([...liveAssessments, ...extraExams].map((e) => [e._id.toString(), e]));
+
   const windowOpen = (e: { windowStart?: Date; windowEnd?: Date }) =>
     (!e.windowStart || new Date(e.windowStart) <= new Date()) && (!e.windowEnd || new Date(e.windowEnd) >= new Date());
   const cbtToAttend = liveAssessments.filter((e) => !attemptedExamIds.has(e._id.toString()) && windowOpen(e));
-  const cbtInProgress = liveAssessments.filter((e) => attemptByExam.get(e._id.toString())?.status === 'in_progress');
-  const cbtReattempt = liveAssessments.filter((e) => {
+  const cbtInProgress = Array.from(examById.values()).filter((e) => attemptByExam.get(e._id.toString())?.status === 'in_progress');
+  // Re-attempt shows regardless of the due date — a reopened exam is intentional.
+  const cbtReattempt = Array.from(examById.values()).filter((e) => {
     const a = attemptByExam.get(e._id.toString());
-    return a?.reattemptAllowed && (a.status === 'submitted' || a.status === 'auto_submitted') && windowOpen(e);
+    return a?.reattemptAllowed && (a.status === 'submitted' || a.status === 'auto_submitted');
   });
 
   const latestResult = studentProfile
@@ -76,8 +97,8 @@ export default async function StudentDashboard() {
       {/* Re-attempt: a teacher/admin reopened a submitted exam for this student. */}
       {cbtReattempt.map((e) => (
         <Link key={`reattempt-${e._id.toString()}`} href={`/portals/dashboard/student/exams/${e._id.toString()}`} className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-400/50 bg-emerald-500 px-5 py-4 text-white shadow-lg hover:bg-emerald-400 transition-colors">
-          <span className="min-w-0"><strong className="block text-sm md:text-base">Re-attempt available{e.title ? `: ${e.title}` : ''}.</strong><span className="text-xs md:text-sm text-emerald-50/90">Your teacher has reopened this exam. Starting it begins a fresh attempt.</span></span>
-          <span className="shrink-0 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white">Re-attempt</span>
+          <span className="min-w-0"><strong className="block text-sm md:text-base">You have to re-attempt{e.title ? `: ${e.title}` : ''} — start now.</strong><span className="text-xs md:text-sm text-emerald-50/90">Your teacher has reopened this exam for you. Starting it begins a fresh attempt and replaces your previous score.</span></span>
+          <span className="shrink-0 rounded-xl bg-slate-950 px-4 py-2 text-xs font-bold text-white">Start now</span>
         </Link>
       ))}
 

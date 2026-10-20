@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, MonitorCheck, Clock, Users, Loader2, Circle, Trash2, Pencil, ClipboardCheck } from 'lucide-react';
+import { Plus, MonitorCheck, Clock, Users, Loader2, Circle, Trash2, Pencil, ClipboardCheck, RotateCcw, CheckCircle2 } from 'lucide-react';
 
 interface Exam {
   _id: string;
@@ -32,6 +32,9 @@ export default function TeacherExamsPage() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [reattemptExam, setReattemptExam] = useState<Exam | null>(null);
+  const [reattemptLoading, setReattemptLoading] = useState(false);
+  const [reattemptResult, setReattemptResult] = useState<string | null>(null);
 
   const fetchExams = useCallback(async () => {
     setLoading(true);
@@ -55,6 +58,26 @@ export default function TeacherExamsPage() {
       fetchExams();
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleReattemptAll = async () => {
+    if (!reattemptExam) return;
+    setReattemptLoading(true);
+    setReattemptResult(null);
+    try {
+      const res = await fetch(`/api/teacher/exams/${reattemptExam._id}/reattempt-all`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { setReattemptResult(data.error ?? 'Could not reopen the exam.'); return; }
+      setReattemptResult(
+        data.reopenedFor > 0
+          ? `Reopened for ${data.reopenedFor} student${data.reopenedFor === 1 ? '' : 's'}. They'll see a "re-attempt now" prompt in their portal.`
+          : 'No submitted attempts to reopen yet.',
+      );
+    } catch {
+      setReattemptResult('Network error. Please try again.');
+    } finally {
+      setReattemptLoading(false);
     }
   };
 
@@ -120,6 +143,13 @@ export default function TeacherExamsPage() {
                   <ClipboardCheck size={13} /> Grade
                 </Link>
                 <button
+                  onClick={() => { setReattemptExam(exam); setReattemptResult(null); }}
+                  className="flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-3.5 py-2 rounded-xl font-bold text-xs transition-all border border-amber-500/25"
+                  title="Reopen this exam for every student who already submitted — even if the due date has passed."
+                >
+                  <RotateCcw size={13} /> Make them re-attempt
+                </button>
+                <button
                   onClick={() => setDeleteId(exam._id)}
                   className="flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3.5 py-2 rounded-xl font-bold text-xs transition-all border border-red-500/20"
                 >
@@ -128,6 +158,36 @@ export default function TeacherExamsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {reattemptExam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0d1f3c] text-white rounded-2xl shadow-2xl w-full max-w-md border border-white/10 p-6">
+            <h3 className="font-bold text-white mb-2 flex items-center gap-2"><RotateCcw size={18} className="text-amber-400" /> Make the class re-attempt?</h3>
+            {reattemptResult ? (
+              <>
+                <div className={`mt-2 flex items-start gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${reattemptResult.startsWith('Reopened') ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/25' : 'bg-amber-500/10 text-amber-300 border border-amber-500/25'}`}>
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5" /> {reattemptResult}
+                </div>
+                <div className="flex justify-end mt-5">
+                  <button onClick={() => { setReattemptExam(null); setReattemptResult(null); }} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/15 text-white">Done</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-400 text-sm mb-5">
+                  This reopens <strong className="text-white">{reattemptExam.title}</strong> for <strong className="text-white">every student who already submitted it</strong>, even if the due date has passed. Each will see a “re-attempt now” prompt, start fresh, and their new score will replace the old one. Students who haven’t submitted are unaffected.
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={handleReattemptAll} disabled={reattemptLoading} className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 py-2.5 rounded-xl text-sm font-bold disabled:opacity-40">
+                    {reattemptLoading ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />} Reopen for the class
+                  </button>
+                  <button onClick={() => setReattemptExam(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-400 hover:bg-white/5">Cancel</button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

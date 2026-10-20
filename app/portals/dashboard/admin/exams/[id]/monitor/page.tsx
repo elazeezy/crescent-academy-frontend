@@ -26,6 +26,7 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [reattemptBusy, setReattemptBusy] = useState<string | null>(null);
+  const [reopenBusy, setReopenBusy] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -41,6 +42,22 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
       setLoading(false);
     }
   }, [id]);
+
+  const reopenForClass = useCallback(async () => {
+    if (!window.confirm('Reopen this exam for EVERY student who already submitted? They can retake it even after the due date, and their new score replaces the old one.')) return;
+    setReopenBusy(true);
+    try {
+      const res = await fetch(`/api/admin/exams/${id}/reattempt-all`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Could not reopen the exam.'); return; }
+      alert(data.reopenedFor > 0 ? `Reopened for ${data.reopenedFor} student(s). They'll see a "re-attempt now" prompt.` : 'No submitted attempts to reopen yet.');
+      await fetchData();
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setReopenBusy(false);
+    }
+  }, [id, fetchData]);
 
   const toggleReattempt = useCallback(async (studentId: string, allow: boolean) => {
     setReattemptBusy(studentId);
@@ -94,6 +111,16 @@ export default function MonitorExamPage({ params }: { params: Promise<{ id: stri
           </h1>
           <p className="text-slate-500 text-sm mt-1">{examMeta.subject} — live progress, refreshes every 10 seconds. Scores stay hidden until grading.</p>
         </div>
+        {submitted.length > 0 && (
+          <button
+            onClick={reopenForClass}
+            disabled={reopenBusy}
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+            title="Reopen this exam for every student who already submitted, even after the due date."
+          >
+            {reopenBusy ? <Loader2 size={15} className="animate-spin" /> : <RotateCcw size={15} />} Make them re-attempt
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">

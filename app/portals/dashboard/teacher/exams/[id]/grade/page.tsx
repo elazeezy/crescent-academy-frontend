@@ -31,11 +31,15 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
   const [saving, setSaving] = useState<string | null>(null);
   const [saveMsg, setSaveMsg] = useState<Record<string, string>>({});
   const [reattemptBusy, setReattemptBusy] = useState<string | null>(null);
+  const [pendingReattempt, setPendingReattempt] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/teacher/exams/${id}/attempts`);
+      const [res, reqRes] = await Promise.all([
+        fetch(`/api/teacher/exams/${id}/attempts`),
+        fetch('/api/teacher/reattempt-requests').catch(() => null),
+      ]);
       const data = await res.json();
       if (res.ok) {
         setExamMeta(data.exam);
@@ -43,6 +47,13 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
         setTermSession(data.exam.session || '2026/2027');
         setAttempts(data.attempts ?? []);
         setNotStarted(data.notStarted ?? []);
+      }
+      if (reqRes && reqRes.ok) {
+        const reqData = await reqRes.json();
+        const pending = new Set<string>(
+          (reqData.pending ?? []).filter((r: any) => r.exam === id).map((r: any) => r.student),
+        );
+        setPendingReattempt(pending);
       }
     } finally {
       setLoading(false);
@@ -168,6 +179,11 @@ export default function GradeExamPage({ params }: { params: Promise<{ id: string
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
+                    {pendingReattempt.has(a.student._id) && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/30">
+                        <RotateCcw size={10} /> re-attempt requested
+                      </span>
+                    )}
                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${submitted ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/15 text-amber-400 border-amber-500/25'}`}>
                       {a.status.replace('_', ' ')}
                     </span>

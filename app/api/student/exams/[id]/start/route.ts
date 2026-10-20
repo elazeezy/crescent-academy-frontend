@@ -28,18 +28,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (exam.section !== student.section || exam.targetClass !== student.currentClass) {
       return NextResponse.json({ error: 'This exam is not available for your class' }, { status: 403 });
     }
-    if (exam.status !== 'live') {
-      return NextResponse.json({ error: 'This exam is not currently open' }, { status: 403 });
-    }
-    const now = new Date();
-    if (exam.windowStart && now < new Date(exam.windowStart)) {
-      return NextResponse.json({ error: 'This exam has not opened yet' }, { status: 403 });
-    }
-    if (exam.windowEnd && now > new Date(exam.windowEnd)) {
-      return NextResponse.json({ error: 'This exam window has closed' }, { status: 403 });
-    }
 
+    const now = new Date();
     let attempt = await ExamAttempt.findOne({ exam: id, student: student._id });
+
+    // A teacher/admin-granted re-attempt bypasses the status/window gates: the student
+    // is being asked to retake a submission on purpose, even after the due date.
+    const hasGrantedReattempt = !!(attempt && attempt.reattemptAllowed);
+
+    if (!hasGrantedReattempt) {
+      if (exam.status !== 'live') {
+        return NextResponse.json({ error: 'This exam is not currently open' }, { status: 403 });
+      }
+      if (exam.windowStart && now < new Date(exam.windowStart)) {
+        return NextResponse.json({ error: 'This exam has not opened yet' }, { status: 403 });
+      }
+      if (exam.windowEnd && now > new Date(exam.windowEnd)) {
+        return NextResponse.json({ error: 'This exam window has closed' }, { status: 403 });
+      }
+    }
 
     const alreadySubmitted = attempt && (attempt.status === 'submitted' || attempt.status === 'auto_submitted');
 

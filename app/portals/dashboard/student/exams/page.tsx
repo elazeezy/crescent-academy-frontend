@@ -93,11 +93,11 @@ export default function StudentExamsPage() {
           className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/15 px-5 py-4 text-white hover:bg-emerald-500/25 transition-colors"
         >
           <span className="min-w-0">
-            <strong className="block text-sm md:text-base">Re-attempt available: {exam.title}</strong>
-            <span className="text-xs md:text-sm text-emerald-200/90">Your teacher has reopened this exam. Starting a re-attempt begins a fresh attempt.</span>
+            <strong className="block text-sm md:text-base">You have to re-attempt: {exam.title}</strong>
+            <span className="text-xs md:text-sm text-emerald-200/90">Your teacher has reopened this exam for you. Start now — this begins a fresh attempt and replaces your previous score.</span>
           </span>
           <span className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-emerald-400 px-4 py-2 text-xs font-bold text-slate-950">
-            <RotateCcw size={14} /> Re-attempt
+            <RotateCcw size={14} /> Start now
           </span>
         </Link>
       ))}
@@ -131,7 +131,14 @@ export default function StudentExamsPage() {
                   </p>
                 )}
                 <div className="mt-5">
-                  {submitted ? (
+                  {canReattempt ? (
+                    <Link
+                      href={`/portals/dashboard/student/exams/${exam._id}`}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all active:scale-95"
+                    >
+                      <RotateCcw size={16} /> Re-attempt now
+                    </Link>
+                  ) : submitted ? (
                     <div className="space-y-3">
                       <span className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
                         <CheckCircle2 size={16} /> Submitted
@@ -165,11 +172,9 @@ export default function StudentExamsPage() {
                   ) : (
                     <Link
                       href={`/portals/dashboard/student/exams/${exam._id}`}
-                      className={`flex items-center justify-center gap-2 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 w-full ${canReattempt ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'}`}
+                      className="flex items-center justify-center gap-2 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 w-full bg-sky-600 hover:bg-sky-500"
                     >
-                      {canReattempt
-                        ? <><RotateCcw size={16} /> Re-attempt CBT</>
-                        : <><PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue CBT' : 'Attempt CBT'}</>}
+                      <PlayCircle size={16} /> {exam.attemptStatus === 'in_progress' ? 'Continue CBT' : 'Attempt CBT'}
                     </Link>
                   )}
                 </div>
