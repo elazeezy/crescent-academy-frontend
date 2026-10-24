@@ -5,6 +5,10 @@ import Exam from '@/models/Exam';
 import ExamAttempt from '@/models/ExamAttempt';
 import Student from '@/models/Student';
 import { creditDisconnectGap } from '@/lib/examTiming';
+import {
+  buildAttemptShuffle, identityShuffle, isValidShuffle,
+  toDisplayQuestions, canonicalAnswersToDisplay,
+} from '@/lib/examShuffle';
 
 // POST /api/student/exams/[id]/start — begins (or resumes) an attempt.
 // Timer is server-stamped; questions are returned WITHOUT correctIndex.
@@ -65,6 +69,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       attempt.submittedAt = undefined;
       attempt.reattemptAllowed = false;
       attempt.attemptNumber = (attempt.attemptNumber ?? 1) + 1;
+      // Fresh re-attempt gets a brand-new shuffle.
+      const reshuffle = buildAttemptShuffle(exam.questions);
+      attempt.questionOrder = reshuffle.questionOrder;
+      attempt.optionOrders = reshuffle.optionOrders;
       await attempt.save();
     } else if (alreadySubmitted) {
       return NextResponse.json({ error: 'You have already submitted this exam' }, { status: 403 });
@@ -73,6 +81,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!attempt) {
       const startedAt = now;
       const deadline = new Date(startedAt.getTime() + exam.durationMinutes * 60 * 1000);
+      const shuffle = buildAttemptShuffle(exam.questions);
       attempt = await ExamAttempt.create({
         exam: id,
         student: student._id,
@@ -81,6 +90,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         deadline,
         lastSeenAt: now,
         status: 'in_progress',
+        questionOrder: shuffle.questionOrder,
+        optionOrders: shuffle.optionOrders,
       });
     } else {
       // Resuming — first credit any disconnect gap (capped per attempt) so a student who
@@ -104,14 +115,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       await attempt.save();
     }
 
-    const questionsForStudent = exam.questions.map((q: any) => ({ text: q.text, options: q.options }));
+    // Resolve this attempt's shuffle. Attempts created before shuffling existed get a
+    // stable identity order (persisted) so they are never reshuffled mid-exam.
+    let shuffle = { questionOrder: attempt.questionOrder, optionOrders: attempt.optionOrders };
+    if (!isValidShuffle(shuffle, exam.questions)) {
+      shuffle = identityShuffle(exam.questions);
+      attempt.questionOrder = shuffle.questionOrder;
+      attempt.optionOrders = shuffle.optionOrders;
+      await attempt.save();
+    }
+
+    // Serve questions and the student's current answers in THIS attempt's display order.
+    const questionsForStudent = toDisplayQuestions(exam.questions, shuffle);
+    const answersForStudent = canonicalAnswersToDisplay(attempt.answers, shuffle);
 
     return NextResponse.json({
       attemptId: attempt._id.toString(),
       title: exam.title,
       subject: exam.subject,
       questions: questionsForStudent,
-      answers: attempt.answers,
+      answers: answersForStudent,
       deadline: attempt.deadline,
       serverNow: now,
     });

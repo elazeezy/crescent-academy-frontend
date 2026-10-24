@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, Loader2, Plus } from 'lucide-react';
 import { localInputToIso } from '@/lib/examWindow';
+import { SECTIONS, getClassNamesForSection, type Section } from '@/lib/subjects';
 
 export default function NewExamPage() {
   const router = useRouter();
   const [subjects, setSubjects] = useState<string[]>([]);
-  const [assignedClass, setAssignedClass] = useState('');
   const [form, setForm] = useState({
     title: '',
     subject: '',
     targetClass: '',
+    section: 'college' as Section,
     objectiveCount: 1,
     durationMinutes: 45,
     theoryMaxScore: 40,
@@ -26,13 +27,20 @@ export default function NewExamPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const classOptions = getClassNamesForSection(form.section);
+
   useEffect(() => {
     fetch('/api/teacher/profile')
       .then((r) => r.json())
       .then((d) => {
         setSubjects(d.subjects ?? []);
-        setAssignedClass(d.assignedClass ?? '');
-        setForm((f) => ({ ...f, targetClass: d.assignedClass ?? '', subject: d.subjects?.[0] ?? '' }));
+        const sec: Section = d.section === 'science' ? 'science' : 'college';
+        setForm((f) => ({
+          ...f,
+          section: sec,
+          targetClass: d.assignedClass ?? '',
+          subject: d.subjects?.[0] ?? '',
+        }));
       })
       .catch(() => {});
   }, []);
@@ -80,24 +88,50 @@ export default function NewExamPage() {
           <input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="First Term Mid-Term Test" />
         </div>
 
+        <div>
+          <label className={labelCls}>Subject *</label>
+          <input
+            className={inputCls}
+            value={form.subject}
+            onChange={(e) => setForm({ ...form, subject: e.target.value })}
+            placeholder="Type any subject, e.g. Mathematics"
+            list="subject-suggestions"
+          />
+          {subjects.length > 0 && (
+            <datalist id="subject-suggestions">
+              {subjects.map((s) => <option key={s} value={s} />)}
+            </datalist>
+          )}
+          <p className="text-xs text-slate-500 mt-1.5">You can type any subject — suggestions come from your assigned subjects.</p>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Subject *</label>
-            {subjects.length > 0 ? (
-              <select className={inputCls} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
-                {subjects.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            ) : (
-              <input className={inputCls} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Mathematics" />
-            )}
+            <label className={labelCls}>Section *</label>
+            <select
+              className={inputCls}
+              value={form.section}
+              onChange={(e) => {
+                const section = e.target.value as Section;
+                const opts = getClassNamesForSection(section);
+                setForm((f) => ({ ...f, section, targetClass: opts.includes(f.targetClass) ? f.targetClass : (opts[0] ?? '') }));
+              }}
+            >
+              {SECTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
           </div>
           <div>
-            <label className={labelCls}>Class</label>
-            <input className={inputCls} value={form.targetClass || assignedClass} onChange={(e) => setForm({ ...form, targetClass: e.target.value })} />
+            <label className={labelCls}>Class *</label>
+            <select className={inputCls} value={form.targetClass} onChange={(e) => setForm({ ...form, targetClass: e.target.value })}>
+              {!classOptions.includes(form.targetClass) && form.targetClass && (
+                <option value={form.targetClass}>{form.targetClass}</option>
+              )}
+              {classOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
         </div>
 
-        <p className="text-xs text-slate-500">Add as many questions as you need in the next step. The system detects the final count for grading.</p>
+        <p className="text-xs text-slate-500">You can set this assessment for any class in either section. Add as many questions as you need in the next step — the system detects the final count for grading.</p>
 
         <div className="grid grid-cols-3 gap-3">
           <div><label className={labelCls}>Term *</label><select className={inputCls} value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })}><option>1st Term</option><option>2nd Term</option><option>3rd Term</option></select></div>

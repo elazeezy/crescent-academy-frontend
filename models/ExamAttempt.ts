@@ -23,6 +23,11 @@ export interface IExamAttempt extends Document {
   // the student has started this exam (1 for the first run).
   reattemptAllowed: boolean;
   attemptNumber: number;
+  // Per-student shuffle so neighbours get the same questions in a different order, with
+  // options reordered too. Answers are translated back to canonical order before storage,
+  // so grading is unaffected. See lib/examShuffle.ts.
+  questionOrder: number[];
+  optionOrders: number[][];
 }
 
 const DisconnectEntrySchema = new Schema<IDisconnectEntry>(
@@ -49,6 +54,8 @@ const ExamAttemptSchema = new Schema<IExamAttempt>(
     submittedAt:    { type: Date },
     reattemptAllowed: { type: Boolean, default: false },
     attemptNumber:    { type: Number, default: 1 },
+    questionOrder:    { type: [Number], default: [] },
+    optionOrders:     { type: [[Number]], default: [] },
   },
   { timestamps: true }
 );

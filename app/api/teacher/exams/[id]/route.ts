@@ -42,11 +42,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const exam = await Exam.findOne({ _id: id, createdBy: session.user.id });
   if (!exam) return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
 
-  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, status, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
+  const { title, subject, targetClass, section, objectiveCount, durationMinutes, theoryMaxScore, questions, status, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
 
   if (title !== undefined) exam.title = String(title).trim();
   if (subject !== undefined) exam.subject = String(subject).trim();
   if (targetClass !== undefined) exam.targetClass = String(targetClass).trim();
+  if (section !== undefined) {
+    if (!['college', 'science'].includes(section)) {
+      return NextResponse.json({ error: 'Choose a valid section' }, { status: 400 });
+    }
+    exam.section = section;
+  }
 
   if (objectiveCount !== undefined) {
     if (!Number.isInteger(Number(objectiveCount)) || Number(objectiveCount) < 1) return NextResponse.json({ error: 'Enter at least one question' }, { status: 400 });

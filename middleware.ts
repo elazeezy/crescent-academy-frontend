@@ -3,9 +3,10 @@ import { getToken } from 'next-auth/jwt';
 import { NextRequest } from 'next/server';
 
 const ROLE_PATHS: Record<string, string> = {
-  admin:   '/portals/dashboard/admin',
-  teacher: '/portals/dashboard/teacher',
-  student: '/portals/dashboard/student',
+  admin:     '/portals/dashboard/admin',
+  teacher:   '/portals/dashboard/teacher',
+  student:   '/portals/dashboard/student',
+  principal: '/portals/dashboard/principal',
 };
 
 const SECRET = process.env.NEXTAUTH_SECRET;
@@ -42,6 +43,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
   if (pathname.startsWith('/portals/dashboard/student') && role !== 'student') {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+  if (pathname.startsWith('/portals/dashboard/principal') && role !== 'principal') {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 

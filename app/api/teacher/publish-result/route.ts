@@ -4,6 +4,8 @@ import dbConnect from '@/lib/dbConnect';
 import Result from '@/models/Result';
 import Student from '@/models/Student';
 import Teacher from '@/models/Teacher';
+import Exam from '@/models/Exam';
+import { classNameRegex } from '@/lib/subjects';
 
 // POST /api/teacher/publish-result
 // Body: { resultId, publish: boolean }
@@ -31,7 +33,21 @@ export async function POST(req: NextRequest) {
   const normalise = (s: string) => s?.replace(/[\s.]/g, '').toLowerCase();
   const sameClass   = teacher?.assignedClass && normalise(student.currentClass) === normalise(teacher.assignedClass);
   const sameSection = (teacher?.section || 'college') === (student.section || 'college');
+
+  // Form master of the class, or any teacher who set a CBT assessment for the
+  // student's class/section, may publish this result (req. 1).
+  let setsExamForClass = false;
   if (!sameClass || !sameSection) {
+    const studentClassRegex = classNameRegex(student.currentClass || '');
+    const examForClass = await Exam.exists({
+      createdBy: session.user.id,
+      section: student.section || 'college',
+      targetClass: { $regex: studentClassRegex, $options: 'i' },
+    });
+    setsExamForClass = !!examForClass;
+  }
+
+  if (!(sameClass && sameSection) && !setsExamForClass) {
     return NextResponse.json({ error: 'Not your student' }, { status: 403 });
   }
 

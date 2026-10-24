@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/dbConnect';
 import ExamAttempt from '@/models/ExamAttempt';
 import Student from '@/models/Student';
+import { identityShuffle, isValidShuffle, displayAnswerToCanonical } from '@/lib/examShuffle';
+import Exam from '@/models/Exam';
 
 // POST /api/student/exams/[id]/answer — autosave a single answer as the student selects it
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -49,9 +51,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Time has expired' }, { status: 403 });
     }
 
+    // The client sends answers in its DISPLAY order (this attempt's per-student shuffle);
+    // translate each back to the exam's canonical (question, option) before storing, so
+    // grading stays order-independent.
+    let shuffle: { questionOrder: number[]; optionOrders: number[][] } = {
+      questionOrder: attempt.questionOrder,
+      optionOrders: attempt.optionOrders,
+    };
+    const looksValid =
+      shuffle.questionOrder?.length === attempt.answers.length &&
+      shuffle.optionOrders?.length === attempt.answers.length;
+    if (!looksValid) {
+      const exam = await Exam.findById(id).select('questions.options').lean() as any;
+      shuffle = isValidShuffle(shuffle, exam?.questions ?? [])
+        ? shuffle
+        : identityShuffle(exam?.questions ?? []);
+    }
+
     for (const { questionIndex, optionIndex } of valid) {
-      if (questionIndex >= 0 && questionIndex < attempt.answers.length) {
-        attempt.answers[questionIndex] = optionIndex;
+      const mapped = displayAnswerToCanonical(questionIndex, optionIndex, shuffle);
+      if (mapped && mapped.questionIndex >= 0 && mapped.questionIndex < attempt.answers.length) {
+        attempt.answers[mapped.questionIndex] = mapped.optionIndex;
       }
     }
     attempt.lastSeenAt = new Date();

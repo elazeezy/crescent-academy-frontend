@@ -37,10 +37,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { title, subject, targetClass, objectiveCount, durationMinutes, theoryMaxScore, questions, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
+  const { title, subject, targetClass, section, objectiveCount, durationMinutes, theoryMaxScore, questions, windowStart, windowEnd, term, session: termSession, assessmentSlot } = body;
 
   if (!title || !subject || !targetClass) {
     return NextResponse.json({ error: 'title, subject, and targetClass are required' }, { status: 400 });
+  }
+  if (section !== undefined && !['college', 'science'].includes(section)) {
+    return NextResponse.json({ error: 'Choose a valid section' }, { status: 400 });
   }
   if (objectiveCount !== undefined && (!Number.isInteger(Number(objectiveCount)) || Number(objectiveCount) < 1)) return NextResponse.json({ error: 'Question count must be a positive whole number' }, { status: 400 });
   if (!['ca1', 'ca2', 'exam', 'testing'].includes(assessmentSlot ?? 'exam')) return NextResponse.json({ error: 'Choose a valid result slot' }, { status: 400 });
@@ -67,7 +70,9 @@ export async function POST(req: Request) {
   const exam = await Exam.create({
     title: String(title).trim(),
     subject: String(subject).trim(),
-    section: teacher.section,
+    // A teacher may set a CBT assessment for any class in either section (req. 2);
+    // the section defaults to their own when not specified.
+    section: section || teacher.section,
     targetClass: String(targetClass).trim(),
     objectiveCount: Math.max(1, cleanedQuestions.questions.length || Number(objectiveCount) || 1),
     term: term || '1st Term',
