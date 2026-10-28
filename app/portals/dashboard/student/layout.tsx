@@ -10,6 +10,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import NotificationBell from '@/components/student/NotificationBell';
+import PortalThemeToggle from '@/components/portal/PortalThemeToggle';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Overview',     href: '/portals/dashboard/student' },
@@ -28,7 +29,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const initials = name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-white font-sans flex overflow-hidden">
+    <div className="portal-shell min-h-screen bg-[#0a1628] text-white font-sans flex overflow-hidden">
 
       {/* ── Ambient background ── */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -163,6 +164,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse" />
               <span className="text-xs font-bold text-sky-300">Active</span>
             </div>
+            <PortalThemeToggle />
             <NotificationBell />
           </div>
         </header>

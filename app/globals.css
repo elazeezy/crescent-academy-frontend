@@ -326,3 +326,175 @@
   box-shadow:0 0 0 3px rgba(16,185,129,0.1);
 }
 .portal-input::placeholder { color:rgba(148,163,184,0.5); }
+
+/* ============================================================
+   PORTAL LIGHT MODE
+   Scoped to .portal-shell + html[data-portal-theme="light"] so the
+   public site (which uses data-theme) is completely unaffected.
+   Strategy: flip only the NEUTRAL dark-shell surfaces/text to light.
+   Colored buttons/badges/bands, tinted chips, printable report
+   documents, and already-dark text (slate-700..950) are left alone.
+   Default (no attribute / "dark") keeps the original dark design.
+   ============================================================ */
+html[data-portal-theme="light"] .portal-shell {
+  --pl-page:      #eef2f7;
+  --pl-surface:   #ffffff;
+  --pl-text:      #0f172a;
+  --pl-border:    rgba(15, 23, 42, 0.10);
+  --pl-overlay:   rgba(2, 6, 23, 0.04);
+  --pl-overlay-2: rgba(2, 6, 23, 0.08);
+  color: var(--pl-text);
+}
+
+/* ---- Page backgrounds (dark chrome) → light page ---- */
+html[data-portal-theme="light"] .portal-shell[class*="#060d18"],
+html[data-portal-theme="light"] .portal-shell [class*="#060d18"],
+html[data-portal-theme="light"] .portal-shell[class*="#070615"],
+html[data-portal-theme="light"] .portal-shell [class*="#070615"],
+html[data-portal-theme="light"] .portal-shell[class*="#0d0a24"],
+html[data-portal-theme="light"] .portal-shell [class*="#0d0a24"],
+html[data-portal-theme="light"] .portal-shell.bg-slate-950,
+html[data-portal-theme="light"] .portal-shell .bg-slate-950 {
+  background-color: var(--pl-page) !important;
+}
+
+/* ---- Elevated surfaces (sidebar / header / cards) → white ---- */
+html[data-portal-theme="light"] .portal-shell[class*="#0a1628"],
+html[data-portal-theme="light"] .portal-shell [class*="#0a1628"],
+html[data-portal-theme="light"] .portal-shell[class*="#0f172a"],
+html[data-portal-theme="light"] .portal-shell [class*="#0f172a"],
+html[data-portal-theme="light"] .portal-shell [class*="#0d1f3c"],
+html[data-portal-theme="light"] .portal-shell [class*="#0F1E4A"],
+html[data-portal-theme="light"] .portal-shell .bg-slate-900,
+html[data-portal-theme="light"] .portal-shell .bg-slate-900\/95,
+html[data-portal-theme="light"] .portal-shell .bg-slate-800,
+html[data-portal-theme="light"] .portal-shell .bg-slate-800\/50,
+html[data-portal-theme="light"] .portal-shell .bg-slate-800\/60,
+html[data-portal-theme="light"] .portal-shell .bg-slate-700,
+html[data-portal-theme="light"] .portal-shell .bg-slate-600 {
+  background-color: var(--pl-surface) !important;
+}
+
+/* ---- Translucent white overlays (cards) → faint dark tint ---- */
+html[data-portal-theme="light"] .portal-shell .bg-white\/2,
+html[data-portal-theme="light"] .portal-shell .bg-white\/3,
+html[data-portal-theme="light"] .portal-shell .bg-white\/4,
+html[data-portal-theme="light"] .portal-shell .bg-white\/5,
+html[data-portal-theme="light"] .portal-shell .bg-white\/8,
+html[data-portal-theme="light"] .portal-shell .bg-white\/10,
+html[data-portal-theme="light"] .portal-shell .bg-white\/12,
+html[data-portal-theme="light"] .portal-shell .bg-white\/14,
+html[data-portal-theme="light"] .portal-shell .bg-white\/15,
+html[data-portal-theme="light"] .portal-shell .bg-white\/20,
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.02\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.03\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.04\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.05\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.06\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.08\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.12\],
+html[data-portal-theme="light"] .portal-shell .bg-white\/\[0\.14\] {
+  background-color: var(--pl-overlay) !important;
+}
+
+/* ---- White hover overlays → faint dark hover ---- */
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/2:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/3:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/5:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/10:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/12:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/14:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/15:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/20:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.02\]:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.03\]:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.05\]:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.06\]:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.12\]:hover,
+html[data-portal-theme="light"] .portal-shell .hover\:bg-white\/\[0\.14\]:hover {
+  background-color: var(--pl-overlay-2) !important;
+}
+
+/* ---- White borders / dividers → faint dark border ---- */
+html[data-portal-theme="light"] .portal-shell [class*="border-white/"] {
+  border-color: var(--pl-border) !important;
+}
+html[data-portal-theme="light"] .portal-shell .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--pl-border) !important;
+}
+
+/* ---- Neutral text: white + muted slates → dark ---- */
+html[data-portal-theme="light"] .portal-shell .text-white   { color: var(--pl-text) !important; }
+html[data-portal-theme="light"] .portal-shell .text-slate-200 { color: #1e293b !important; }
+html[data-portal-theme="light"] .portal-shell .text-slate-300 { color: #334155 !important; }
+html[data-portal-theme="light"] .portal-shell .text-slate-400 { color: #475569 !important; }
+html[data-portal-theme="light"] .portal-shell .text-slate-500 { color: #475569 !important; }
+html[data-portal-theme="light"] .portal-shell .text-slate-600 { color: #334155 !important; }
+
+/* ---- Accent text: light-on-dark tints → darker for white bg ---- */
+html[data-portal-theme="light"] .portal-shell .text-emerald-300,
+html[data-portal-theme="light"] .portal-shell .text-emerald-400 { color: #059669 !important; }
+html[data-portal-theme="light"] .portal-shell .text-sky-300,
+html[data-portal-theme="light"] .portal-shell .text-sky-400     { color: #0284c7 !important; }
+html[data-portal-theme="light"] .portal-shell .text-indigo-300,
+html[data-portal-theme="light"] .portal-shell .text-indigo-400  { color: #4f46e5 !important; }
+html[data-portal-theme="light"] .portal-shell .text-teal-300,
+html[data-portal-theme="light"] .portal-shell .text-teal-400    { color: #0d9488 !important; }
+html[data-portal-theme="light"] .portal-shell .text-amber-300,
+html[data-portal-theme="light"] .portal-shell .text-amber-400   { color: #b45309 !important; }
+html[data-portal-theme="light"] .portal-shell .text-red-300,
+html[data-portal-theme="light"] .portal-shell .text-red-400     { color: #dc2626 !important; }
+html[data-portal-theme="light"] .portal-shell .text-rose-300,
+html[data-portal-theme="light"] .portal-shell .text-rose-400    { color: #e11d48 !important; }
+html[data-portal-theme="light"] .portal-shell .text-violet-400,
+html[data-portal-theme="light"] .portal-shell .text-purple-400  { color: #7c3aed !important; }
+html[data-portal-theme="light"] .portal-shell .text-cyan-300,
+html[data-portal-theme="light"] .portal-shell .text-cyan-400    { color: #0891b2 !important; }
+
+/* ---- EXCEPTIONS: keep white text on solid colored controls ----
+   (placed after the neutral rules so equal-specificity wins) */
+html[data-portal-theme="light"] .portal-shell .bg-emerald-500,
+html[data-portal-theme="light"] .portal-shell .bg-emerald-600,
+html[data-portal-theme="light"] .portal-shell .bg-emerald-700,
+html[data-portal-theme="light"] .portal-shell .bg-sky-500,
+html[data-portal-theme="light"] .portal-shell .bg-sky-600,
+html[data-portal-theme="light"] .portal-shell .bg-sky-700,
+html[data-portal-theme="light"] .portal-shell .bg-indigo-500,
+html[data-portal-theme="light"] .portal-shell .bg-indigo-600,
+html[data-portal-theme="light"] .portal-shell .bg-blue-500,
+html[data-portal-theme="light"] .portal-shell .bg-blue-600,
+html[data-portal-theme="light"] .portal-shell .bg-teal-500,
+html[data-portal-theme="light"] .portal-shell .bg-teal-600,
+html[data-portal-theme="light"] .portal-shell .bg-red-500,
+html[data-portal-theme="light"] .portal-shell .bg-red-600,
+html[data-portal-theme="light"] .portal-shell .bg-rose-500,
+html[data-portal-theme="light"] .portal-shell .bg-rose-600,
+html[data-portal-theme="light"] .portal-shell .bg-amber-500,
+html[data-portal-theme="light"] .portal-shell .bg-amber-600,
+html[data-portal-theme="light"] .portal-shell .bg-violet-600,
+html[data-portal-theme="light"] .portal-shell .bg-purple-600,
+html[data-portal-theme="light"] .portal-shell [class*="#1a5276"],
+html[data-portal-theme="light"] .portal-shell [class*="#0145F2"],
+html[data-portal-theme="light"] .portal-shell [class*="#25D366"],
+html[data-portal-theme="light"] .portal-shell [class*="#D4A847"],
+html[data-portal-theme="light"] .portal-shell [class*="#0EA5E9"],
+html[data-portal-theme="light"] .portal-shell [class*="#1E3A8A"],
+html[data-portal-theme="light"] .portal-shell [class*="#0030C9"],
+html[data-portal-theme="light"] .portal-shell [class*="#0284C7"],
+html[data-portal-theme="light"] .portal-shell [class*="bg-linear-to"]:not(.text-transparent),
+html[data-portal-theme="light"] .portal-shell [class*="bg-gradient"]:not(.text-transparent) {
+  color: #ffffff !important;
+}
+
+/* ---- Dark form inputs → light ---- */
+html[data-portal-theme="light"] .portal-shell .portal-input {
+  background: #ffffff;
+  border-color: var(--pl-border);
+  color: var(--pl-text);
+}
+html[data-portal-theme="light"] .portal-shell .portal-input::placeholder { color: #94a3b8; }
+html[data-portal-theme="light"] .portal-shell .portal-input:focus {
+  background: #ffffff;
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}

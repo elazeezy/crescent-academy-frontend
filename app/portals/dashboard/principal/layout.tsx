@@ -8,6 +8,7 @@ import {
   LayoutDashboard, ClipboardList, LogOut, Menu, X,
   GraduationCap, ShieldCheck, Home,
 } from 'lucide-react';
+import PortalThemeToggle from '@/components/portal/PortalThemeToggle';
 
 const navItems = [
   { href: '/portals/dashboard/principal',         icon: LayoutDashboard, label: 'Dashboard' },
@@ -22,7 +23,7 @@ export default function PrincipalPortalLayout({ children }: { children: React.Re
   const principalInitial = principalName[0]?.toUpperCase() ?? 'P';
 
   return (
-    <div className="min-h-screen bg-[#070615] text-white font-sans flex overflow-hidden">
+    <div className="portal-shell min-h-screen bg-[#070615] text-white font-sans flex overflow-hidden">
 
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -149,6 +150,7 @@ export default function PrincipalPortalLayout({ children }: { children: React.Re
               <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
               <span className="text-xs font-bold text-indigo-300">Live</span>
             </div>
+            <PortalThemeToggle />
           </div>
         </header>
 

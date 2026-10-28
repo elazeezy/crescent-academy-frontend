@@ -8,6 +8,7 @@ import {
   LayoutDashboard, ClipboardList,
   LogOut, Bell, Menu, X, GraduationCap, BookOpen, Home, Upload, MonitorCheck,
 } from 'lucide-react';
+import PortalThemeToggle from '@/components/portal/PortalThemeToggle';
 
 const navItems = [
   { href: '/portals/dashboard/teacher',               icon: LayoutDashboard, label: 'Dashboard'     },
@@ -25,7 +26,7 @@ export default function TeacherPortalLayout({ children }: { children: React.Reac
   const teacherInitial = teacherName[0]?.toUpperCase() ?? 'T';
 
   return (
-    <div className="min-h-screen bg-[#060d18] text-white font-sans flex overflow-hidden">
+    <div className="portal-shell min-h-screen bg-[#060d18] text-white font-sans flex overflow-hidden">
 
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -153,6 +154,7 @@ export default function TeacherPortalLayout({ children }: { children: React.Reac
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               <span className="text-xs font-bold text-emerald-300">Live</span>
             </div>
+            <PortalThemeToggle />
             <button className="p-2.5 rounded-xl bg-white/5 border border-white/8 hover:bg-white/10 transition-colors relative">
               <Bell size={18} className="text-slate-400" />
             </button>

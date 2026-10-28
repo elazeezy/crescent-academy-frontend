@@ -81,7 +81,7 @@ export default function BroadsheetView({ data }: Props) {
         </button>
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95"
+          className="flex items-center gap-2 bg-[#1e293b] hover:bg-[#334155] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95"
         >
           <Printer size={16} /> Print / Download PDF
         </button>

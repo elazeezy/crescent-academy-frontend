@@ -35,6 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${amiri.variable}`}>
       <body className="antialiased">
+        {/* Apply the saved portal theme before paint to avoid a dark→light flash.
+            Only affects portal-scoped styles; the public site uses data-theme. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('ca-portal-theme')||'dark';document.documentElement.setAttribute('data-portal-theme',t);}catch(e){document.documentElement.setAttribute('data-portal-theme','dark');}`,
+          }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

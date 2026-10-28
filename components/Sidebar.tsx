@@ -18,6 +18,7 @@ import {
   Bell,
   MonitorCheck,
 } from 'lucide-react';
+import PortalThemeToggle from '@/components/portal/PortalThemeToggle';
 
 interface NavItem {
   href: string;
@@ -122,13 +123,16 @@ export default function Sidebar({ user }: { user: any }) {
           </div>
         </div>
 
-        <Link
-          href="/"
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-200 hover:bg-white/5 rounded-xl transition-all duration-200 text-sm font-semibold"
-        >
-          <Home size={18} />
-          Back to Website
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex-1 flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-200 hover:bg-white/5 rounded-xl transition-all duration-200 text-sm font-semibold"
+          >
+            <Home size={18} />
+            Back to Website
+          </Link>
+          <PortalThemeToggle />
+        </div>
         <button
           onClick={() => signOut({ callbackUrl: window.location.origin + '/login' })}
           className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all duration-200 text-sm font-semibold group"
