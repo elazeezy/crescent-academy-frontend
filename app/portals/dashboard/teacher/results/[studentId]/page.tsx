@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import dbConnect from "@/lib/dbConnect";
 import Student from "@/models/Student";
 import Result from "@/models/Result";
-import Teacher from "@/models/Teacher";
 import { redirect } from "next/navigation";
 import { getSubjectsForClass } from "@/lib/subjects";
 import ResultEntryForm from "@/components/teacher/ResultEntryForm";
@@ -27,18 +26,7 @@ export default async function ResultEntryPage({
     );
   }
 
-  const teacher = await Teacher.findOne({ user: session.user.id }).lean() as any;
-
-  const normalise = (s: string) => s?.replace(/[\s.]/g, '').toLowerCase();
-  const sameClass   = teacher?.assignedClass && normalise(student.currentClass) === normalise(teacher.assignedClass);
-  const sameSection = (teacher?.section || 'college') === (student.section || 'college');
-  if (!sameClass || !sameSection) {
-    return (
-      <div className="p-10 text-center text-slate-400">
-        This student is not in your assigned class.
-      </div>
-    );
-  }
+  // Any teacher can edit any student in any class, so no class-ownership gate here.
 
   // Load existing result for pre-populating the form
   const existingResult = await Result.findOne({
@@ -47,11 +35,9 @@ export default async function ResultEntryPage({
     .sort({ createdAt: -1 })
     .lean() as any;
 
-  // Determine subjects list
-  const subjects = getSubjectsForClass(
-    student.currentClass,
-    teacher?.subjects
-  );
+  // Full subject list for the student's class/level (not the editing teacher's own
+  // subjects) so any teacher can edit any subject.
+  const subjects = getSubjectsForClass(student.currentClass);
 
   const safeStudent = JSON.parse(JSON.stringify(student));
   const safeResult  = existingResult ? JSON.parse(JSON.stringify(existingResult)) : null;

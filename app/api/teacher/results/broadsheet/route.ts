@@ -12,13 +12,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const targetClass = session.user.assignedClass;
-  const section = (session.user.section || 'college') as 'college' | 'science';
+  const { searchParams } = new URL(req.url);
+  // Any teacher can generate a broadsheet for any class; fall back to their own
+  // assigned class/section when no override is given.
+  const sectionParam = searchParams.get('section');
+  const classParam = searchParams.get('class');
+  const section = ((sectionParam === 'science' || sectionParam === 'college')
+    ? sectionParam
+    : (session.user.section || 'college')) as 'college' | 'science';
+  const targetClass = classParam || session.user.assignedClass;
   if (!targetClass) {
-    return NextResponse.json({ error: 'You have no assigned class' }, { status: 400 });
+    return NextResponse.json({ error: 'Pick a class to generate a broadsheet' }, { status: 400 });
   }
 
-  const { searchParams } = new URL(req.url);
   const academicSession = searchParams.get('session');
   const term = searchParams.get('term') as BroadsheetTerm | null;
 

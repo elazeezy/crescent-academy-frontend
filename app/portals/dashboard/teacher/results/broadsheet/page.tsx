@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   ChevronLeft, Loader2, AlertCircle, Sheet,
 } from 'lucide-react';
 import BroadsheetView from '@/components/results/BroadsheetView';
 import type { BroadsheetData, BroadsheetTerm } from '@/lib/broadsheet';
+import { SECTIONS, getClassNamesForSection, type Section } from '@/lib/subjects';
 
 const TERM_OPTIONS: { value: BroadsheetTerm; label: string }[] = [
   { value: '1st Term', label: '1st Term' },
@@ -18,20 +20,30 @@ const TERM_OPTIONS: { value: BroadsheetTerm; label: string }[] = [
 
 export default function TeacherBroadsheetPage() {
   const { data: authSession } = useSession();
+  const sp = useSearchParams();
+  const assignedClass = authSession?.user?.assignedClass;
+  const assignedSection: Section = authSession?.user?.section === 'science' ? 'science' : 'college';
+
+  const initialSection: Section = sp.get('section') === 'science' ? 'science' : sp.get('section') === 'college' ? 'college' : assignedSection;
+  const initialClass = sp.get('class') ? decodeURIComponent(sp.get('class') as string) : (assignedClass || '');
+
+  const [section, setSection] = useState<Section>(initialSection);
+  const [targetClass, setTargetClass] = useState(initialClass);
   const [academicSession, setAcademicSession] = useState('2025/2026');
   const [term, setTerm] = useState<BroadsheetTerm>('3rd Term');
   const [data, setData] = useState<(BroadsheetData & { schoolLogo?: string | null }) | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const assignedClass = authSession?.user?.assignedClass;
+  const classOptions = getClassNamesForSection(section);
 
   const generate = async () => {
+    if (!targetClass) { setError('Pick a class to generate a broadsheet.'); return; }
     setLoading(true);
     setError('');
     setData(null);
     try {
-      const params = new URLSearchParams({ session: academicSession, term });
+      const params = new URLSearchParams({ session: academicSession, term, section, class: targetClass });
       const res = await fetch(`/api/teacher/results/broadsheet?${params}`);
       const json = await res.json();
       if (!res.ok) { setError(json.error ?? 'Failed to generate broadsheet'); return; }
@@ -53,18 +65,42 @@ export default function TeacherBroadsheetPage() {
           <Sheet size={20} className="text-emerald-400" /> Broadsheet
         </h1>
         <p className="text-slate-400 text-sm mt-1">
-          {assignedClass ? <><span className="text-emerald-400 font-bold">{assignedClass}</span> — pick a term (or the full session) to generate.</> : 'You have no assigned class.'}
+          Pick any class and a term (or the full session) to generate its broadsheet.
         </p>
       </div>
 
-      {!assignedClass ? (
-        <div className="no-print flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl px-4 py-3 text-sm font-semibold">
-          <AlertCircle size={16} /> No assigned class — ask an admin to assign you one before generating a broadsheet.
-        </div>
-      ) : (
+      {(
         <>
           {/* Controls */}
           <div className="no-print bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 flex flex-wrap items-end gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Section</label>
+              <select
+                value={section}
+                onChange={(e) => {
+                  const next = e.target.value as Section;
+                  setSection(next);
+                  const opts = getClassNamesForSection(next);
+                  setTargetClass((c) => (opts.includes(c) ? c : (opts[0] ?? '')));
+                }}
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400"
+              >
+                {SECTIONS.map((s) => <option key={s.value} value={s.value} className="bg-slate-900">{s.label}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Class</label>
+              <select
+                value={targetClass}
+                onChange={(e) => setTargetClass(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-400"
+              >
+                {!classOptions.includes(targetClass) && targetClass && <option value={targetClass} className="bg-slate-900">{targetClass}</option>}
+                {classOptions.map((c) => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+              </select>
+            </div>
+
             <div>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Session</label>
               <input

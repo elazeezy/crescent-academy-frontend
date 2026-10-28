@@ -63,6 +63,13 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
   const [scores, setScores] = useState<Record<string, SubjectRow>>(
     () => buildInitialScores(subjects, existingResult)
   );
+  // Teacher first picks which subjects to edit; only those rows are shown and saved.
+  // Subjects that already have a saved score are not auto-selected — nothing is edited
+  // until the teacher chooses it, so untouched subjects are preserved verbatim on save.
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const existingNames = new Set<string>(
+    (existingResult?.subjects ?? []).map((s: any) => s.subjectName)
+  );
   const [affective,    setAffective]    = useState<Record<string, number>>(
     () => buildInitialTraits(AFFECTIVE_TRAITS,   existingResult?.affectiveTraits   ?? {})
   );
@@ -120,8 +127,8 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
     setter(prev => ({ ...prev, [key]: val }));
   };
 
-  const totalScore = subjects.reduce((acc, s) => acc + (scores[s]?.total ?? 0), 0);
-  const avgScore   = subjects.length > 0 ? (totalScore / subjects.length).toFixed(1) : '0';
+  const totalScore = selectedSubjects.reduce((acc, s) => acc + (scores[s]?.total ?? 0), 0);
+  const avgScore   = selectedSubjects.length > 0 ? (totalScore / selectedSubjects.length).toFixed(1) : '0';
 
   const handleSignatureUpload = async (
     file: File,
@@ -178,15 +185,34 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
           studentId,
           term,
           session,
-          subjects: subjects.map(sub => ({
-            subjectName: sub,
-            test1:    scores[sub]?.test1 ?? 0,
-            test2:    scores[sub]?.test2 ?? 0,
-            test3:    scores[sub]?.test3 ?? 0,
-            examScore: scores[sub]?.exam ?? 0,
-            total:    scores[sub]?.total ?? 0,
-            grade:    scores[sub]?.grade ?? 'F9',
-          })),
+          // Only the subjects the teacher chose to edit are rewritten; every other
+          // subject already on the result is carried forward untouched (including
+          // CBT-recorded subjects), so editing one subject never wipes the rest.
+          subjects: [
+            ...selectedSubjects.map(sub => ({
+              subjectName: sub,
+              test1:    scores[sub]?.test1 ?? 0,
+              test2:    scores[sub]?.test2 ?? 0,
+              test3:    scores[sub]?.test3 ?? 0,
+              examScore: scores[sub]?.exam ?? 0,
+              total:    scores[sub]?.total ?? 0,
+              grade:    scores[sub]?.grade ?? 'F9',
+            })),
+            ...((existingResult?.subjects ?? []) as any[])
+              .filter((s) => !selectedSubjects.includes(s.subjectName))
+              .map((s) => ({
+                subjectName: s.subjectName,
+                test1: s.test1 ?? 0,
+                test2: s.test2 ?? 0,
+                test3: s.test3 ?? 0,
+                examScore: s.examScore ?? 0,
+                total: s.total ?? 0,
+                grade: s.grade ?? 'F9',
+                ...(s.isCbt
+                  ? { isCbt: true, cbtExamId: s.cbtExamId, objectiveScore: s.objectiveScore, theoryScore: s.theoryScore }
+                  : {}),
+              })),
+          ],
           affectiveTraits:   affective,
           psychomotorSkills: psychomotor,
           attendance: { daysOpened, daysPresent, daysAbsent },
@@ -251,12 +277,46 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
 
       {/* Live avg banner */}
       <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-2xl px-6 py-4">
-        <span className="text-sm text-slate-400 font-medium">Live Class Average</span>
+        <span className="text-sm text-slate-400 font-medium">Average · selected subjects</span>
         <span className="text-2xl font-black text-emerald-400">{avgScore} <span className="text-sm font-medium text-slate-500">/ 100</span></span>
       </div>
 
       {/* ── SECTION 1: ACADEMIC SCORES ── */}
-      <Section icon={<BookOpen size={18} />} title="Academic Results" subtitle="CA tests max 10 each · Exam max 70 · Total 100">
+      <Section icon={<BookOpen size={18} />} title="Academic Results" subtitle="Pick the subjects to edit · CA tests max 10 each · Exam max 70 · Total 100">
+        {/* Subject picker — choose which subjects to edit */}
+        <div className="mb-5 space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Choose subjects to edit</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setSelectedSubjects(subjects)} className="text-xs font-bold text-emerald-400 hover:text-emerald-300">Select all</button>
+              <button type="button" onClick={() => setSelectedSubjects([])} className="text-xs font-bold text-slate-500 hover:text-slate-300">Clear</button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {subjects.map(sub => {
+              const active = selectedSubjects.includes(sub);
+              const hasScore = existingNames.has(sub);
+              return (
+                <button
+                  key={sub}
+                  type="button"
+                  onClick={() => setSelectedSubjects(prev => active ? prev.filter(s => s !== sub) : [...prev, sub])}
+                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                    active ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:border-emerald-400/40'
+                  }`}
+                >
+                  {sub}
+                  {hasScore && <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-white' : 'bg-emerald-400'}`} title="Already has a saved score" />}
+                </button>
+              );
+            })}
+          </div>
+          {selectedSubjects.length === 0 && (
+            <p className="text-xs text-slate-500">Pick one or more subjects above to edit their scores. A dot marks subjects that already have a saved score. Subjects you don&apos;t pick are left exactly as they are.</p>
+          )}
+        </div>
+
+        {selectedSubjects.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -271,7 +331,7 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
               </tr>
             </thead>
             <tbody>
-              {subjects.map(sub => {
+              {selectedSubjects.map(sub => {
                 const row = scores[sub] ?? initSubject();
                 const gradeColor = row.grade === '-' ? 'text-slate-500'
                   : row.grade.startsWith('A') ? 'text-emerald-400'
@@ -302,6 +362,7 @@ export default function ResultEntryForm({ studentId, student, existingResult, su
             </tbody>
           </table>
         </div>
+        )}
       </Section>
 
       {/* ── SECTION 2: AFFECTIVE TRAITS ── */}
